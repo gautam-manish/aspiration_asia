@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reservation Detail | Hotel Collection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    body { font-family: 'DM Sans', sans-serif; background: #0f0f0f; color: #f0f0f0; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; }
+    .gold { color: #c9a84c; }
+    .card { background: #161616; border: 1px solid #2a2a2a; border-radius: 1rem; }
+    .section-title { font-size: 1rem; color: #c9a84c; margin-bottom: 1rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 0.5rem; font-family: 'Playfair Display', serif; }
+    .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e1e1e; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: #666; font-size: 0.85rem; }
+    .detail-value { color: #f0f0f0; font-size: 0.9rem; text-align: right; }
+    .badge { display: inline-block; background: #1e1a0f; border: 1px solid #c9a84c33; border-radius: 4px; padding: 3px 10px; font-size: 0.78rem; color: #c9a84c; }
+    .btn-gold { background: #c9a84c; color: #0f0f0f; font-weight: 600; border-radius: 0.5rem; padding: 0.65rem 1.5rem; transition: background 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: none; display: inline-block; }
+    .btn-gold:hover { background: #b8943d; }
+    .skeleton { background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <main class="max-w-3xl mx-auto px-6 py-10">
+
+    <!-- Back -->
+    <a href="reservations.html" class="inline-flex items-center gap-2 text-[#666] hover:text-[#c9a84c] text-sm mb-6 transition">
+      <i class="fa fa-arrow-left"></i> Back to Reservations
+    </a>
+
+    <div id="content">
+      <!-- Skeleton -->
+      <div class="space-y-6">
+        <div class="skeleton h-8 w-64"></div>
+        <div class="card p-6 space-y-4">
+          ${Array(6).fill(`<div class="skeleton h-4 w-full"></div>`).join("")}
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="sidebar.js"></script>
+  <script>
+    const API = "http://localhost:5000/api/reservations";
+
+    async function loadReservation() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+
+      if (!id) {
+        document.getElementById("content").innerHTML = `<p class="text-red-400">No reservation ID provided.</p>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/${id}`);
+        const data = await res.json();
+        if (data.success) renderDetail(data.data);
+        else document.getElementById("content").innerHTML = `<p class="text-red-400">${data.message}</p>`;
+      } catch {
+        document.getElementById("content").innerHTML = `<p class="text-red-400">Failed to load reservation.</p>`;
+      }
+    }
+
+    function row(label, value) {
+      return `
+        <div class="detail-row">
+          <span class="detail-label">${label}</span>
+          <span class="detail-value">${value || "—"}</span>
+        </div>
+      `;
+    }
+
+    function renderDetail(r) {
+      const date = new Date(r.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+      const totalPax = (Number(r.pax?.adults) || 0) + (Number(r.pax?.childWithBed) || 0) + (Number(r.pax?.childWithoutBed) || 0) + (Number(r.pax?.childBelow5) || 0);
+
+      document.title = `${r.bookingName} | Reservation Detail`;
+
+      document.getElementById("content").innerHTML = `
+
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h2 class="text-3xl text-white">${r.bookingName}</h2>
+            <p class="text-[#555] text-sm mt-1">Created on ${date}</p>
+          </div>
+          <span class="badge">${r.room?.mealPlan || "—"}</span>
+        </div>
+
+        <!-- Booking -->
+        <div class="card p-6 mb-5">
+          <p class="section-title">Booking Details</p>
+          ${row("Booking Name", `<span class="text-white font-medium">${r.bookingName}</span>`)}
+          ${row("Nationality", r.nationality)}
+        </div>
+
+        <!-- Pax -->
+        <div class="card p-6 mb-5">
+          <p class="section-title">Number of Pax <span class="text-sm text-[#555] ml-2">(Total: ${totalPax})</span></p>
+          ${row("Adults", r.pax?.adults)}
+          ${row("Child with Bed", r.pax?.childWithBed)}
+          ${row("Child without Bed (6–10 yrs)", r.pax?.childWithoutBed)}
+          ${row("Child below 5 yrs", r.pax?.childBelow5)}
+        </div>
+
+        <!-- Room -->
+        <div class="card p-6 mb-5">
+          <p class="section-title">Room Details</p>
+          ${row("Room Category", r.room?.category)}
+          ${row("No. of Rooms", r.room?.noOfRooms)}
+          ${row("Room Type", r.room?.type)}
+          ${row("No. of Extra Bed", r.room?.extraBed)}
+          ${row("Meal Plan", r.room?.mealPlan ? `<span class="badge">${r.room.mealPlan}</span>` : "—")}
+        </div>
+
+        <!-- Visits -->
+        <div class="card p-6 mb-5">
+          <p class="section-title">Visit Details</p>
+          ${row("1st Visit Check-In", r.visits?.visit1in)}
+          ${row("1st Visit Check-Out", r.visits?.visit1out)}
+          ${row("2nd Visit Check-In", r.visits?.visit2in)}
+          ${row("2nd Visit Check-Out", r.visits?.visit2out)}
+          ${row("Check-In Time", r.visits?.checkinTime)}
+          ${row("Check-Out Time", r.visits?.checkoutTime)}
+        </div>
+
+        <!-- Email -->
+        <div class="card p-6 mb-5">
+          <p class="section-title">Email Details</p>
+          ${row("Subject", r.subject)}
+          ${row("Sent To", r.emailTo?.join(", "))}
+        </div>
+
+        ${r.note ? `
+        <div class="card p-6 mb-5">
+          <p class="section-title">Note</p>
+          <p class="text-[#aaa] text-sm leading-relaxed">${r.note}</p>
+        </div>` : ""}
+
+        <div class="mt-6">
+          <a href="reservations.html" class="btn-gold">
+            <i class="fa fa-arrow-left mr-2"></i> Back to Reservations
+          </a>
+        </div>
+      `;
+    }
+
+    loadReservation();
+  </script>
+</body>
+</html>
