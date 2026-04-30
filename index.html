@@ -5,439 +5,197 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hotel Collection</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap"
-        rel="stylesheet" />
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="shared-theme.css" />
     <style>
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        .floating label {
+            background: white;
         }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: #0f0f0f;
+        .modal-box .floating label {
+            background: white;
         }
 
-        h1,
-        h2,
-        h3,
-        label {
-            font-family: 'Playfair Display', serif;
-        }
-
-        .gold {
-            color: #c9a84c;
-        }
-
-        .input-field {
-            background: #1a1a1a;
-            border: 1px solid #2e2e2e;
-            color: #f0f0f0;
-            border-radius: 0.5rem;
-            padding: 0.65rem 1rem;
-            width: 100%;
-            transition: border-color 0.2s;
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: #c9a84c;
-        }
-
-        .input-field::placeholder {
-            color: #555;
-        }
-
-        select.input-field option {
-            background: #1a1a1a;
-        }
-
-        .card {
-            background: #161616;
-            border: 1px solid #2a2a2a;
+        .hotel-card {
+            background: white;
+            border: 1px solid #e2e8f0;
             border-radius: 1rem;
+            padding: 1.25rem;
             transition: border-color 0.2s, transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
         }
 
-        .card:hover {
-            border-color: #c9a84c33;
+        .hotel-card:hover {
+            border-color: #bfdbfe;
             transform: translateY(-2px);
         }
 
-        .btn-gold {
-            background: #c9a84c;
-            color: #0f0f0f;
-            font-weight: 600;
-            border-radius: 0.5rem;
-            padding: 0.65rem 1.5rem;
-            transition: background 0.2s;
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        .btn-gold:hover {
-            background: #b8943d;
-        }
-
-        .btn-outline {
-            border: 1px solid #c9a84c;
-            color: #c9a84c;
-            border-radius: 0.5rem;
-            padding: 0.65rem 1.5rem;
-            transition: all 0.2s;
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        .btn-outline:hover {
-            background: #c9a84c;
-            color: #0f0f0f;
-        }
-
-        .btn-danger {
-            border: 1px solid #ef444455;
-            color: #ef4444;
-            border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-        }
-
-        .btn-danger:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-edit {
-            border: 1px solid #c9a84c55;
-            color: #c9a84c;
-            border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-        }
-
-        .btn-edit:hover {
-            background: #c9a84c;
-            color: #0f0f0f;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal-box {
-            background: #161616;
-            border: 1px solid #2a2a2a;
-            border-radius: 1rem;
-            padding: 2rem;
-            width: 100%;
-            max-width: 520px;
-            max-height: 90vh;
-            overflow-y: auto;
-            transform: translateY(20px);
-            transition: transform 0.2s;
-        }
-
-        .modal-overlay.active .modal-box {
-            transform: translateY(0);
-        }
-
         .meal-tag {
-            background: #1e1e1e;
-            border: 1px solid #2e2e2e;
-            border-radius: 0.4rem;
-            padding: 0.25rem 0.6rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 4px;
+            padding: 2px 8px;
             font-size: 0.78rem;
-            color: #c9a84c;
-        }
-
-        .meal-row {
-            animation: fadeIn 0.2s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-6px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            border-radius: 0.75rem;
-            font-size: 0.9rem;
-            z-index: 999;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 0.5rem;
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
-            }
-
-            100% {
-                background-position: -200% 0;
-            }
+            color: #2563eb;
         }
     </style>
 </head>
 
-<body class="min-h-screen text-white">
-
-    <!-- Navbar -->
-    <!-- <nav class="border-b border-[#2a2a2a] px-8 py-4 flex items-center justify-between">
-        <h1 class="text-2xl gold tracking-wide">🏨 Hotel Collection</h1>
-        <a href="add-hotel.html" class="btn-gold text-sm">+ Add Hotel</a>
-        <a href="voucher.html" class="btn-outline text-sm">🧾 Voucher</a>
-        <a href="package-cost.html">Package Cost</a>
-    </nav> -->
-
-    <!-- Main -->
+<body>
     <main class="max-w-5xl mx-auto px-6 py-10">
 
-        <!-- Header + Search -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div>
-                <h2 class="text-3xl text-white">All Hotels</h2>
-                <p id="hotelCount" class="text-[#555] text-sm mt-1">Loading...</p>
+                <h2 class="text-3xl" style="color:#1e293b;">All Hotels</h2>
+                <p id="hotelCount" class="text-sm mt-1" style="color:#64748b;">Loading...</p>
             </div>
-            <div class="relative w-full sm:w-72">
-                <input id="searchInput" type="text" placeholder="Search by hotel name..." class="input-field pr-10"
+            <a href="add-hotel.html" class="btn-blue"><i class="fa fa-plus"></i> Add Hotel</a>
+        </div>
+
+        <div class="card p-4 mb-6">
+            <div class="relative">
+                <input id="searchInput" type="text" placeholder="Search by hotel name..." class="input pr-10"
                     oninput="handleSearch()" />
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#555]">🔍</span>
+                <span class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#94a3b8;">🔍</span>
             </div>
         </div>
 
-        <!-- Hotel Cards -->
         <div id="hotelGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 
-        <!-- Empty State -->
         <div id="emptyState" class="hidden text-center py-20">
             <p class="text-5xl mb-4">🏨</p>
-            <p class="text-[#555] text-lg">No hotels found.</p>
-            <a href="add-hotel.html" class="btn-gold inline-block mt-4 text-sm">Add your first hotel</a>
+            <p style="color:#64748b;">No hotels found.</p>
+            <a href="add-hotel.html" class="btn-blue inline-flex mt-4 text-sm">Add your first hotel</a>
         </div>
-
     </main>
 
     <!-- Edit Modal -->
     <div id="editModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
         <div class="modal-box">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl text-white">Edit Hotel</h3>
-                <button onclick="closeModal()" class="text-[#555] hover:text-white text-2xl leading-none">✕</button>
+                <h3 class="text-xl" style="color:#1e293b;">Edit Hotel</h3>
+                <button onclick="closeModal()"
+                    style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">✕</button>
             </div>
-
             <input type="hidden" id="editId" />
-
             <div class="space-y-4">
-                <div>
-                    <label class="block text-sm gold mb-2">Hotel Name</label>
-                    <input id="editName" type="text" class="input-field" placeholder="Hotel Name" />
-                </div>
+                <div class="floating"><input class="input" id="editName" type="text" placeholder=" " /><label>Hotel
+                        Name</label></div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm gold mb-2">Country</label>
-                        <input id="editCountry" type="text" class="input-field" placeholder="Country" />
-                    </div>
-                    <div>
-                        <label class="block text-sm gold mb-2">City</label>
-                        <input id="editCity" type="text" class="input-field" placeholder="City" />
-                    </div>
+                    <div class="floating"><input class="input" id="editCountry" type="text"
+                            placeholder=" " /><label>Country</label></div>
+                    <div class="floating"><input class="input" id="editCity" type="text"
+                            placeholder=" " /><label>City</label></div>
                 </div>
                 <div>
-                    <label class="block text-sm gold mb-3">Cost Per Room</label>
+                    <p class="section-title">Cost Per Room</p>
                     <div id="editMealRows" class="space-y-3"></div>
                     <button onclick="addEditMealRow()"
-                        class="mt-3 flex items-center gap-2 text-sm text-[#c9a84c] hover:text-white transition">
-                        <span class="text-xl leading-none">＋</span> Add Meal Plan
+                        style="color:#2563eb;font-size:0.85rem;background:none;border:none;cursor:pointer;margin-top:8px;display:flex;align-items:center;gap:4px;">
+                        <span>＋</span> Add Meal Plan
                     </button>
                 </div>
                 <div class="flex gap-3 pt-2">
-                    <button onclick="updateHotel()" class="btn-gold flex-1">Update Hotel</button>
+                    <button onclick="updateHotel()" class="btn-blue flex-1">Update Hotel</button>
                     <button onclick="closeModal()" class="btn-outline flex-1">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="sidebar.js"></script>
     <script>
         const API = "http://localhost:5000/api/hotels";
         const MEAL_PLANS = ["EP", "CP", "MAP", "AP", "JP"];
-        let allHotels = [];
-        let searchTimeout = null;
+        let allHotels = [], searchTimeout = null;
 
-        // ── Fetch & Render ──────────────────────────
         async function fetchHotels(search = "") {
             const url = search ? `${API}?search=${encodeURIComponent(search)}` : API;
             try {
                 showSkeletons();
                 const res = await fetch(url);
                 const data = await res.json();
-                if (data.success) {
-                    allHotels = data.data;
-                    renderHotels(allHotels);
-                }
-            } catch (err) {
-                showToast("Failed to load hotels.", false);
-                document.getElementById("hotelGrid").innerHTML = "";
-            }
+                if (data.success) renderHotels(data.data);
+            } catch { showToast("Failed to load hotels.", false); }
         }
 
         function renderHotels(hotels) {
             const grid = document.getElementById("hotelGrid");
             const empty = document.getElementById("emptyState");
-            const count = document.getElementById("hotelCount");
-
-            count.textContent = `${hotels.length} hotel${hotels.length !== 1 ? "s" : ""} found`;
-
-            if (hotels.length === 0) {
-                grid.innerHTML = "";
-                empty.classList.remove("hidden");
-                return;
-            }
-
+            document.getElementById("hotelCount").textContent = `${hotels.length} hotel${hotels.length !== 1 ? "s" : ""} found`;
+            if (hotels.length === 0) { grid.innerHTML = ""; empty.classList.remove("hidden"); return; }
             empty.classList.add("hidden");
             grid.innerHTML = hotels.map(hotel => `
-        <div class="card p-5 flex flex-col gap-4">
-          <div>
-            <h3 class="text-lg text-white leading-tight">${hotel.name}</h3>
-            <p class="text-[#666] text-sm mt-1">📍 ${hotel.city}, ${hotel.country}</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            ${hotel.costPerRoom.map(c => `
-              <span class="meal-tag">${c.mealPlan}: $${c.rate}</span>
-            `).join("")}
-          </div>
-          <div class="flex gap-2 mt-auto pt-2 border-t border-[#222]">
-            <button onclick='openEditModal(${JSON.stringify(hotel)})' class="btn-edit flex-1">✏️ Edit</button>
-            <button onclick="deleteHotel('${hotel._id}')" class="btn-danger flex-1">🗑 Delete</button>
-          </div>
+      <div class="hotel-card flex flex-col gap-4">
+        <div>
+          <h3 class="text-lg font-semibold" style="color:#1e293b;">${hotel.name}</h3>
+          <p class="text-sm mt-1" style="color:#64748b;">📍 ${hotel.city}, ${hotel.country}</p>
         </div>
-      `).join("");
+        <div class="flex flex-wrap gap-2">
+          ${hotel.costPerRoom.map(c => `<span class="meal-tag">${c.mealPlan}: $${c.rate}</span>`).join("")}
+        </div>
+        <div class="flex gap-2 mt-auto pt-2 border-t" style="border-color:#e2e8f0;">
+          <button onclick='openEditModal(${JSON.stringify(hotel)})' class="btn-outline flex-1 text-sm">✏️ Edit</button>
+          <button onclick="deleteHotel('${hotel._id}')" style="border:1px solid #fecaca;color:#ef4444;border-radius:0.5rem;padding:0.5rem 1rem;flex:1;font-size:0.85rem;background:transparent;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#ef4444'">🗑 Delete</button>
+        </div>
+      </div>`).join("");
         }
 
         function showSkeletons() {
-            const grid = document.getElementById("hotelGrid");
-            grid.innerHTML = Array(6).fill(`
-        <div class="card p-5 space-y-3">
-          <div class="skeleton h-5 w-3/4"></div>
-          <div class="skeleton h-4 w-1/2"></div>
-          <div class="flex gap-2">
-            <div class="skeleton h-6 w-12"></div>
-            <div class="skeleton h-6 w-12"></div>
-          </div>
-          <div class="skeleton h-8 w-full mt-2"></div>
-        </div>
-      `).join("");
+            document.getElementById("hotelGrid").innerHTML = Array(6).fill(`
+      <div class="hotel-card space-y-3">
+        <div class="skeleton h-5 w-3/4"></div>
+        <div class="skeleton h-4 w-1/2"></div>
+        <div class="flex gap-2"><div class="skeleton h-6 w-12"></div><div class="skeleton h-6 w-12"></div></div>
+        <div class="skeleton h-8 w-full"></div>
+      </div>`).join("");
         }
 
-        // ── Search ──────────────────────────────────
         function handleSearch() {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const q = document.getElementById("searchInput").value.trim();
-                fetchHotels(q);
-            }, 400);
+            searchTimeout = setTimeout(() => fetchHotels(document.getElementById("searchInput").value.trim()), 400);
         }
 
-        // ── Delete ──────────────────────────────────
         async function deleteHotel(id) {
             if (!confirm("Are you sure you want to delete this hotel?")) return;
             try {
                 const res = await fetch(`${API}/${id}`, { method: "DELETE" });
                 const data = await res.json();
-                if (data.success) {
-                    showToast("Hotel deleted successfully. ✓");
-                    fetchHotels(document.getElementById("searchInput").value.trim());
-                } else {
-                    showToast(data.message, false);
-                }
-            } catch {
-                showToast("Failed to delete hotel.", false);
-            }
+                if (data.success) { showToast("Hotel deleted! ✓"); fetchHotels(document.getElementById("searchInput").value.trim()); }
+                else showToast(data.message, false);
+            } catch { showToast("Failed to delete.", false); }
         }
 
-        // ── Edit Modal ──────────────────────────────
         function openEditModal(hotel) {
             document.getElementById("editId").value = hotel._id;
             document.getElementById("editName").value = hotel.name;
             document.getElementById("editCountry").value = hotel.country;
             document.getElementById("editCity").value = hotel.city;
-
             const container = document.getElementById("editMealRows");
             container.innerHTML = "";
             hotel.costPerRoom.forEach(c => addEditMealRow(c.mealPlan, c.rate));
-
             document.getElementById("editModal").classList.add("active");
         }
 
-        function closeModal() {
-            document.getElementById("editModal").classList.remove("active");
-        }
-
-        function closeModalOnOverlay(e) {
-            if (e.target === document.getElementById("editModal")) closeModal();
-        }
+        function closeModal() { document.getElementById("editModal").classList.remove("active"); }
+        function closeModalOnOverlay(e) { if (e.target === document.getElementById("editModal")) closeModal(); }
 
         function addEditMealRow(mealPlan = "", rate = "") {
             const container = document.getElementById("editMealRows");
             const row = document.createElement("div");
-            row.className = "meal-row flex items-center gap-3";
+            row.className = "flex items-center gap-3";
             row.innerHTML = `
-        <select class="input-field edit-meal-select">
-          <option value="" disabled ${!mealPlan ? "selected" : ""}>Select Plan</option>
-          ${MEAL_PLANS.map(p => `<option value="${p}" ${p === mealPlan ? "selected" : ""}>${p}</option>`).join("")}
-        </select>
-        <input type="number" placeholder="Rate" value="${rate}" class="input-field edit-rate-input" min="0"/>
-        <button onclick="this.parentElement.remove()" class="text-[#555] hover:text-red-400 transition text-xl leading-none flex-shrink-0">✕</button>
-      `;
+      <select class="input edit-meal-select" onchange="this.classList.add('has-value')" style="flex:1;">
+        <option value="" disabled ${!mealPlan ? "selected" : ""} hidden>Select Plan</option>
+        ${MEAL_PLANS.map(p => `<option value="${p}" ${p === mealPlan ? "selected" : ""}>${p}</option>`).join("")}
+      </select>
+      <input type="number" placeholder="Rate" value="${rate}" class="input edit-rate-input" min="0" style="flex:1;"/>
+      <button onclick="this.parentElement.remove()" style="color:#94a3b8;font-size:1.2rem;background:none;border:none;cursor:pointer;flex-shrink:0;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✕</button>
+    `;
             container.appendChild(row);
+            if (mealPlan) row.querySelector("select").classList.add("has-value");
         }
 
         async function updateHotel() {
@@ -445,64 +203,33 @@
             const name = document.getElementById("editName").value.trim();
             const country = document.getElementById("editCountry").value.trim();
             const city = document.getElementById("editCity").value.trim();
-
-            if (!name || !country || !city) {
-                showToast("Please fill in all hotel details.", false);
-                return;
-            }
-
-            const rows = document.querySelectorAll(".meal-row");
+            if (!name || !country || !city) { showToast("Please fill all hotel details.", false); return; }
+            const rows = document.querySelectorAll(".edit-meal-select");
             const costPerRoom = [];
-            for (const row of rows) {
-                const mealPlan = row.querySelector(".edit-meal-select").value;
-                const rate = row.querySelector(".edit-rate-input").value;
-                if (!mealPlan || rate === "") {
-                    showToast("Please complete all meal plan rows.", false);
-                    return;
-                }
+            for (const sel of rows) {
+                const mealPlan = sel.value;
+                const rate = sel.parentElement.querySelector(".edit-rate-input").value;
+                if (!mealPlan || rate === "") { showToast("Please complete all meal plan rows.", false); return; }
                 costPerRoom.push({ mealPlan, rate: Number(rate) });
             }
-
-            if (costPerRoom.length === 0) {
-                showToast("At least one meal plan is required.", false);
-                return;
-            }
-
+            if (costPerRoom.length === 0) { showToast("At least one meal plan required.", false); return; }
             try {
-                const res = await fetch(`${API}/${id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, country, city, costPerRoom }),
-                });
+                const res = await fetch(`${API}/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, country, city, costPerRoom }) });
                 const data = await res.json();
-                if (data.success) {
-                    showToast("Hotel updated successfully! ✓");
-                    closeModal();
-                    fetchHotels(document.getElementById("searchInput").value.trim());
-                } else {
-                    showToast(data.message, false);
-                }
-            } catch {
-                showToast("Failed to update hotel.", false);
-            }
+                if (data.success) { showToast("Hotel updated! ✓"); closeModal(); fetchHotels(document.getElementById("searchInput").value.trim()); }
+                else showToast(data.message, false);
+            } catch { showToast("Failed to update.", false); }
         }
 
-        // ── Toast ───────────────────────────────────
-        function showToast(message, success = true) {
-            const existing = document.querySelector(".toast");
-            if (existing) existing.remove();
-            const toast = document.createElement("div");
-            toast.className = `toast ${success ? "bg-[#1a2e1a] border border-green-700 text-green-400" : "bg-[#2e1a1a] border border-red-700 text-red-400"}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+        function showToast(msg, success = true) {
+            const e = document.querySelector(".toast"); if (e) e.remove();
+            const t = document.createElement("div");
+            t.className = `toast ${success ? "toast-success" : "toast-error"}`; t.textContent = msg;
+            document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
         }
 
-        // ── Init ─────────────────────────────────────
         fetchHotels();
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<script src="sidebar.js"></script>
 </body>
 
 </html>

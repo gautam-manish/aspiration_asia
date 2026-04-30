@@ -1,411 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vouchers | Hotel Collection</title>
+  <!-- Add this as the FIRST script in <head> on every page except login.html -->
+  <script>
+    if (!localStorage.getItem("token")) {
+      window.location.replace("login.html");
+    }
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="shared-theme.css" />
   <style>
-    body { font-family: 'DM Sans', sans-serif; background: #0f0f0f; color: #f0f0f0; }
-    h1,h2,h3 { font-family: 'Playfair Display', serif; }
-    .gold { color: #c9a84c; }
-    .input { width:100%; padding:10px 12px; font-size:14px; border:1px solid #2e2e2e; border-radius:8px; background:#1a1a1a; color:#f0f0f0; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
-    .input:focus { border-color:#c9a84c; outline:none; box-shadow:0 0 0 3px rgba(201,168,76,0.15); }
-    .input::placeholder { color:#555; }
-    select.input option { background:#1a1a1a; }
-    textarea.input { resize:vertical; min-height:80px; }
-    .floating { position:relative; }
-    .floating label { position:absolute; top:10px; left:12px; font-size:12px; color:#666; pointer-events:none; transition:0.2s; background:#1a1a1a; padding:0 4px; font-family:'DM Sans',sans-serif; }
-    .floating input:focus+label, .floating input:not(:placeholder-shown)+label, .floating select:focus+label { top:-8px; font-size:11px; color:#c9a84c; }
-    .card { background:#161616; border:1px solid #2a2a2a; border-radius:1rem; }
-    .section-title { font-size:1rem; color:#c9a84c; margin-bottom:1rem; border-bottom:1px solid #2a2a2a; padding-bottom:0.5rem; font-family:'Playfair Display',serif; }
-    .btn-gold { background:#c9a84c; color:#0f0f0f; font-weight:600; border-radius:0.5rem; padding:0.65rem 1.5rem; transition:background 0.2s; cursor:pointer; font-family:'DM Sans',sans-serif; border:none; }
-    .btn-gold:hover { background:#b8943d; }
-    .btn-outline { border:1px solid #c9a84c; color:#c9a84c; border-radius:0.5rem; padding:0.65rem 1.5rem; transition:all 0.2s; cursor:pointer; font-family:'DM Sans',sans-serif; background:transparent; }
-    .btn-outline:hover { background:#c9a84c; color:#0f0f0f; }
-    .btn-red { border:1px solid #ef444455; color:#ef4444; border-radius:0.5rem; padding:0.5rem 0.75rem; transition:all 0.2s; cursor:pointer; background:transparent; font-size:0.8rem; }
-    .btn-red:hover { background:#ef4444; color:white; }
-    table { width:100%; border-collapse:collapse; }
-    thead tr { background:#1a1a1a; }
-    th { padding:12px 16px; text-align:left; font-size:0.78rem; color:#c9a84c; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
-    td { padding:12px 16px; font-size:0.88rem; color:#ccc; border-bottom:1px solid #1e1e1e; }
-    tbody tr:hover { background:#1a1a1a; }
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:50; opacity:0; pointer-events:none; transition:opacity 0.2s; }
-    .modal-overlay.active { opacity:1; pointer-events:all; }
-    .modal-box { background:#161616; border:1px solid #2a2a2a; border-radius:1rem; padding:2rem; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; transform:translateY(20px); transition:transform 0.2s; }
-    .modal-overlay.active .modal-box { transform:translateY(0); }
-    .hotel-block { background:#111; border:1px solid #2a2a2a; border-radius:0.75rem; padding:1.25rem; animation:fadeIn 0.2s ease; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-    .badge { display:inline-block; background:#1e1a0f; border:1px solid #c9a84c33; border-radius:4px; padding:2px 8px; font-size:0.75rem; color:#c9a84c; }
-    .skeleton { background:linear-gradient(90deg,#1a1a1a 25%,#222 50%,#1a1a1a 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    .toast { position:fixed; bottom:2rem; right:2rem; padding:1rem 1.5rem; border-radius:0.75rem; font-size:0.9rem; z-index:999; animation:slideUp 0.3s ease; }
-    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .floating label {
+      background: white;
+    }
+
+    .hotel-block .floating label {
+      background: #f8fafc;
+    }
+
+    .modal-box .floating label {
+      background: white;
+    }
   </style>
 </head>
-<body class="min-h-screen">
-<main class="max-w-6xl mx-auto px-6 py-10">
 
-  <!-- Header -->
-  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-    <div>
-      <h2 class="text-3xl text-white">Hotel Vouchers</h2>
-      <p id="voucherCount" class="text-[#555] text-sm mt-1">Loading...</p>
-    </div>
-    <button onclick="openModal()" class="btn-gold"><i class="fa fa-plus mr-2"></i>Add Voucher</button>
-  </div>
+<body>
+  <main class="max-w-6xl mx-auto px-6 py-10">
 
-  <!-- Search -->
-  <div class="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
-    <div class="relative flex-1">
-      <input id="searchInput" type="text" placeholder="Search by guest name..." class="input pr-10" oninput="handleSearch()"/>
-      <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#555]">🔍</span>
-    </div>
-    <input id="dateFilter" type="date" class="input sm:w-48" onchange="handleSearch()"/>
-    <button onclick="clearFilters()" class="btn-outline text-sm px-4">Clear</button>
-  </div>
-
-  <!-- Table -->
-  <div class="card overflow-hidden">
-    <div class="overflow-x-auto">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Guest Name</th>
-            <th>Nationality</th>
-            <th>No. of Pax</th>
-            <th>Hotels</th>
-            <th>Check-In</th>
-            <th>Check-Out</th>
-            <th>No. of Rooms</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="voucherTableBody"></tbody>
-      </table>
-    </div>
-    <div id="emptyState" class="hidden text-center py-16">
-      <p class="text-4xl mb-3">🧾</p>
-      <p class="text-[#555]">No vouchers found.</p>
-      <button onclick="openModal()" class="btn-gold mt-4 text-sm">Add your first voucher</button>
-    </div>
-  </div>
-
-</main>
-
-<!-- Add Voucher Modal -->
-<div id="addModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
-  <div class="modal-box">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-xl text-white">Add Voucher</h3>
-      <button onclick="closeModal()" class="text-[#555] hover:text-white text-2xl leading-none">✕</button>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <h2 class="text-3xl" style="color:#1e293b;">Hotel Vouchers</h2>
+        <p id="voucherCount" class="text-sm mt-1" style="color:#64748b;">Loading...</p>
+      </div>
+      <button onclick="openModal()" class="btn-blue"><i class="fa fa-plus"></i> Add Voucher</button>
     </div>
 
-    <div class="space-y-4">
+    <div class="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
+      <div class="relative flex-1">
+        <input id="searchInput" type="text" placeholder="Search by guest name..." class="input pr-10"
+          oninput="handleSearch()" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#94a3b8;">🔍</span>
+      </div>
+      <input id="dateFilter" type="date" class="input sm:w-48" onchange="handleSearch()" />
+      <button onclick="clearFilters()" class="btn-outline text-sm px-4">Clear</button>
+    </div>
 
-      <!-- Guest -->
-      <p class="section-title">Guest Details</p>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="floating">
-          <input class="input" id="m_guestName" type="text" placeholder=" "/>
-          <label>Guest Name *</label>
+    <div class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Guest Name</th>
+              <th>Nationality</th>
+              <th>Pax</th>
+              <th>Hotels</th>
+              <th>Check-In</th>
+              <th>Check-Out</th>
+              <th>No. of Rooms</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="voucherTableBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="hidden text-center py-16">
+        <p class="text-4xl mb-3">🧾</p>
+        <p style="color:#64748b;">No vouchers found.</p>
+        <button onclick="openModal()" class="btn-blue mt-4 text-sm">Add your first voucher</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="addModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-box">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl" style="color:#1e293b;">Add Voucher</h3>
+        <button onclick="closeModal()"
+          style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">✕</button>
+      </div>
+      <div class="space-y-4">
+        <p class="section-title">Guest Details</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="floating"><input class="input" id="m_guestName" type="text" placeholder=" " /><label>Guest Name
+              *</label></div>
+          <div class="floating">
+            <select class="input" id="m_nationality" onchange="this.classList.add('has-value')">
+              <option value="" disabled selected hidden></option>
+              <option>Afghan</option>
+              <option>Albanian</option>
+              <option>American</option>
+              <option>Argentine</option>
+              <option>Australian</option>
+              <option>Austrian</option>
+              <option>Bangladeshi</option>
+              <option>Belgian</option>
+              <option>Brazilian</option>
+              <option>British</option>
+              <option>Bulgarian</option>
+              <option>Canadian</option>
+              <option>Chilean</option>
+              <option>Chinese</option>
+              <option>Colombian</option>
+              <option>Czech</option>
+              <option>Danish</option>
+              <option>Dutch</option>
+              <option>Egyptian</option>
+              <option>Emirati</option>
+              <option>Ethiopian</option>
+              <option>Filipino</option>
+              <option>Finnish</option>
+              <option>French</option>
+              <option>German</option>
+              <option>Greek</option>
+              <option>Hungarian</option>
+              <option>Icelandic</option>
+              <option>Indian</option>
+              <option>Indonesian</option>
+              <option>Iranian</option>
+              <option>Irish</option>
+              <option>Israeli</option>
+              <option>Italian</option>
+              <option>Japanese</option>
+              <option>Jordanian</option>
+              <option>Kenyan</option>
+              <option>Korean</option>
+              <option>Kuwaiti</option>
+              <option>Lebanese</option>
+              <option>Malaysian</option>
+              <option>Maldivian</option>
+              <option>Mexican</option>
+              <option>Moroccan</option>
+              <option>Nepalese</option>
+              <option>New Zealander</option>
+              <option>Nigerian</option>
+              <option>Norwegian</option>
+              <option>Pakistani</option>
+              <option>Polish</option>
+              <option>Portuguese</option>
+              <option>Qatari</option>
+              <option>Romanian</option>
+              <option>Russian</option>
+              <option>Saudi</option>
+              <option>Singaporean</option>
+              <option>South African</option>
+              <option>Spanish</option>
+              <option>Sri Lankan</option>
+              <option>Swedish</option>
+              <option>Swiss</option>
+              <option>Thai</option>
+              <option>Turkish</option>
+              <option>Ukrainian</option>
+              <option>Vietnamese</option>
+            </select>
+            <label>Nationality</label>
+          </div>
         </div>
-        <div class="floating">
-          <select class="input" id="m_nationality">
-            <option value="" disabled selected hidden>Select</option>
-            <option>Afghan</option><option>Albanian</option><option>Algerian</option><option>American</option><option>Argentine</option><option>Armenian</option><option>Australian</option><option>Austrian</option><option>Azerbaijani</option><option>Bangladeshi</option><option>Belgian</option><option>Brazilian</option><option>British</option><option>Bulgarian</option><option>Burmese</option><option>Cambodian</option><option>Canadian</option><option>Chilean</option><option>Chinese</option><option>Colombian</option><option>Croatian</option><option>Cuban</option><option>Czech</option><option>Danish</option><option>Dutch</option><option>Egyptian</option><option>Emirati</option><option>Estonian</option><option>Ethiopian</option><option>Filipino</option><option>Finnish</option><option>French</option><option>German</option><option>Ghanaian</option><option>Greek</option><option>Hungarian</option><option>Icelandic</option><option>Indian</option><option>Indonesian</option><option>Iranian</option><option>Iraqi</option><option>Irish</option><option>Israeli</option><option>Italian</option><option>Japanese</option><option>Jordanian</option><option>Kazakhstani</option><option>Kenyan</option><option>Korean</option><option>Kuwaiti</option><option>Lebanese</option><option>Malaysian</option><option>Maldivian</option><option>Mexican</option><option>Mongolian</option><option>Moroccan</option><option>Nepalese</option><option>New Zealander</option><option>Nigerian</option><option>Norwegian</option><option>Pakistani</option><option>Peruvian</option><option>Polish</option><option>Portuguese</option><option>Qatari</option><option>Romanian</option><option>Russian</option><option>Saudi</option><option>Serbian</option><option>Singaporean</option><option>South African</option><option>Spanish</option><option>Sri Lankan</option><option>Swedish</option><option>Swiss</option><option>Syrian</option><option>Thai</option><option>Turkish</option><option>Ukrainian</option><option>Vietnamese</option>
-          </select>
-          <label>Nationality</label>
+        <p class="section-title mt-2">Number of Pax</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="floating"><input class="input" id="m_adults" type="number" placeholder=" "
+              min="0" /><label>Adults</label></div>
+          <div class="floating"><input class="input" id="m_childWithBed" type="number" placeholder=" "
+              min="0" /><label>Child with Bed</label></div>
+          <div class="floating"><input class="input" id="m_childWithoutBed" type="number" placeholder=" "
+              min="0" /><label>Child without Bed (6–10)</label></div>
+          <div class="floating"><input class="input" id="m_childBelow5" type="number" placeholder=" "
+              min="0" /><label>Child below 5 yrs</label></div>
         </div>
-      </div>
-
-      <!-- Pax -->
-      <p class="section-title mt-2">Number of Pax</p>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="floating"><input class="input" id="m_adults" type="number" placeholder=" " min="0"/><label>Adults</label></div>
-        <div class="floating"><input class="input" id="m_childWithBed" type="number" placeholder=" " min="0"/><label>Child with Bed</label></div>
-        <div class="floating"><input class="input" id="m_childWithoutBed" type="number" placeholder=" " min="0"/><label>Child without Bed (6–10)</label></div>
-        <div class="floating"><input class="input" id="m_childBelow5" type="number" placeholder=" " min="0"/><label>Child below 5 yrs</label></div>
-      </div>
-
-      <!-- Hotel Blocks -->
-      <div class="flex items-center justify-between mt-2">
-        <p class="section-title mb-0">Hotel Entries</p>
-        <button onclick="addHotelBlock()" class="text-[#c9a84c] hover:text-white text-sm flex items-center gap-1 transition">
-          <span class="text-lg">➕</span> Add Hotel
-        </button>
-      </div>
-      <div id="hotelBlocksContainer" class="space-y-4"></div>
-
-      <!-- Actions -->
-      <div class="flex gap-3 pt-4">
-        <button onclick="submitVoucher()" class="btn-gold flex-1"><i class="fa fa-save mr-2"></i>Save Voucher</button>
-        <button onclick="closeModal()" class="btn-outline flex-1">Cancel</button>
+        <div class="flex items-center justify-between mt-2">
+          <p class="section-title mb-0">Hotel Entries</p>
+          <button onclick="addHotelBlock()"
+            style="color:#2563eb;font-size:0.85rem;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;"><span>➕</span>
+            Add Hotel</button>
+        </div>
+        <div id="hotelBlocksContainer" class="space-y-4"></div>
+        <div class="flex gap-3 pt-4">
+          <button onclick="submitVoucher()" class="btn-blue flex-1"><i class="fa fa-save"></i> Save Voucher</button>
+          <button onclick="closeModal()" class="btn-outline flex-1">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script src="sidebar.js"></script>
-<script>
-  const HOTELS_API = "http://localhost:5000/api/hotels";
-  const VOUCHERS_API = "http://localhost:5000/api/vouchers";
-  let hotelsData = [];
-  let blockCount = 0;
-  let searchTimeout = null;
+  <script src="sidebar.js"></script>
+  <script>
+    const HOTELS_API = "http://localhost:5000/api/hotels";
+    const VOUCHERS_API = "http://localhost:5000/api/vouchers";
+    let hotelsData = [], blockCount = 0, searchTimeout = null;
 
-  // ── Load Hotels ──────────────────────────────
-  async function loadHotels() {
-    try {
-      const res = await fetch(HOTELS_API);
-      const data = await res.json();
-      if (data.success) hotelsData = data.data;
-    } catch { showToast("Failed to load hotels.", false); }
-  }
+    async function loadHotels() {
+      try { const res = await fetch(HOTELS_API); const data = await res.json(); if (data.success) hotelsData = data.data; } catch { }
+    }
 
-  // ── Fetch Vouchers ───────────────────────────
-  async function fetchVouchers(search = "", date = "") {
-    try {
-      showSkeletons();
-      let url = VOUCHERS_API;
-      const params = [];
-      if (search) params.push(`search=${encodeURIComponent(search)}`);
-      if (date) params.push(`date=${date}`);
-      if (params.length) url += "?" + params.join("&");
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.success) renderTable(data.data);
-    } catch { showToast("Failed to load vouchers.", false); }
-  }
+    async function fetchVouchers(search = "", date = "") {
+      try {
+        showSkeletons();
+        let url = VOUCHERS_API;
+        const params = [];
+        if (search) params.push(`search=${encodeURIComponent(search)}`);
+        if (date) params.push(`date=${date}`);
+        if (params.length) url += "?" + params.join("&");
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success) renderTable(data.data);
+      } catch { showToast("Failed to load vouchers.", false); }
+    }
 
-  function renderTable(vouchers) {
-    const tbody = document.getElementById("voucherTableBody");
-    const empty = document.getElementById("emptyState");
-    const count = document.getElementById("voucherCount");
-    count.textContent = `${vouchers.length} voucher${vouchers.length !== 1 ? "s" : ""} found`;
-    if (vouchers.length === 0) { tbody.innerHTML = ""; empty.classList.remove("hidden"); return; }
-    empty.classList.add("hidden");
-    tbody.innerHTML = vouchers.map(v => {
-      const totalPax = (Number(v.pax?.adults)||0)+(Number(v.pax?.childWithBed)||0)+(Number(v.pax?.childWithoutBed)||0)+(Number(v.pax?.childBelow5)||0);
-      const date = new Date(v.createdAt).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
-      const firstHotel = v.hotels?.[0] || {};
-      return `
-        <tr>
-          <td>${date}</td>
-          <td class="text-white font-medium">${v.guestName}</td>
-          <td>${v.nationality || "—"}</td>
-          <td><span class="badge">${totalPax} Pax</span></td>
-          <td><span class="badge">${v.hotels?.length || 0} Hotel${v.hotels?.length !== 1 ? "s" : ""}</span></td>
-          <td>${firstHotel.visit1in || "—"}</td>
-          <td>${firstHotel.visit1out || "—"}</td>
-          <td>${firstHotel.noOfRooms || "—"}</td>
-          <td>
-            <a href="voucher-detail.html?id=${v._id}" class="btn-outline text-xs px-3 py-1">
-              View <i class="fa fa-arrow-right ml-1"></i>
-            </a>
-          </td>
-        </tr>`;
-    }).join("");
-  }
+    function paxDisplay(pax) {
+      const adults = Number(pax?.adults) || 0;
+      const children = (Number(pax?.childWithBed) || 0) + (Number(pax?.childWithoutBed) || 0) + (Number(pax?.childBelow5) || 0);
+      return `${adults} Adult${adults !== 1 ? "s" : ""} / ${children} Child${children !== 1 ? "ren" : ""}`;
+    }
 
-  function showSkeletons() {
-    document.getElementById("voucherTableBody").innerHTML = Array(5).fill(`
-      <tr>${Array(9).fill(`<td><div class="skeleton h-4 w-20"></div></td>`).join("")}</tr>
-    `).join("");
-  }
+    function renderTable(vouchers) {
+      const tbody = document.getElementById("voucherTableBody");
+      const empty = document.getElementById("emptyState");
+      document.getElementById("voucherCount").textContent = `${vouchers.length} voucher${vouchers.length !== 1 ? "s" : ""} found`;
+      if (vouchers.length === 0) { tbody.innerHTML = ""; empty.classList.remove("hidden"); return; }
+      empty.classList.add("hidden");
+      tbody.innerHTML = vouchers.map(v => {
+        const date = new Date(v.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+        const fh = v.hotels?.[0] || {};
+        return `<tr>
+        <td>${date}</td>
+        <td style="font-weight:500;">${v.guestName}</td>
+        <td>${v.nationality || "—"}</td>
+        <td><span class="badge">${paxDisplay(v.pax)}</span></td>
+        <td><span class="badge">${v.hotels?.length || 0} Hotel${v.hotels?.length !== 1 ? "s" : ""}</span></td>
+        <td>${fh.visit1in !== "N/A" ? fh.visit1in : "—"}</td>
+        <td>${fh.visit1out !== "N/A" ? fh.visit1out : "—"}</td>
+        <td>${fh.noOfRooms || "—"}</td>
+        <td><a href="voucher-detail.html?id=${v._id}" class="btn-outline text-xs px-3 py-1">View <i class="fa fa-arrow-right"></i></a></td>
+      </tr>`;
+      }).join("");
+    }
 
-  // ── Search ───────────────────────────────────
-  function handleSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      fetchVouchers(document.getElementById("searchInput").value.trim(), document.getElementById("dateFilter").value);
-    }, 400);
-  }
+    function showSkeletons() {
+      document.getElementById("voucherTableBody").innerHTML = Array(5).fill(`<tr>${Array(9).fill(`<td><div class="skeleton h-4 w-20"></div></td>`).join("")}</tr>`).join("");
+    }
 
-  function clearFilters() {
-    document.getElementById("searchInput").value = "";
-    document.getElementById("dateFilter").value = "";
-    fetchVouchers();
-  }
+    function handleSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => fetchVouchers(document.getElementById("searchInput").value.trim(), document.getElementById("dateFilter").value), 400);
+    }
 
-  // ── Modal ────────────────────────────────────
-  function openModal() {
-    document.getElementById("hotelBlocksContainer").innerHTML = "";
-    blockCount = 0;
-    addHotelBlock();
-    document.getElementById("addModal").classList.add("active");
-  }
-  function closeModal() { document.getElementById("addModal").classList.remove("active"); }
-  function closeModalOnOverlay(e) { if (e.target === document.getElementById("addModal")) closeModal(); }
+    function clearFilters() { document.getElementById("searchInput").value = ""; document.getElementById("dateFilter").value = ""; fetchVouchers(); }
 
-  // ── Hotel Block ──────────────────────────────
-  function generateConfirmation() {
-    return Math.floor(10000000 + Math.random() * 90000000).toString();
-  }
+    function openModal() { document.getElementById("hotelBlocksContainer").innerHTML = ""; blockCount = 0; addHotelBlock(); document.getElementById("addModal").classList.add("active"); }
+    function closeModal() { document.getElementById("addModal").classList.remove("active"); }
+    function closeModalOnOverlay(e) { if (e.target === document.getElementById("addModal")) closeModal(); }
 
-  function addHotelBlock() {
-    blockCount++;
-    const id = `block_${blockCount}`;
-    const confirmNum = generateConfirmation();
-    const container = document.getElementById("hotelBlocksContainer");
-    const div = document.createElement("div");
-    div.className = "hotel-block";
-    div.id = id;
-    div.innerHTML = `
+    function generateConfirmation() { return Math.floor(10000000 + Math.random() * 90000000).toString(); }
+
+    function addHotelBlock() {
+      blockCount++;
+      const id = `block_${blockCount}`;
+      const div = document.createElement("div");
+      div.className = "hotel-block"; div.id = id;
+      div.innerHTML = `
       <div class="flex items-center justify-between mb-3">
-        <p class="text-sm gold font-semibold">Hotel #${blockCount}</p>
-        ${blockCount > 1 ? `<button onclick="document.getElementById('${id}').remove()" class="btn-red"><i class="fa fa-times mr-1"></i>Remove</button>` : ""}
+        <p style="font-size:0.85rem;color:#2563eb;font-weight:600;">Hotel #${blockCount}</p>
+        ${blockCount > 1 ? `<button onclick="document.getElementById('${id}').remove()" class="btn-red"><i class="fa fa-times"></i> Remove</button>` : ""}
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <!-- Confirmation -->
+        <div class="floating col-span-2"><input class="input conf-num" type="text" value="${generateConfirmation()}" placeholder=" "/><label>Confirmation Number</label></div>
         <div class="floating col-span-2">
-          <input class="input conf-num" type="text" value="${confirmNum}" placeholder=" "/>
-          <label>Confirmation Number</label>
-        </div>
-        <!-- Hotel Dropdown -->
-        <div class="floating col-span-2">
-          <select class="input hotel-select">
-            <option value="" disabled selected>Select Hotel</option>
+          <select class="input hotel-select" onchange="onHotelSelect(this,'${id}')">
+            <option value="" disabled selected></option>
             ${hotelsData.map(h => `<option value="${h._id}" data-city="${h.city}" data-country="${h.country}">${h.name}</option>`).join("")}
           </select>
           <label>Hotel Name</label>
         </div>
-        <!-- Room Details -->
+        <div class="floating"><input class="input hotel-city" type="text" placeholder=" " readonly/><label>City</label></div>
+        <div class="floating"><input class="input hotel-country" type="text" placeholder=" " readonly/><label>Country</label></div>
+        <div class="floating"><input class="input" type="text" placeholder=" " data-field="roomCategory"/><label>Room Category</label></div>
+        <div class="floating"><input class="input" type="text" placeholder=" " data-field="noOfRooms"/><label>No. of Rooms</label></div>
         <div class="floating">
-          <input class="input" type="text" placeholder=" " data-field="roomCategory"/>
-          <label>Room Category</label>
-        </div>
-        <div class="floating">
-          <input class="input" type="text" placeholder=" " data-field="noOfRooms"/>
-          <label>No. of Rooms</label>
-        </div>
-        <div class="floating">
-          <select class="input" data-field="roomType">
-            <option value="" disabled selected hidden>Select</option>
+          <select class="input" data-field="roomType" onchange="this.classList.add('has-value')">
+            <option value="" disabled selected hidden></option>
             <option>Single Room</option><option>Double Room</option><option>Twin Room</option><option>Suite</option>
           </select>
           <label>Room Type</label>
         </div>
         <div class="floating">
-          <select class="input" data-field="mealPlan">
-            <option value="" disabled selected hidden>Select</option>
+          <select class="input" data-field="mealPlan" onchange="this.classList.add('has-value')">
+            <option value="" disabled selected hidden></option>
             <option>EP</option><option>CP</option><option>MAP</option><option>AP</option><option>JP</option>
           </select>
           <label>Meal Plan</label>
         </div>
-        <!-- 1st Visit -->
-        <div class="floating">
-          <input class="input" type="date" data-field="visit1in"/>
-          <label>1st Visit Check-In</label>
-        </div>
-        <div class="floating">
-          <input class="input" type="date" data-field="visit1out"/>
-          <label>1st Visit Check-Out</label>
-        </div>
-        <!-- 2nd Visit -->
-        <div class="floating">
-          <input class="input" type="date" data-field="visit2in"/>
-          <label>2nd Visit Check-In</label>
-        </div>
-        <div class="floating">
-          <input class="input" type="date" data-field="visit2out"/>
-          <label>2nd Visit Check-Out</label>
-        </div>
-        <!-- Times -->
-        <div class="floating">
-          <input class="input" type="text" placeholder=" " data-field="checkinTime"/>
-          <label>Check-In Time</label>
-        </div>
-        <div class="floating">
-          <input class="input" type="text" placeholder=" " data-field="checkoutTime"/>
-          <label>Check-Out Time</label>
-        </div>
-        <!-- Includes -->
-        <div class="floating col-span-2">
-          <input class="input" type="text" placeholder=" " data-field="includes"/>
-          <label>Includes</label>
-        </div>
-      </div>
-    `;
-    container.appendChild(div);
-  }
+        <div class="floating"><input class="input" type="date" data-field="visit1in"/><label>1st Visit Check-In</label></div>
+        <div class="floating"><input class="input" type="date" data-field="visit1out"/><label>1st Visit Check-Out</label></div>
+        <div class="floating"><input class="input" type="date" data-field="visit2in"/><label>2nd Visit Check-In</label></div>
+        <div class="floating"><input class="input" type="date" data-field="visit2out"/><label>2nd Visit Check-Out</label></div>
+        
+        <div class="floating col-span-2"><input class="input" type="text" placeholder=" " data-field="includes"/><label>Includes</label></div>
+      </div>`;
+      document.getElementById("hotelBlocksContainer").appendChild(div);
+    }
 
-  // ── Collect Hotel Blocks ─────────────────────
-  function collectHotelBlocks() {
-    const blocks = document.querySelectorAll(".hotel-block");
-    return Array.from(blocks).map(block => {
-      const hotelSelect = block.querySelector(".hotel-select");
-      const selectedOption = hotelSelect.options[hotelSelect.selectedIndex];
-      const g = (field) => block.querySelector(`[data-field="${field}"]`)?.value || "";
-      return {
-        confirmationNumber: block.querySelector(".conf-num")?.value || "",
-        hotelName:    selectedOption?.text || "",
-        hotelCity:    selectedOption?.dataset?.city || "",
-        hotelCountry: selectedOption?.dataset?.country || "",
-        roomCategory: g("roomCategory"),
-        noOfRooms:    g("noOfRooms"),
-        roomType:     g("roomType"),
-        mealPlan:     g("mealPlan"),
-        visit1in:     g("visit1in") || "N/A",
-        visit1out:    g("visit1out") || "N/A",
-        visit2in:     g("visit2in") || "N/A",
-        visit2out:    g("visit2out") || "N/A",
-        checkinTime:  g("checkinTime") || "N/A",
-        checkoutTime: g("checkoutTime") || "N/A",
-        includes:     g("includes"),
+    function onHotelSelect(select, blockId) {
+      select.classList.add("has-value");
+      const block = document.getElementById(blockId);
+      const opt = select.options[select.selectedIndex];
+      const cityInput = block.querySelector(".hotel-city");
+      const countryInput = block.querySelector(".hotel-country");
+      cityInput.value = opt.dataset.city || "";
+      countryInput.value = opt.dataset.country || "";
+      // Force label to float for readonly inputs
+      [cityInput, countryInput].forEach(input => input.setAttribute("placeholder", "X"));
+      setTimeout(() => [cityInput, countryInput].forEach(input => input.setAttribute("placeholder", " ")), 10);
+    }
+
+    function collectHotelBlocks() {
+      return Array.from(document.querySelectorAll(".hotel-block")).map(block => {
+        const sel = block.querySelector(".hotel-select");
+        const g = f => block.querySelector(`[data-field="${f}"]`)?.value || "";
+        return {
+          confirmationNumber: block.querySelector(".conf-num")?.value || "",
+          hotelName: sel.value ? sel.options[sel.selectedIndex].text : "",
+          hotelCity: block.querySelector(".hotel-city")?.value || "",
+          hotelCountry: block.querySelector(".hotel-country")?.value || "",
+          roomCategory: g("roomCategory"), noOfRooms: g("noOfRooms"),
+          roomType: g("roomType"), mealPlan: g("mealPlan"),
+          visit1in: g("visit1in") || "N/A", visit1out: g("visit1out") || "N/A",
+          visit2in: g("visit2in") || "N/A", visit2out: g("visit2out") || "N/A",
+          
+          includes: g("includes"),
+        };
+      });
+    }
+
+    async function submitVoucher() {
+      const guestName = document.getElementById("m_guestName").value.trim();
+      if (!guestName) { showToast("Please enter a guest name.", false); return; }
+      const g = id => document.getElementById(id)?.value ?? "";
+      const payload = {
+        guestName, nationality: g("m_nationality"),
+        pax: { adults: g("m_adults"), childWithBed: g("m_childWithBed"), childWithoutBed: g("m_childWithoutBed"), childBelow5: g("m_childBelow5") },
+        hotels: collectHotelBlocks(),
       };
-    });
-  }
+      try {
+        const res = await axios.post(VOUCHERS_API, payload, { headers: { "Content-Type": "application/json" } });
+        if (res.data.success) { showToast("Voucher saved! ✓"); closeModal(); fetchVouchers(); }
+        else showToast(res.data.message, false);
+      } catch { showToast("Error saving voucher.", false); }
+    }
 
-  // ── Submit ───────────────────────────────────
-  async function submitVoucher() {
-    const guestName = document.getElementById("m_guestName").value.trim();
-    if (!guestName) { showToast("Please enter a guest name.", false); return; }
+    function showToast(msg, success = true) {
+      const e = document.querySelector(".toast"); if (e) e.remove();
+      const t = document.createElement("div");
+      t.className = `toast ${success ? "toast-success" : "toast-error"}`; t.textContent = msg;
+      document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
+    }
 
-    const g = (id) => document.getElementById(id)?.value ?? "";
-    const hotels = collectHotelBlocks();
-
-    const payload = {
-      guestName,
-      nationality: g("m_nationality"),
-      pax: {
-        adults:          g("m_adults"),
-        childWithBed:    g("m_childWithBed"),
-        childWithoutBed: g("m_childWithoutBed"),
-        childBelow5:     g("m_childBelow5"),
-      },
-      hotels,
-    };
-
-    try {
-      const res = await axios.post(VOUCHERS_API, payload, { headers: { "Content-Type": "application/json" } });
-      if (res.data.success) {
-        showToast("Voucher saved successfully! ✓");
-        closeModal();
-        fetchVouchers();
-      } else {
-        showToast(res.data.message, false);
-      }
-    } catch { showToast("Error saving voucher.", false); }
-  }
-
-  // ── Toast ────────────────────────────────────
-  function showToast(message, success = true) {
-    const existing = document.querySelector(".toast");
-    if (existing) existing.remove();
-    const toast = document.createElement("div");
-    toast.className = `toast ${success ? "bg-[#1a2e1a] border border-green-700 text-green-400" : "bg-[#2e1a1a] border border-red-700 text-red-400"}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
-
-  // ── Init ─────────────────────────────────────
-  loadHotels().then(() => fetchVouchers());
-</script>
+    loadHotels().then(() => fetchVouchers());
+  </script>
 </body>
+
 </html>

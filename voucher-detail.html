@@ -4,95 +4,56 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Voucher Detail | Hotel Collection</title>
+  <script>if(!localStorage.getItem("token"))window.location.replace("login.html");</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="shared-theme.css"/>
   <style>
-    body { font-family:'DM Sans',sans-serif; background:#0f0f0f; color:#f0f0f0; }
-    h1,h2,h3 { font-family:'Playfair Display',serif; }
-    .gold { color:#c9a84c; }
-    .card { background:#161616; border:1px solid #2a2a2a; border-radius:1rem; }
-    .section-title { font-size:1rem; color:#c9a84c; margin-bottom:1rem; border-bottom:1px solid #2a2a2a; padding-bottom:0.5rem; font-family:'Playfair Display',serif; }
-    .detail-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #1e1e1e; }
-    .detail-row:last-child { border-bottom:none; }
-    .detail-label { color:#666; font-size:0.85rem; }
-    .detail-value { color:#f0f0f0; font-size:0.9rem; text-align:right; }
-    .badge { display:inline-block; background:#1e1a0f; border:1px solid #c9a84c33; border-radius:4px; padding:3px 10px; font-size:0.78rem; color:#c9a84c; }
-    .btn-gold { background:#c9a84c; color:#0f0f0f; font-weight:600; border-radius:0.5rem; padding:0.65rem 1.5rem; transition:background 0.2s; cursor:pointer; font-family:'DM Sans',sans-serif; border:none; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
-    .btn-gold:hover { background:#b8943d; }
-    .btn-outline { border:1px solid #c9a84c; color:#c9a84c; border-radius:0.5rem; padding:0.65rem 1.5rem; transition:all 0.2s; cursor:pointer; font-family:'DM Sans',sans-serif; background:transparent; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
-    .btn-outline:hover { background:#c9a84c; color:#0f0f0f; }
-    .btn-green { background:#16a34a; color:#fff; font-weight:600; border-radius:0.5rem; padding:0.65rem 1.5rem; transition:background 0.2s; cursor:pointer; font-family:'DM Sans',sans-serif; border:none; display:inline-flex; align-items:center; gap:6px; }
-    .btn-green:hover { background:#15803d; }
-    .input { width:100%; padding:10px 12px; font-size:14px; border:1px solid #2e2e2e; border-radius:8px; background:#1a1a1a; color:#f0f0f0; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
-    .input:focus { border-color:#c9a84c; outline:none; }
-    .input::placeholder { color:#555; }
-    select.input option { background:#1a1a1a; }
-    .floating { position:relative; }
-    .floating label { position:absolute; top:10px; left:12px; font-size:12px; color:#666; pointer-events:none; transition:0.2s; background:#1a1a1a; padding:0 4px; }
-    .floating input:focus+label,.floating input:not(:placeholder-shown)+label,.floating select:focus+label { top:-8px; font-size:11px; color:#c9a84c; }
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:50; opacity:0; pointer-events:none; transition:opacity 0.2s; }
-    .modal-overlay.active { opacity:1; pointer-events:all; }
-    .modal-box { background:#161616; border:1px solid #2a2a2a; border-radius:1rem; padding:2rem; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; transform:translateY(20px); transition:transform 0.2s; }
-    .modal-overlay.active .modal-box { transform:translateY(0); }
-    .hotel-block-edit { background:#111; border:1px solid #2a2a2a; border-radius:0.75rem; padding:1.25rem; }
-    .toast { position:fixed; bottom:2rem; right:2rem; padding:1rem 1.5rem; border-radius:0.75rem; font-size:0.9rem; z-index:999; animation:slideUp 0.3s ease; }
-    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-
-    /* ── Print / PDF Styles ── */
+    .floating label { background: white; }
+    .hotel-block-edit .floating label { background: #f8fafc; }
+    .modal-box .floating label { background: white; }
     @media print {
-      body * { visibility:hidden; }
-      #pdfVoucher, #pdfVoucher * { visibility:visible; }
-      #pdfVoucher { position:absolute; left:0; top:0; width:100%; background:white; }
+      body * { visibility: hidden; }
+      #pdfVoucher, #pdfVoucher * { visibility: visible; }
+      #pdfVoucher { position: absolute; left: 0; top: 0; width: 100%; background: white; }
     }
-    #pdfVoucher table, #pdfVoucher td, #pdfVoucher tr { border:1px solid rgb(109,152,187); }
+    #pdfVoucher table, #pdfVoucher td, #pdfVoucher tr { border: 1px solid rgb(109,152,187); }
   </style>
 </head>
-<body class="min-h-screen">
-
+<body>
 <main class="max-w-4xl mx-auto px-6 py-10">
-
-  <!-- Back -->
-  <a href="voucher.html" class="inline-flex items-center gap-2 text-[#666] hover:text-[#c9a84c] text-sm mb-6 transition">
+  <a href="vouchers.html" class="inline-flex items-center gap-2 text-sm mb-6 transition" style="color:#64748b;">
     <i class="fa fa-arrow-left"></i> Back to Vouchers
   </a>
-
-  <!-- Action Buttons -->
   <div class="flex gap-3 mb-6 flex-wrap">
     <button onclick="openEditModal()" class="btn-outline"><i class="fa fa-edit"></i> Edit Voucher</button>
     <button onclick="window.print()" class="btn-green"><i class="fa fa-file-pdf"></i> Save as PDF</button>
   </div>
-
-  <!-- Detail Content -->
   <div id="content">
     <div class="space-y-5">
-      <div class="card p-6 space-y-3">
-        ${Array(4).fill(`<div style="height:16px;background:#222;border-radius:4px;animation:shimmer 1.5s infinite"></div>`).join("")}
-      </div>
+      <div class="skeleton h-8 w-64"></div>
+      <div class="card p-6 space-y-3">${Array(4).fill(`<div class="skeleton h-4 w-full"></div>`).join("")}</div>
     </div>
   </div>
-
-  <!-- PDF Voucher (hidden on screen, visible on print) -->
   <div id="pdfVoucher" style="display:none;"></div>
-
 </main>
 
 <!-- Edit Modal -->
 <div id="editModal" class="modal-overlay" onclick="closeEditOnOverlay(event)">
   <div class="modal-box">
     <div class="flex items-center justify-between mb-6">
-      <h3 class="text-xl text-white">Edit Voucher</h3>
-      <button onclick="closeEditModal()" class="text-[#555] hover:text-white text-2xl">✕</button>
+      <h3 class="text-xl" style="color:#1e293b;">Edit Voucher</h3>
+      <button onclick="closeEditModal()" style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">x</button>
     </div>
     <div class="space-y-4">
       <p class="section-title">Guest Details</p>
       <div class="grid grid-cols-2 gap-4">
         <div class="floating"><input class="input" id="e_guestName" type="text" placeholder=" "/><label>Guest Name *</label></div>
         <div class="floating">
-          <select class="input" id="e_nationality">
-            <option value="" disabled selected hidden>Select</option>
-            <option>Afghan</option><option>Albanian</option><option>Algerian</option><option>American</option><option>Argentine</option><option>Armenian</option><option>Australian</option><option>Austrian</option><option>Azerbaijani</option><option>Bangladeshi</option><option>Belgian</option><option>Brazilian</option><option>British</option><option>Bulgarian</option><option>Burmese</option><option>Cambodian</option><option>Canadian</option><option>Chilean</option><option>Chinese</option><option>Colombian</option><option>Croatian</option><option>Cuban</option><option>Czech</option><option>Danish</option><option>Dutch</option><option>Egyptian</option><option>Emirati</option><option>Estonian</option><option>Ethiopian</option><option>Filipino</option><option>Finnish</option><option>French</option><option>German</option><option>Ghanaian</option><option>Greek</option><option>Hungarian</option><option>Icelandic</option><option>Indian</option><option>Indonesian</option><option>Iranian</option><option>Iraqi</option><option>Irish</option><option>Israeli</option><option>Italian</option><option>Japanese</option><option>Jordanian</option><option>Kazakhstani</option><option>Kenyan</option><option>Korean</option><option>Kuwaiti</option><option>Lebanese</option><option>Malaysian</option><option>Maldivian</option><option>Mexican</option><option>Mongolian</option><option>Moroccan</option><option>Nepalese</option><option>New Zealander</option><option>Nigerian</option><option>Norwegian</option><option>Pakistani</option><option>Peruvian</option><option>Polish</option><option>Portuguese</option><option>Qatari</option><option>Romanian</option><option>Russian</option><option>Saudi</option><option>Serbian</option><option>Singaporean</option><option>South African</option><option>Spanish</option><option>Sri Lankan</option><option>Swedish</option><option>Swiss</option><option>Syrian</option><option>Thai</option><option>Turkish</option><option>Ukrainian</option><option>Vietnamese</option>
+          <select class="input" id="e_nationality" onchange="this.classList.add('has-value')">
+            <option value="" disabled selected hidden></option>
+            <option>Afghan</option><option>Albanian</option><option>American</option><option>Argentine</option><option>Australian</option><option>Austrian</option><option>Azerbaijani</option><option>Bangladeshi</option><option>Belgian</option><option>Brazilian</option><option>British</option><option>Bulgarian</option><option>Burmese</option><option>Canadian</option><option>Chilean</option><option>Chinese</option><option>Colombian</option><option>Croatian</option><option>Czech</option><option>Danish</option><option>Dutch</option><option>Egyptian</option><option>Emirati</option><option>Ethiopian</option><option>Filipino</option><option>Finnish</option><option>French</option><option>German</option><option>Greek</option><option>Hungarian</option><option>Indian</option><option>Indonesian</option><option>Iranian</option><option>Irish</option><option>Israeli</option><option>Italian</option><option>Japanese</option><option>Jordanian</option><option>Kenyan</option><option>Korean</option><option>Kuwaiti</option><option>Lebanese</option><option>Malaysian</option><option>Maldivian</option><option>Mexican</option><option>Moroccan</option><option>Nepalese</option><option>New Zealander</option><option>Nigerian</option><option>Norwegian</option><option>Pakistani</option><option>Polish</option><option>Portuguese</option><option>Qatari</option><option>Romanian</option><option>Russian</option><option>Saudi</option><option>Singaporean</option><option>South African</option><option>Spanish</option><option>Sri Lankan</option><option>Swedish</option><option>Swiss</option><option>Thai</option><option>Turkish</option><option>Ukrainian</option><option>Vietnamese</option>
           </select>
           <label>Nationality</label>
         </div>
@@ -101,13 +62,19 @@
       <div class="grid grid-cols-2 gap-4">
         <div class="floating"><input class="input" id="e_adults" type="number" placeholder=" " min="0"/><label>Adults</label></div>
         <div class="floating"><input class="input" id="e_childWithBed" type="number" placeholder=" " min="0"/><label>Child with Bed</label></div>
-        <div class="floating"><input class="input" id="e_childWithoutBed" type="number" placeholder=" " min="0"/><label>Child without Bed (6–10)</label></div>
+        <div class="floating"><input class="input" id="e_childWithoutBed" type="number" placeholder=" " min="0"/><label>Child without Bed (6-10)</label></div>
         <div class="floating"><input class="input" id="e_childBelow5" type="number" placeholder=" " min="0"/><label>Child below 5 yrs</label></div>
       </div>
-      <p class="section-title mt-2">Hotel Entries</p>
+      <!-- Hotel Entries header with Add button -->
+      <div class="flex items-center justify-between mt-2">
+        <p class="section-title mb-0">Hotel Entries</p>
+        <button onclick="addEditHotelBlock()" style="color:#2563eb;font-size:0.85rem;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <span>+</span> Add Hotel
+        </button>
+      </div>
       <div id="e_hotelBlocks" class="space-y-4"></div>
       <div class="flex gap-3 pt-4">
-        <button onclick="updateVoucher()" class="btn-gold flex-1"><i class="fa fa-save mr-2"></i>Update</button>
+        <button onclick="updateVoucher()" class="btn-blue flex-1"><i class="fa fa-save"></i> Update</button>
         <button onclick="closeEditModal()" class="btn-outline flex-1">Cancel</button>
       </div>
     </div>
@@ -116,157 +83,265 @@
 
 <script src="sidebar.js"></script>
 <script>
+  const HOTELS_API = "http://localhost:5000/api/hotels";
   const VOUCHERS_API = "http://localhost:5000/api/vouchers";
   let currentVoucher = null;
+  let hotelsData = [];
   const id = new URLSearchParams(window.location.search).get("id");
+
+  // ── Load hotels for dropdown ──────────────────
+  async function loadHotels() {
+    try {
+      const res = await fetch(HOTELS_API);
+      const data = await res.json();
+      if (data.success) hotelsData = data.data;
+    } catch {}
+  }
 
   // ── Load Voucher ─────────────────────────────
   async function loadVoucher() {
-    if (!id) { document.getElementById("content").innerHTML = `<p class="text-red-400">No voucher ID.</p>`; return; }
+    if (!id) { document.getElementById("content").innerHTML = `<p style="color:red;">No voucher ID.</p>`; return; }
     try {
       const res = await fetch(`${VOUCHERS_API}/${id}`);
       const data = await res.json();
       if (data.success) { currentVoucher = data.data; renderDetail(data.data); buildPDF(data.data); }
-      else document.getElementById("content").innerHTML = `<p class="text-red-400">${data.message}</p>`;
-    } catch { document.getElementById("content").innerHTML = `<p class="text-red-400">Failed to load voucher.</p>`; }
+      else document.getElementById("content").innerHTML = `<p style="color:red;">${data.message}</p>`;
+    } catch { document.getElementById("content").innerHTML = `<p style="color:red;">Failed to load.</p>`; }
   }
 
   function row(label, value) {
-    return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${value || "—"}</span></div>`;
+    return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${value || "?"}</span></div>`;
+  }
+
+  function paxDisplay(pax) {
+    const adults = Number(pax?.adults) || 0;
+    const children = (Number(pax?.childWithBed)||0) + (Number(pax?.childWithoutBed)||0) + (Number(pax?.childBelow5)||0);
+    return `${adults} Adult${adults !== 1 ? "s" : ""} / ${children} Child${children !== 1 ? "ren" : ""}`;
   }
 
   function renderDetail(v) {
     document.title = `${v.guestName} | Voucher`;
-    const date = new Date(v.createdAt).toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"});
-    const totalPax = (Number(v.pax?.adults)||0)+(Number(v.pax?.childWithBed)||0)+(Number(v.pax?.childWithoutBed)||0)+(Number(v.pax?.childBelow5)||0);
-
+    const date = new Date(v.createdAt).toLocaleDateString("en-GB", {day:"2-digit", month:"long", year:"numeric"});
     document.getElementById("content").innerHTML = `
       <div class="flex items-start justify-between mb-6">
         <div>
-          <h2 class="text-3xl text-white">${v.guestName}</h2>
-          <p class="text-[#555] text-sm mt-1">Created on ${date}</p>
+          <h2 class="text-3xl" style="color:#1e293b;">${v.guestName}</h2>
+          <p class="text-sm mt-1" style="color:#64748b;">Created on ${date}</p>
         </div>
         <span class="badge">${v.hotels?.length || 0} Hotel${v.hotels?.length !== 1 ? "s" : ""}</span>
       </div>
-
-      <!-- Guest -->
       <div class="card p-6 mb-5">
         <p class="section-title">Guest Details</p>
-        ${row("Guest Name", `<span class="text-white font-medium">${v.guestName}</span>`)}
+        ${row("Guest Name", `<span style="font-weight:600;">${v.guestName}</span>`)}
         ${row("Nationality", v.nationality)}
       </div>
-
-      <!-- Pax -->
       <div class="card p-6 mb-5">
-        <p class="section-title">Number of Pax <span class="text-sm text-[#555] ml-2">(Total: ${totalPax})</span></p>
+        <p class="section-title">Pax Details</p>
+        ${row("Summary", `<span class="badge">${paxDisplay(v.pax)}</span>`)}
         ${row("Adults", v.pax?.adults)}
         ${row("Child with Bed", v.pax?.childWithBed)}
-        ${row("Child without Bed (6–10 yrs)", v.pax?.childWithoutBed)}
+        ${row("Child without Bed (6-10 yrs)", v.pax?.childWithoutBed)}
         ${row("Child below 5 yrs", v.pax?.childBelow5)}
       </div>
-
-      <!-- Hotels -->
       ${(v.hotels || []).map((h, i) => `
         <div class="card p-6 mb-5">
-          <p class="section-title">Hotel #${i + 1} — ${h.hotelName || "—"}</p>
-          ${row("Confirmation No.", `<span class="text-white font-bold">${h.confirmationNumber || "—"}</span>`)}
-          ${row("Hotel", h.hotelName)}
-          ${row("City / Country", h.hotelCity && h.hotelCountry ? `${h.hotelCity}, ${h.hotelCountry}` : "—")}
+          <p class="section-title">Hotel #${i + 1} - ${h.hotelName || "?"}</p>
+          ${row("Confirmation No.", `<span style="font-weight:700;">${h.confirmationNumber || "?"}</span>`)}
+          ${row("Hotel Name", h.hotelName)}
+          ${row("City / Country", h.hotelCity && h.hotelCountry ? `${h.hotelCity}, ${h.hotelCountry}` : "?")}
           ${row("Room Category", h.roomCategory)}
           ${row("No. of Rooms", h.noOfRooms)}
           ${row("Room Type", h.roomType)}
-          ${row("Meal Plan", h.mealPlan ? `<span class="badge">${h.mealPlan}</span>` : "—")}
+          ${row("Meal Plan", h.mealPlan ? `<span class="badge">${h.mealPlan}</span>` : "?")}
           ${row("1st Visit Check-In", h.visit1in)}
           ${row("1st Visit Check-Out", h.visit1out)}
           ${row("2nd Visit Check-In", h.visit2in)}
           ${row("2nd Visit Check-Out", h.visit2out)}
-          ${row("Check-In Time", h.checkinTime)}
-          ${row("Check-Out Time", h.checkoutTime)}
+          
           ${row("Includes", h.includes)}
         </div>
       `).join("")}
-
-      <div class="mt-4">
-        <a href="vouchers.html" class="btn-gold"><i class="fa fa-arrow-left"></i> Back</a>
-      </div>
+      <a href="voucher.html" class="btn-blue"><i class="fa fa-arrow-left"></i> Back</a>
     `;
   }
 
   // ── Build PDF ─────────────────────────────────
   function buildPDF(v) {
-    const totalPax = (Number(v.pax?.adults)||0)+(Number(v.pax?.childWithBed)||0)+(Number(v.pax?.childWithoutBed)||0)+(Number(v.pax?.childBelow5)||0);
-
+    const totalPax = (Number(v.pax?.adults)||0) + (Number(v.pax?.childWithBed)||0) + (Number(v.pax?.childWithoutBed)||0) + (Number(v.pax?.childBelow5)||0);
     const hotelTables = (v.hotels || []).map((h, i) => `
       <div style="margin-top:24px;">
-        <div style="background:#2563eb;color:white;text-align:center;padding:8px;font-weight:bold;border-radius:4px 4px 0 0;">
-          HOTEL #${i+1} — ${h.hotelName || ""}
-        </div>
+        <div style="background:#2563eb;color:white;text-align:center;padding:8px;font-weight:bold;">HOTEL #${i+1} - ${h.hotelName || ""}</div>
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;width:40%;">CONFIRMATION NUMBER</td><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:bold;">${h.confirmationNumber || ""}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">HOTEL NAME</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.hotelName || ""}</td></tr>
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">CITY / COUNTRY</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.hotelCity ? `${h.hotelCity}, ${h.hotelCountry}` : ""}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">ROOM CATEGORY</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.roomCategory || ""}</td></tr>
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">NO. OF ROOMS</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.noOfRooms || ""}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">ROOM TYPE</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.roomType || ""}</td></tr>
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">MEAL PLAN</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.mealPlan || ""}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">1ST VISIT</td><td style="padding:7px;border:1px solid rgb(109,152,187);">CHECK-IN: ${h.visit1in || "N/A"} &nbsp; CHECK-OUT: ${h.visit1out || "N/A"}</td></tr>
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">2ND VISIT</td><td style="padding:7px;border:1px solid rgb(109,152,187);">CHECK-IN: ${h.visit2in || "N/A"} &nbsp; CHECK-OUT: ${h.visit2out || "N/A"}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">CHECK-IN TIME</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.checkinTime || "N/A"}</td></tr>
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">CHECK-OUT TIME</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.checkoutTime || "N/A"}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">INCLUDES</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${h.includes || ""}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;width:40%;">CONFIRMATION NUMBER</td><td style="padding:7px;font-weight:bold;">${h.confirmationNumber || ""}</td></tr>
+          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">HOTEL NAME</td><td style="padding:7px;">${h.hotelName || ""}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;">CITY / COUNTRY</td><td style="padding:7px;">${h.hotelCity ? `${h.hotelCity}, ${h.hotelCountry}` : ""}</td></tr>
+          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">ROOM CATEGORY</td><td style="padding:7px;">${h.roomCategory || ""}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;">NO. OF ROOMS</td><td style="padding:7px;">${h.noOfRooms || ""}</td></tr>
+          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">ROOM TYPE</td><td style="padding:7px;">${h.roomType || ""}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;">MEAL PLAN</td><td style="padding:7px;">${h.mealPlan || ""}</td></tr>
+          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">1ST VISIT</td><td style="padding:7px;">CHECK-IN: ${h.visit1in || "N/A"} &nbsp; CHECK-OUT: ${h.visit1out || "N/A"}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;">2ND VISIT</td><td style="padding:7px;">CHECK-IN: ${h.visit2in || "N/A"} &nbsp; CHECK-OUT: ${h.visit2out || "N/A"}</td></tr>
+         
+          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">INCLUDES</td><td style="padding:7px;">${h.includes || ""}</td></tr>
         </table>
-      </div>
-    `).join("");
+      </div>`).join("");
 
-    document.getElementById("pdfVoucher").style.display = "block";
-    document.getElementById("pdfVoucher").innerHTML = `
+    const el = document.getElementById("pdfVoucher");
+    el.style.display = "block";
+    el.innerHTML = `
       <div style="max-width:900px;margin:auto;background:white;padding:30px;font-family:Arial,sans-serif;color:#000;">
-
-        <!-- Header -->
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <img src="https://i.ibb.co/bRJr7nNM/images.png" style="height:80px;"/>
           <div style="text-align:right;font-size:13px;">
             <p style="font-weight:600;">Aspiration Asia Trekking and Expedition Pvt Ltd.</p>
-            <p>Bhaktapur Durbar Square – Kathmandu, Nepal</p>
+            <p>Bhaktapur Durbar Square - Kathmandu, Nepal</p>
             <p>Web: www.aspirationasia.com</p>
             <p>Email: sales@aspirationasia.com / reservations@aspirationasia.com</p>
             <p>Contact: +977-982761738 / +977-9851021924</p>
           </div>
         </div>
-
-        <!-- Title -->
-        <div style="border:1px solid #ccc;text-align:center;margin-top:20px;padding:8px;font-weight:bold;color:#2563eb;font-size:16px;">
-          HOTEL CONFIRMATION VOUCHER
-        </div>
-
-        <!-- Guest Info -->
+        <div style="border:1px solid #ccc;text-align:center;margin-top:20px;padding:8px;font-weight:bold;color:#2563eb;font-size:16px;">HOTEL CONFIRMATION VOUCHER</div>
         <div style="text-align:center;margin-top:16px;">
           <p style="color:#dc2626;font-weight:600;font-size:18px;">${v.guestName}</p>
           <p style="color:#ef4444;font-size:14px;">${v.nationality || ""}</p>
         </div>
-
-        <!-- Pax Table -->
         <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;">
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;width:40%;">TOTAL PAX</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${totalPax}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">ADULTS</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${v.pax?.adults || 0}</td></tr>
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">CHILD WITH BED</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${v.pax?.childWithBed || 0}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">CHILD WITHOUT BED (6–10 YRS)</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${v.pax?.childWithoutBed || 0}</td></tr>
-          <tr><td style="padding:7px;border:1px solid rgb(109,152,187);font-weight:600;">CHILD BELOW 5 YRS</td><td style="padding:7px;border:1px solid rgb(109,152,187);">${v.pax?.childBelow5 || 0}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;width:40%;">TOTAL PAX</td><td style="padding:7px;">${totalPax}</td></tr>
+          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">ADULTS</td><td style="padding:7px;">${v.pax?.adults || 0}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;">CHILD WITH BED</td><td style="padding:7px;">${v.pax?.childWithBed || 0}</td></tr>
+          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">CHILD WITHOUT BED (6-10 YRS)</td><td style="padding:7px;">${v.pax?.childWithoutBed || 0}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;">CHILD BELOW 5 YRS</td><td style="padding:7px;">${v.pax?.childBelow5 || 0}</td></tr>
         </table>
-
-        <!-- Hotel Blocks -->
         ${hotelTables}
-
-      </div>
-    `;
+      </div>`;
   }
 
-  // ── Edit Modal ───────────────────────────────
+  // ── Build hotel options for dropdown ──────────
+  function hotelOptions(selectedName) {
+    return `<option value="" disabled ${!selectedName ? "selected" : ""} hidden></option>` +
+      hotelsData.map(h => `<option value="${h._id}" data-city="${h.city}" data-country="${h.country}" ${h.name === selectedName ? "selected" : ""}>${h.name}</option>`).join("");
+  }
+
+  // ── Auto-fill city/country on hotel select ────
+  function onEditHotelSelect(select) {
+    select.classList.add("has-value");
+    const block = select.closest(".hotel-block-edit");
+    const opt = select.options[select.selectedIndex];
+    const cityInput = block.querySelector(".e-city");
+    const countryInput = block.querySelector(".e-country");
+    cityInput.value = opt.dataset.city || "";
+    countryInput.value = opt.dataset.country || "";
+    [cityInput, countryInput].forEach(inp => {
+      inp.setAttribute("placeholder", "X");
+      setTimeout(() => inp.setAttribute("placeholder", " "), 10);
+    });
+  }
+
+  // ── Renumber hotel headings after remove ──────
+  function renumberBlocks() {
+    document.querySelectorAll(".hotel-block-edit").forEach((block, i) => {
+      const heading = block.querySelector(".hotel-heading");
+      if (heading) heading.textContent = `Hotel #${i + 1}`;
+    });
+  }
+
+  // ── Build a single hotel block element ────────
+  function buildHotelBlock(h, index) {
+    const isNew = !h || Object.keys(h).length === 0;
+    const confirmNum = isNew
+      ? Math.floor(10000000 + Math.random() * 90000000).toString()
+      : (h.confirmationNumber || "");
+
+    const block = document.createElement("div");
+    block.className = "hotel-block-edit card p-4";
+    block.innerHTML = `
+      <div class="flex items-center justify-between mb-3">
+        <p class="hotel-heading" style="font-size:0.85rem;color:#2563eb;font-weight:600;">Hotel #${index + 1}</p>
+        <button onclick="this.closest('.hotel-block-edit').remove();renumberBlocks();" class="btn-red text-xs">
+          <i class="fa fa-times"></i> Remove
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="floating col-span-2">
+          <input class="input e-conf" type="text" value="${confirmNum}" placeholder=" "/>
+          <label>Confirmation Number</label>
+        </div>
+        <div class="floating col-span-2">
+          <select class="input e-hotelSelect ${!isNew && h.hotelName ? "has-value" : ""}" onchange="onEditHotelSelect(this)">
+            ${hotelOptions(!isNew ? h.hotelName : "")}
+          </select>
+          <label>Hotel Name</label>
+        </div>
+        <div class="floating">
+          <input class="input e-city" type="text" value="${!isNew ? (h.hotelCity || "") : ""}" placeholder=" " readonly/>
+          <label>City</label>
+        </div>
+        <div class="floating">
+          <input class="input e-country" type="text" value="${!isNew ? (h.hotelCountry || "") : ""}" placeholder=" " readonly/>
+          <label>Country</label>
+        </div>
+        <div class="floating">
+          <input class="input e-roomCategory" type="text" value="${!isNew ? (h.roomCategory || "") : ""}" placeholder=" "/>
+          <label>Room Category</label>
+        </div>
+        <div class="floating">
+          <input class="input e-noOfRooms" type="text" value="${!isNew ? (h.noOfRooms || "") : ""}" placeholder=" "/>
+          <label>No. of Rooms</label>
+        </div>
+        <div class="floating">
+          <select class="input e-roomType ${!isNew && h.roomType ? "has-value" : ""}" onchange="this.classList.add('has-value')">
+            <option value="" disabled ${!(!isNew && h.roomType) ? "selected" : ""} hidden></option>
+            ${["Single Room","Double Room","Twin Room","Suite"].map(t => `<option ${!isNew && h.roomType === t ? "selected" : ""}>${t}</option>`).join("")}
+          </select>
+          <label>Room Type</label>
+        </div>
+        <div class="floating">
+          <select class="input e-mealPlan ${!isNew && h.mealPlan ? "has-value" : ""}" onchange="this.classList.add('has-value')">
+            <option value="" disabled ${!(!isNew && h.mealPlan) ? "selected" : ""} hidden></option>
+            ${["EP","CP","MAP","AP","JP"].map(m => `<option ${!isNew && h.mealPlan === m ? "selected" : ""}>${m}</option>`).join("")}
+          </select>
+          <label>Meal Plan</label>
+        </div>
+        <div class="floating">
+          <input class="input e-v1in" type="date" value="${!isNew && h.visit1in && h.visit1in !== 'N/A' ? h.visit1in : ""}"/>
+          <label>1st Check-In</label>
+        </div>
+        <div class="floating">
+          <input class="input e-v1out" type="date" value="${!isNew && h.visit1out && h.visit1out !== 'N/A' ? h.visit1out : ""}"/>
+          <label>1st Check-Out</label>
+        </div>
+        <div class="floating">
+          <input class="input e-v2in" type="date" value="${!isNew && h.visit2in && h.visit2in !== 'N/A' ? h.visit2in : ""}"/>
+          <label>2nd Check-In</label>
+        </div>
+        <div class="floating">
+          <input class="input e-v2out" type="date" value="${!isNew && h.visit2out && h.visit2out !== 'N/A' ? h.visit2out : ""}"/>
+          <label>2nd Check-Out</label>
+        </div>
+        
+        <div class="floating col-span-2">
+          <input class="input e-includes" type="text" value="${!isNew ? (h.includes || "") : ""}" placeholder=" "/>
+          <label>Includes</label>
+        </div>
+      </div>`;
+    return block;
+  }
+
+  // ── Add new empty hotel block ─────────────────
+  function addEditHotelBlock() {
+    const container = document.getElementById("e_hotelBlocks");
+    const count = container.querySelectorAll(".hotel-block-edit").length;
+    container.appendChild(buildHotelBlock({}, count));
+  }
+
+  // ── Open Edit Modal ───────────────────────────
   function openEditModal() {
     if (!currentVoucher) return;
     const v = currentVoucher;
     document.getElementById("e_guestName").value = v.guestName || "";
-    document.getElementById("e_nationality").value = v.nationality || "";
+    const natSel = document.getElementById("e_nationality");
+    natSel.value = v.nationality || "";
+    if (v.nationality) natSel.classList.add("has-value");
     document.getElementById("e_adults").value = v.pax?.adults || "";
     document.getElementById("e_childWithBed").value = v.pax?.childWithBed || "";
     document.getElementById("e_childWithoutBed").value = v.pax?.childWithoutBed || "";
@@ -274,41 +349,7 @@
 
     const container = document.getElementById("e_hotelBlocks");
     container.innerHTML = "";
-    (v.hotels || []).forEach((h, i) => {
-      const block = document.createElement("div");
-      block.className = "hotel-block-edit space-y-3";
-      block.innerHTML = `
-        <p class="text-sm gold font-semibold mb-2">Hotel #${i+1}</p>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="floating col-span-2"><input class="input e-conf" type="text" value="${h.confirmationNumber||""}" placeholder=" "/><label>Confirmation Number</label></div>
-          <div class="floating col-span-2"><input class="input e-hotelName" type="text" value="${h.hotelName||""}" placeholder=" "/><label>Hotel Name</label></div>
-          <div class="floating"><input class="input e-roomCategory" type="text" value="${h.roomCategory||""}" placeholder=" "/><label>Room Category</label></div>
-          <div class="floating"><input class="input e-noOfRooms" type="text" value="${h.noOfRooms||""}" placeholder=" "/><label>No. of Rooms</label></div>
-          <div class="floating">
-            <select class="input e-roomType">
-              <option value="" disabled ${!h.roomType?"selected":""}>Select</option>
-              ${["Single Room","Double Room","Twin Room","Suite"].map(t=>`<option ${h.roomType===t?"selected":""}>${t}</option>`).join("")}
-            </select>
-            <label>Room Type</label>
-          </div>
-          <div class="floating">
-            <select class="input e-mealPlan">
-              <option value="" disabled ${!h.mealPlan?"selected":""}>Select</option>
-              ${["EP","CP","MAP","AP","JP"].map(m=>`<option ${h.mealPlan===m?"selected":""}>${m}</option>`).join("")}
-            </select>
-            <label>Meal Plan</label>
-          </div>
-          <div class="floating"><input class="input e-v1in" type="date" value="${h.visit1in!=="N/A"?h.visit1in:""}"/><label>1st Visit Check-In</label></div>
-          <div class="floating"><input class="input e-v1out" type="date" value="${h.visit1out!=="N/A"?h.visit1out:""}"/><label>1st Visit Check-Out</label></div>
-          <div class="floating"><input class="input e-v2in" type="date" value="${h.visit2in!=="N/A"?h.visit2in:""}"/><label>2nd Visit Check-In</label></div>
-          <div class="floating"><input class="input e-v2out" type="date" value="${h.visit2out!=="N/A"?h.visit2out:""}"/><label>2nd Visit Check-Out</label></div>
-          <div class="floating"><input class="input e-cin" type="text" value="${h.checkinTime!=="N/A"?h.checkinTime:""}" placeholder=" "/><label>Check-In Time</label></div>
-          <div class="floating"><input class="input e-cout" type="text" value="${h.checkoutTime!=="N/A"?h.checkoutTime:""}" placeholder=" "/><label>Check-Out Time</label></div>
-          <div class="floating col-span-2"><input class="input e-includes" type="text" value="${h.includes||""}" placeholder=" "/><label>Includes</label></div>
-        </div>
-      `;
-      container.appendChild(block);
-    });
+    (v.hotels || []).forEach((h, i) => container.appendChild(buildHotelBlock(h, i)));
 
     document.getElementById("editModal").classList.add("active");
   }
@@ -316,25 +357,31 @@
   function closeEditModal() { document.getElementById("editModal").classList.remove("active"); }
   function closeEditOnOverlay(e) { if (e.target === document.getElementById("editModal")) closeEditModal(); }
 
+  // ── Update Voucher ────────────────────────────
   async function updateVoucher() {
     const guestName = document.getElementById("e_guestName").value.trim();
     if (!guestName) { showToast("Guest name is required.", false); return; }
 
-    const hotels = Array.from(document.querySelectorAll(".hotel-block-edit")).map(block => ({
-      confirmationNumber: block.querySelector(".e-conf")?.value || "",
-      hotelName:    block.querySelector(".e-hotelName")?.value || "",
-      roomCategory: block.querySelector(".e-roomCategory")?.value || "",
-      noOfRooms:    block.querySelector(".e-noOfRooms")?.value || "",
-      roomType:     block.querySelector(".e-roomType")?.value || "",
-      mealPlan:     block.querySelector(".e-mealPlan")?.value || "",
-      visit1in:     block.querySelector(".e-v1in")?.value || "N/A",
-      visit1out:    block.querySelector(".e-v1out")?.value || "N/A",
-      visit2in:     block.querySelector(".e-v2in")?.value || "N/A",
-      visit2out:    block.querySelector(".e-v2out")?.value || "N/A",
-      checkinTime:  block.querySelector(".e-cin")?.value || "N/A",
-      checkoutTime: block.querySelector(".e-cout")?.value || "N/A",
-      includes:     block.querySelector(".e-includes")?.value || "",
-    }));
+    const hotels = Array.from(document.querySelectorAll(".hotel-block-edit")).map(block => {
+      const sel = block.querySelector(".e-hotelSelect");
+      const selectedOpt = sel?.options[sel.selectedIndex];
+      return {
+        confirmationNumber: block.querySelector(".e-conf")?.value || "",
+        hotelName:    selectedOpt?.value ? selectedOpt.text : "",
+        hotelCity:    block.querySelector(".e-city")?.value || "",
+        hotelCountry: block.querySelector(".e-country")?.value || "",
+        roomCategory: block.querySelector(".e-roomCategory")?.value || "",
+        noOfRooms:    block.querySelector(".e-noOfRooms")?.value || "",
+        roomType:     block.querySelector(".e-roomType")?.value || "",
+        mealPlan:     block.querySelector(".e-mealPlan")?.value || "",
+        visit1in:     block.querySelector(".e-v1in")?.value || "N/A",
+        visit1out:    block.querySelector(".e-v1out")?.value || "N/A",
+        visit2in:     block.querySelector(".e-v2in")?.value || "N/A",
+        visit2out:    block.querySelector(".e-v2out")?.value || "N/A",
+        
+        includes:     block.querySelector(".e-includes")?.value || "",
+      };
+    });
 
     const payload = {
       guestName,
@@ -351,7 +398,7 @@
     try {
       const res = await axios.put(`${VOUCHERS_API}/${id}`, payload, { headers: { "Content-Type": "application/json" } });
       if (res.data.success) {
-        showToast("Voucher updated successfully! ✓");
+        showToast("Voucher updated! ✓");
         closeEditModal();
         currentVoucher = res.data.data;
         renderDetail(res.data.data);
@@ -363,17 +410,17 @@
   }
 
   // ── Toast ─────────────────────────────────────
-  function showToast(message, success = true) {
-    const existing = document.querySelector(".toast");
-    if (existing) existing.remove();
-    const toast = document.createElement("div");
-    toast.className = `toast ${success ? "bg-[#1a2e1a] border border-green-700 text-green-400" : "bg-[#2e1a1a] border border-red-700 text-red-400"}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+  function showToast(msg, success = true) {
+    const e = document.querySelector(".toast"); if (e) e.remove();
+    const t = document.createElement("div");
+    t.className = `toast ${success ? "toast-success" : "toast-error"}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
   }
 
-  loadVoucher();
+  // ── Init ─────────────────────────────────────
+  loadHotels().then(() => loadVoucher());
 </script>
 </body>
 </html>

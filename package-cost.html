@@ -1,120 +1,63 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Package Cost Calculation | Hotel Collection</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="shared-theme.css" />
   <style>
-    body { font-family: 'DM Sans', sans-serif; background: #0f0f0f; color: #f0f0f0; }
-    h1, h2, h3, label { font-family: 'Playfair Display', serif; }
-    .gold { color: #c9a84c; }
-
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-    .input {
-      width: 100%;
-      padding: 10px 12px;
-      font-size: 14px;
-      border: 1px solid #2e2e2e;
-      border-radius: 8px;
-      background: #1a1a1a;
-      color: #f0f0f0;
-      transition: all 0.2s ease;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .input:focus { border-color: #c9a84c; outline: none; box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
-    .input::placeholder { color: #555; }
-    .input:read-only { background: #111; color: #888; cursor: not-allowed; }
-    select.input option { background: #1a1a1a; }
-
-    .floating { position: relative; }
     .floating label {
-      position: absolute; top: 10px; left: 12px;
-      font-size: 12px; color: #666;
-      pointer-events: none; transition: 0.2s ease;
-      background: #1a1a1a; padding: 0 4px;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .floating input:focus + label,
-    .floating input:not(:placeholder-shown) + label,
-    .floating select:focus + label {
-      top: -8px; font-size: 11px; color: #c9a84c;
+      background: white;
     }
 
-    .card { background: #161616; border: 1px solid #2a2a2a; border-radius: 1rem; }
-    .section-title { font-size: 1rem; color: #c9a84c; margin-bottom: 1rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 0.5rem; }
-
-    .btn-gold {
-      background: #c9a84c; color: #0f0f0f; font-weight: 600;
-      border-radius: 0.5rem; padding: 0.65rem 1.5rem;
-      transition: background 0.2s; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
+    .accom-row .floating label {
+      background: #f8fafc;
     }
-    .btn-gold:hover { background: #b8943d; }
 
-    .btn-green {
-      background: #16a34a; color: #fff; font-weight: 600;
-      border-radius: 0.5rem; padding: 0.65rem 1.5rem;
-      transition: background 0.2s; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
+    .accom-row {
+      animation: fadeIn 0.2s ease;
     }
-    .btn-green:hover { background: #15803d; }
 
-    .toast {
-      position: fixed; bottom: 2rem; right: 2rem;
-      padding: 1rem 1.5rem; border-radius: 0.75rem;
-      font-size: 0.9rem; z-index: 999;
-      animation: slideUp 0.3s ease;
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
     }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-    .accom-row { animation: fadeIn 0.2s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 
 <body class="min-h-screen">
 
-  <!-- Navbar -->
-  <!-- <nav class="border-b border-[#2a2a2a] px-8 py-4 flex items-center justify-between">
-    <h1 class="text-2xl gold tracking-wide">🏨 Hotel Collection</h1>
-    <div class="flex gap-3">
-      <a href="index.html" class="border border-[#c9a84c] text-[#c9a84c] rounded-lg px-4 py-2 text-sm hover:bg-[#c9a84c] hover:text-black transition">View Hotels</a>
-      <a href="voucher.html" class="border border-[#c9a84c] text-[#c9a84c] rounded-lg px-4 py-2 text-sm hover:bg-[#c9a84c] hover:text-black transition">Voucher</a>
-      <a href="add-hotel.html" class="btn-gold text-sm">+ Add Hotel</a>
-    </div>
-  </nav> -->
-
   <main class="max-w-5xl mx-auto px-6 py-10">
 
     <div class="mb-8">
-      <h2 class="text-3xl text-white">Package Cost Calculation</h2>
-      <p class="text-[#666] text-sm mt-1">Fill in agency, client, and cost details to calculate the total package cost.</p>
+      <h2 class="text-3xl" style="color:#1e293b;">Package Cost Calculation</h2>
+      <p class="text-sm mt-1" style="color:#64748b;">Fill in agency, client, and cost details to calculate the total
+        package cost.</p>
     </div>
 
     <!-- ── AGENCY ── -->
     <div class="card p-6 mb-6">
       <p class="section-title">Agency Details</p>
       <div class="grid md:grid-cols-2 gap-4">
-        <div class="floating">
-          <input class="input" id="companyName" placeholder=" "/>
-          <label>Company Name</label>
+        <div class="floating"><input class="input" id="companyName" placeholder=" " /><label>Company Name</label></div>
+        <div class="floating"><input class="input" id="contactPerson" placeholder=" " /><label>Contact Person</label>
         </div>
-        <div class="floating">
-          <input class="input" id="contactPerson" placeholder=" "/>
-          <label>Contact Person</label>
-        </div>
-        <div class="floating">
-          <input class="input" id="contactNumber" type="number" placeholder=" "/>
-          <label>Contact Number</label>
-        </div>
+        <div class="floating"><input class="input" id="contactNumber" type="number" placeholder=" " /><label>Contact
+            Number</label></div>
       </div>
     </div>
 
@@ -122,69 +65,60 @@
     <div class="card p-6 mb-6">
       <p class="section-title">Client Details</p>
       <div class="grid md:grid-cols-2 gap-4">
-
-        <div class="floating">
-          <input class="input" placeholder=" " id="clientName"/>
-          <label>Client Name</label>
+        <div class="floating"><input class="input" placeholder=" " id="clientName" /><label>Client Name</label></div>
+        <div class="floating"><input class="input" type="number" placeholder=" " id="contact" /><label>Contact</label>
         </div>
+        <div class="floating"><input class="input" type="date" id="arrivalDate" /><label>Arrival Date</label></div>
+        <div class="floating"><input class="input" type="date" id="departureDate" /><label>Departure Date</label></div>
         <div class="floating">
-          <input class="input" type="number" placeholder=" " id="contact"/>
-          <label>Contact</label>
-        </div>
-        <div class="floating">
-          <input class="input" type="date" id="arrivalDate"/>
-          <label>Arrival Date</label>
-        </div>
-        <div class="floating">
-          <input class="input" type="date" id="departureDate"/>
-          <label>Departure Date</label>
-        </div>
-
-        <div class="floating">
-          <select class="input" id="arrivalDestination">
+          <select class="input has-value" id="arrivalDestination" onchange="this.classList.add('has-value')">
             <option value="" disabled selected hidden>Select</option>
-            <option>Kathmandu</option><option>Pokhara</option>
-            <option>Kakadvitta</option><option>Raxaul</option><option>Janakpur</option>
+            <option>Kathmandu</option>
+            <option>Pokhara</option>
+            <option>Kakadvitta</option>
+            <option>Raxaul</option>
+            <option>Janakpur</option>
           </select>
           <label>Arrival Destination</label>
         </div>
         <div class="floating">
-          <select class="input" id="departureDestination">
+          <select class="input" id="departureDestination" onchange="this.classList.add('has-value')">
             <option value="" disabled selected hidden>Select</option>
-            <option>Kathmandu</option><option>Pokhara</option>
-            <option>Kakadvitta</option><option>Raxaul</option><option>Janakpur</option>
+            <option>Kathmandu</option>
+            <option>Pokhara</option>
+            <option>Kakadvitta</option>
+            <option>Raxaul</option>
+            <option>Janakpur</option>
           </select>
           <label>Departure Destination</label>
         </div>
-
+        <div class="floating"><input class="input" type="number" id="numberOfDays" placeholder=" " readonly /><label>No.
+            of Days</label></div>
+        <div class="floating"><input class="input" type="number" id="numberOfAdults" placeholder=" " /><label>No. of
+            Adults</label></div>
+        <div class="floating"><input class="input" type="number" id="numberOfChildren" placeholder=" " /><label>No. of
+            Children</label></div>
         <div class="floating">
-          <input class="input" type="number" id="numberOfDays" placeholder=" " readonly/>
-          <label>No. of Days</label>
-        </div>
-        <div class="floating">
-          <input class="input" type="number" id="numberOfAdults" placeholder=" "/>
-          <label>No. of Adults</label>
-        </div>
-        <div class="floating">
-          <input class="input" type="number" id="numberOfChildren" placeholder=" "/>
-          <label>No. of Children</label>
-        </div>
-
-        <div class="floating">
-          <select class="input" id="mealPlan">
+          <select class="input" id="mealPlan" onchange="this.classList.add('has-value')">
             <option value="" disabled selected hidden>Select</option>
-            <option>EP</option><option>CP</option><option>MAP</option><option>AP</option><option>JP</option>
+            <option>EP</option>
+            <option>CP</option>
+            <option>MAP</option>
+            <option>AP</option>
+            <option>JP</option>
           </select>
           <label>Meal Plan</label>
         </div>
         <div class="floating">
-          <select class="input" id="hotelCategory">
+          <select class="input" id="hotelCategory" onchange="this.classList.add('has-value')">
             <option value="" disabled selected hidden>Select</option>
-            <option>2 Star</option><option>3 Star</option><option>4 Star</option><option>5 Star</option>
+            <option>2 Star</option>
+            <option>3 Star</option>
+            <option>4 Star</option>
+            <option>5 Star</option>
           </select>
           <label>Hotel Category</label>
         </div>
-
       </div>
     </div>
 
@@ -192,17 +126,17 @@
     <div class="card p-6 mb-6">
       <p class="section-title">Cost Details</p>
 
-      <!-- Vehicle -->
       <div class="floating mb-5">
-        <input class="input" type="number" id="vehicle" placeholder=" "/>
+        <input class="input" type="number" id="vehicle" placeholder=" " />
         <label>Vehicle Cost</label>
       </div>
 
       <!-- Accommodation -->
       <div class="mb-6">
         <div class="flex justify-between items-center mb-3">
-          <h3 class="text-sm gold">Accommodation</h3>
-          <button onclick="addRow()" class="bg-[#c9a84c] text-black w-8 h-8 rounded-full hover:bg-[#b8943d] flex items-center justify-center transition">
+          <h3 class="text-sm font-semibold" style="color:#2563eb;">Accommodation</h3>
+          <button onclick="addRow()" class="btn-blue w-8 h-8 rounded-full flex items-center justify-center p-0"
+            style="padding:0;width:2rem;height:2rem;">
             <i class="fa fa-plus text-sm"></i>
           </button>
         </div>
@@ -211,37 +145,25 @@
 
       <!-- Other Costs -->
       <div class="grid md:grid-cols-3 gap-4">
-        <div class="floating">
-          <input class="input other-cost" type="number" id="miscellaneous" placeholder=" "/>
-          <label>Miscellaneous</label>
-        </div>
-        <div class="floating">
-          <input class="input other-cost" type="number" id="flight" placeholder=" "/>
-          <label>Flight</label>
-        </div>
-        <div class="floating">
-          <input class="input other-cost" type="number" id="lunch" placeholder=" "/>
-          <label>Lunch</label>
-        </div>
-        <div class="floating">
-          <input class="input other-cost" type="number" id="entryFee" placeholder=" "/>
-          <label>Entry Fee</label>
-        </div>
-        <div class="floating">
-          <input class="input other-cost" type="number" id="guide" placeholder=" "/>
-          <label>Guide</label>
-        </div>
-        <div class="floating">
-          <input class="input other-cost" type="number" id="extraServices" placeholder=" "/>
-          <label>Extra Services</label>
-        </div>
+        <div class="floating"><input class="input other-cost" type="number" id="miscellaneous"
+            placeholder=" " /><label>Miscellaneous</label></div>
+        <div class="floating"><input class="input other-cost" type="number" id="flight"
+            placeholder=" " /><label>Flight</label></div>
+        <div class="floating"><input class="input other-cost" type="number" id="lunch"
+            placeholder=" " /><label>Lunch</label></div>
+        <div class="floating"><input class="input other-cost" type="number" id="entryFee" placeholder=" " /><label>Entry
+            Fee</label></div>
+        <div class="floating"><input class="input other-cost" type="number" id="guide"
+            placeholder=" " /><label>Guide</label></div>
+        <div class="floating"><input class="input other-cost" type="number" id="extraServices"
+            placeholder=" " /><label>Extra Services</label></div>
       </div>
 
       <!-- Profit -->
       <div class="mt-5">
-        <h3 class="text-sm gold mb-3">Profit</h3>
+        <h3 class="text-sm font-semibold mb-3" style="color:#2563eb;">Profit</h3>
         <div class="floating" style="width:30%">
-          <input class="input" type="number" id="profit" placeholder=" "/>
+          <input class="input" type="number" id="profit" placeholder=" " />
           <label>Profit</label>
         </div>
       </div>
@@ -249,110 +171,74 @@
 
     <!-- ── ACTIONS ── -->
     <div class="flex gap-3 mt-5 items-center flex-wrap">
-      <button onclick="calculate()" class="btn-gold">Calculate</button>
+      <button onclick="calculate()" class="btn-blue">Calculate</button>
       <button onclick="sendEmail()" class="btn-green">Submit & Send Email</button>
       <div class="floating flex-1 min-w-[200px]">
-        <input class="input bg-[#111] text-[#c9a84c] font-bold" placeholder="Grand Total" readonly id="grandTotal"/>
+        <input class="input font-bold" placeholder="Grand Total" readonly id="grandTotal"
+          style="background:#f8fafc;color:#2563eb;" />
       </div>
     </div>
 
   </main>
 
+  <script src="sidebar.js"></script>
   <script>
     const HOTELS_API = "http://localhost:5000/api/hotels";
     const MAIL_API = "http://localhost:5000/api/mail/send-mail";
+    let hotelsData = [], rowCount = 0;
 
-    let hotelsData = [];
-    let rowCount = 0;
-
-    // ── Load Hotels ──────────────────────────────
     async function loadHotels() {
       try {
         const res = await fetch(HOTELS_API);
         const data = await res.json();
-        if (data.success) {
-          hotelsData = data.data;
-        }
-      } catch (err) {
-        showToast("Failed to load hotels from server.", false);
-      }
+        if (data.success) hotelsData = data.data;
+      } catch { showToast("Failed to load hotels.", false); }
     }
 
-    // ── Auto Days Calculation ─────────────────────
+    // ── Auto Days ─────────────────────────────────
     const arrivalDateEl = document.getElementById("arrivalDate");
     const departureDateEl = document.getElementById("departureDate");
     const daysEl = document.getElementById("numberOfDays");
 
     function calculateDays() {
-      const arrival = arrivalDateEl.value;
-      const departure = departureDateEl.value;
+      const arrival = arrivalDateEl.value, departure = departureDateEl.value;
       if (!arrival || !departure) { daysEl.value = ""; return; }
-      const diffTime = new Date(departure) - new Date(arrival);
-      const diffDays = diffTime / (1000 * 60 * 60 * 24);
-      daysEl.value = diffDays >= 0 ? diffDays + 1 : "";
+      const diff = (new Date(departure) - new Date(arrival)) / (1000 * 60 * 60 * 24);
+      daysEl.value = diff >= 0 ? diff + 1 : "";
     }
 
     arrivalDateEl.addEventListener("change", () => {
       departureDateEl.min = arrivalDateEl.value;
-      if (departureDateEl.value && departureDateEl.value < arrivalDateEl.value) {
-        departureDateEl.value = "";
-      }
+      if (departureDateEl.value && departureDateEl.value < arrivalDateEl.value) departureDateEl.value = "";
       calculateDays();
     });
     departureDateEl.addEventListener("change", calculateDays);
 
-    // ── Add Accommodation Row ─────────────────────
+    // ── Add Row ───────────────────────────────────
     function addRow() {
       rowCount++;
-
       const div = document.createElement("div");
-      div.className = "accom-row grid gap-3 bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a] items-center";
-      div.style.gridTemplateColumns = "2fr 1.2fr 1fr 1fr 1fr auto";
-
+      div.className = "accom-row grid gap-3 p-4 rounded-lg items-center";
+      div.style.cssText = "grid-template-columns:2fr 1.2fr 1fr 1fr 1fr auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.75rem;";
       div.innerHTML = `
-        <!-- Hotel Dropdown -->
-        <select class="input hotel-select">
+        <select class="input hotel-select" onchange="this.classList.add('has-value')">
           <option value="" disabled selected>Select Hotel</option>
           ${hotelsData.map(h => `<option value="${h._id}">${h.name}</option>`).join("")}
         </select>
-
-        <!-- Meal Plan Dropdown -->
-        <select class="input meal-select" disabled>
+        <select class="input meal-select" disabled onchange="this.classList.add('has-value')">
           <option value="" disabled selected>Select Plan</option>
         </select>
-
-        <!-- Cost (auto-filled) -->
-        <div class="floating">
-          <input type="number" class="input cost" placeholder=" " readonly/>
-          <label>Cost</label>
-        </div>
-
-        <!-- Nights -->
-        <div class="floating">
-          <input type="number" class="input nights" placeholder=" " min="1"/>
-          <label>Nights</label>
-        </div>
-
-        <!-- Total -->
-        <div class="floating">
-          <input type="number" class="input total" placeholder=" " readonly/>
-          <label>Total</label>
-        </div>
-
-        <!-- Remove -->
+        <div class="floating"><input type="number" class="input cost" placeholder=" " readonly/><label>Cost</label></div>
+        <div class="floating"><input type="number" class="input nights" placeholder=" " min="1"/><label>Nights</label></div>
+        <div class="floating"><input type="number" class="input total" placeholder=" " readonly/><label>Total</label></div>
         ${rowCount > 1
-          ? `<button onclick="this.closest('.accom-row').remove()" class="text-[#555] hover:text-red-400 transition text-xl">
-              <i class="fa fa-circle-xmark"></i>
-            </button>`
-          : `<div></div>`
-        }
+          ? `<button onclick="this.closest('.accom-row').remove()" style="color:#94a3b8;font-size:1.2rem;background:none;border:none;cursor:pointer;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'"><i class="fa fa-circle-xmark"></i></button>`
+          : `<div></div>`}
       `;
-
       document.getElementById("accommodationContainer").appendChild(div);
       attachRowLogic(div);
     }
 
-    // ── Row Logic: Hotel → Meal Plans → Cost → Total ──
     function attachRowLogic(row) {
       const hotelSelect = row.querySelector(".hotel-select");
       const mealSelect = row.querySelector(".meal-select");
@@ -360,11 +246,9 @@
       const nightsInput = row.querySelector(".nights");
       const totalInput = row.querySelector(".total");
 
-      // When hotel is selected → populate meal plan dropdown
       hotelSelect.addEventListener("change", () => {
         const hotel = hotelsData.find(h => h._id === hotelSelect.value);
         mealSelect.innerHTML = `<option value="" disabled selected>Select Plan</option>`;
-
         if (hotel) {
           hotel.costPerRoom.forEach(c => {
             const opt = document.createElement("option");
@@ -375,42 +259,24 @@
           });
           mealSelect.disabled = false;
         }
-
-        // Reset cost & total
-        costInput.value = "";
-        totalInput.value = "";
+        costInput.value = ""; totalInput.value = "";
       });
 
-      // When meal plan is selected → auto-fill cost
-      mealSelect.addEventListener("change", () => {
-        costInput.value = mealSelect.value;
-        updateTotal();
-      });
-
-      // When nights change → recalculate total
+      mealSelect.addEventListener("change", () => { costInput.value = mealSelect.value; updateTotal(); });
       nightsInput.addEventListener("input", updateTotal);
 
       function updateTotal() {
-        const cost = Number(costInput.value || 0);
-        const nights = Number(nightsInput.value || 0);
-        totalInput.value = cost * nights;
+        totalInput.value = Number(costInput.value || 0) * Number(nightsInput.value || 0);
       }
     }
 
-    // ── Calculate Grand Total ─────────────────────
+    // ── Calculate ─────────────────────────────────
     function calculate() {
       let total = 0;
-
-      document.querySelectorAll("#accommodationContainer .total").forEach(el => {
-        total += Number(el.value || 0);
-      });
-      document.querySelectorAll(".other-cost").forEach(el => {
-        total += Number(el.value || 0);
-      });
-
+      document.querySelectorAll("#accommodationContainer .total").forEach(el => total += Number(el.value || 0));
+      document.querySelectorAll(".other-cost").forEach(el => total += Number(el.value || 0));
       total += Number(document.getElementById("vehicle").value || 0);
       total += Number(document.getElementById("profit").value || 0);
-
       document.getElementById("grandTotal").value = total;
       return total;
     }
@@ -419,86 +285,53 @@
     async function sendEmail() {
       const companyName = document.getElementById("companyName").value;
       const clientName = document.getElementById("clientName").value;
-
-      if (!companyName || !clientName) {
-        showToast("Please fill in Company Name and Client Name.", false);
-        return;
-      }
+      if (!companyName || !clientName) { showToast("Please fill in Company Name and Client Name.", false); return; }
 
       const total = calculate();
-
-      const agency = {
-        companyName, contactPerson: document.getElementById("contactPerson").value,
-        contactNumber: document.getElementById("contactNumber").value,
-      };
-
+      const agency = { companyName, contactPerson: document.getElementById("contactPerson").value, contactNumber: document.getElementById("contactNumber").value };
       const clientDetails = {
         clientName, contact: document.getElementById("contact").value,
-        arrivalDate: document.getElementById("arrivalDate").value,
-        departureDate: document.getElementById("departureDate").value,
-        arrivalDestination: document.getElementById("arrivalDestination").value,
-        departureDestination: document.getElementById("departureDestination").value,
-        numberOfDays: document.getElementById("numberOfDays").value,
-        numberOfAdults: document.getElementById("numberOfAdults").value,
-        numberOfChildren: document.getElementById("numberOfChildren").value,
-        mealPlan: document.getElementById("mealPlan").value,
+        arrivalDate: document.getElementById("arrivalDate").value, departureDate: document.getElementById("departureDate").value,
+        arrivalDestination: document.getElementById("arrivalDestination").value, departureDestination: document.getElementById("departureDestination").value,
+        numberOfDays: document.getElementById("numberOfDays").value, numberOfAdults: document.getElementById("numberOfAdults").value,
+        numberOfChildren: document.getElementById("numberOfChildren").value, mealPlan: document.getElementById("mealPlan").value,
         hotelCategory: document.getElementById("hotelCategory").value,
       };
-
       const costs = {
-        vehicle: document.getElementById("vehicle").value,
-        flight: document.getElementById("flight").value,
-        lunch: document.getElementById("lunch").value,
-        entryFee: document.getElementById("entryFee").value,
-        guide: document.getElementById("guide").value,
-        extraServices: document.getElementById("extraServices").value,
-        miscellaneous: document.getElementById("miscellaneous").value,
-        profit: document.getElementById("profit").value,
+        vehicle: document.getElementById("vehicle").value, flight: document.getElementById("flight").value,
+        lunch: document.getElementById("lunch").value, entryFee: document.getElementById("entryFee").value,
+        guide: document.getElementById("guide").value, extraServices: document.getElementById("extraServices").value,
+        miscellaneous: document.getElementById("miscellaneous").value, profit: document.getElementById("profit").value,
       };
-
       const accommodation = [];
       document.querySelectorAll("#accommodationContainer .accom-row").forEach(row => {
         const hotelSelect = row.querySelector(".hotel-select");
         const mealSelect = row.querySelector(".meal-select");
-        const selectedMealOption = mealSelect.options[mealSelect.selectedIndex];
         const cost = Number(row.querySelector(".cost")?.value || 0);
         const nights = Number(row.querySelector(".nights")?.value || 0);
-
         accommodation.push({
           hotel: hotelSelect.options[hotelSelect.selectedIndex]?.text || "-",
-          meal: selectedMealOption?.dataset?.meal || "-",
-          cost, nights,
-          total: cost * nights,
+          meal: mealSelect.options[mealSelect.selectedIndex]?.dataset?.meal || "-",
+          cost, nights, total: cost * nights,
         });
       });
 
       try {
-        const res = await axios.post(MAIL_API, { agency, clientDetails, costs, accommodation, total }, {
-          headers: { "Content-Type": "application/json" }
-        });
+        const res = await axios.post(MAIL_API, { agency, clientDetails, costs, accommodation, total }, { headers: { "Content-Type": "application/json" } });
         showToast(res.data.message || "Mail sent successfully! ✓");
-      } catch (err) {
-        showToast("Error sending mail. Please try again.", false);
-      }
+      } catch { showToast("Error sending mail. Please try again.", false); }
     }
 
     // ── Toast ─────────────────────────────────────
-    function showToast(message, success = true) {
-      const existing = document.querySelector(".toast");
-      if (existing) existing.remove();
-      const toast = document.createElement("div");
-      toast.className = `toast ${success
-        ? "bg-[#1a2e1a] border border-green-700 text-green-400"
-        : "bg-[#2e1a1a] border border-red-700 text-red-400"}`;
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+    function showToast(msg, success = true) {
+      const e = document.querySelector(".toast"); if (e) e.remove();
+      const t = document.createElement("div");
+      t.className = `toast ${success ? "toast-success" : "toast-error"}`; t.textContent = msg;
+      document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
     }
 
-    // ── Init ──────────────────────────────────────
     loadHotels().then(() => addRow());
   </script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<script src="sidebar.js"></script>
 </body>
+
 </html>

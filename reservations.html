@@ -1,101 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hotel Reservations | Hotel Collection</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservations | Hotel Collection</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="shared-theme.css" />
   <style>
-    body { font-family: 'DM Sans', sans-serif; background: #0f0f0f; color: #f0f0f0; }
-    h1, h2, h3 { font-family: 'Playfair Display', serif; }
-    .gold { color: #c9a84c; }
-
-    .input {
-      width: 100%; padding: 10px 12px; font-size: 14px;
-      border: 1px solid #2e2e2e; border-radius: 8px;
-      background: #1a1a1a; color: #f0f0f0;
-      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
-    }
-    .input:focus { border-color: #c9a84c; outline: none; box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
-    .input::placeholder { color: #555; }
-    select.input option { background: #1a1a1a; }
-    textarea.input { resize: vertical; min-height: 80px; }
-
-    .floating { position: relative; }
     .floating label {
-      position: absolute; top: 10px; left: 12px; font-size: 12px; color: #666;
-      pointer-events: none; transition: 0.2s; background: #1a1a1a; padding: 0 4px;
-      font-family: 'DM Sans', sans-serif;
+      background: white;
     }
-    .floating input:focus + label,
-    .floating input:not(:placeholder-shown) + label,
-    .floating select:focus + label,
-    .floating textarea:focus + label { top: -8px; font-size: 11px; color: #c9a84c; }
 
-    .card { background: #161616; border: 1px solid #2a2a2a; border-radius: 1rem; }
-    .section-title { font-size: 1rem; color: #c9a84c; margin-bottom: 1rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 0.5rem; font-family: 'Playfair Display', serif; }
-
-    .btn-gold { background: #c9a84c; color: #0f0f0f; font-weight: 600; border-radius: 0.5rem; padding: 0.65rem 1.5rem; transition: background 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-    .btn-gold:hover { background: #b8943d; }
-    .btn-green { background: #16a34a; color: #fff; font-weight: 600; border-radius: 0.5rem; padding: 0.65rem 1.5rem; transition: background 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-    .btn-green:hover { background: #15803d; }
-    .btn-outline { border: 1px solid #c9a84c; color: #c9a84c; border-radius: 0.5rem; padding: 0.65rem 1.5rem; transition: all 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif; background: transparent; }
-    .btn-outline:hover { background: #c9a84c; color: #0f0f0f; }
-
-    table { width: 100%; border-collapse: collapse; }
-    thead tr { background: #1a1a1a; }
-    th { padding: 12px 16px; text-align: left; font-size: 0.78rem; color: #c9a84c; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
-    td { padding: 12px 16px; font-size: 0.88rem; color: #ccc; border-bottom: 1px solid #1e1e1e; }
-    tbody tr:hover { background: #1a1a1a; }
-
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-    .modal-overlay.active { opacity: 1; pointer-events: all; }
-    .modal-box { background: #161616; border: 1px solid #2a2a2a; border-radius: 1rem; padding: 2rem; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.2s; }
-    .modal-overlay.active .modal-box { transform: translateY(0); }
-
-    .email-tag { display: flex; align-items: center; gap: 6px; background: #1e1e1e; border: 1px solid #2e2e2e; border-radius: 6px; padding: 4px 10px; font-size: 13px; }
-    .email-tag button { color: #555; transition: color 0.2s; }
-    .email-tag button:hover { color: #ef4444; }
-
-    .skeleton { background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-    .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 0.75rem; font-size: 0.9rem; z-index: 999; animation: slideUp 0.3s ease; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-    .badge { display: inline-block; background: #1e1e1e; border: 1px solid #2e2e2e; border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; color: #c9a84c; }
+    .modal-box .floating label {
+      background: white;
+    }
   </style>
 </head>
-<body class="min-h-screen">
 
+<body>
   <main class="max-w-6xl mx-auto px-6 py-10">
 
-    <!-- Header -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
       <div>
-        <h2 class="text-3xl text-white">Hotel Reservations</h2>
-        <p id="reservationCount" class="text-[#555] text-sm mt-1">Loading...</p>
+        <h2 class="text-3xl" style="color:#1e293b;">Hotel Reservations</h2>
+        <p id="reservationCount" class="text-sm mt-1" style="color:#64748b;">Loading...</p>
       </div>
-      <button onclick="openModal()" class="btn-gold">
-        <i class="fa fa-plus mr-2"></i> Add Reservation
-      </button>
+      <button onclick="openModal()" class="btn-blue"><i class="fa fa-plus"></i> Add Reservation</button>
     </div>
 
-    <!-- Search -->
     <div class="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
       <div class="relative flex-1">
-        <input id="searchInput" type="text" placeholder="Search by booking name..." class="input pr-10" oninput="handleSearch()"/>
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#555]">🔍</span>
+        <input id="searchInput" type="text" placeholder="Search by booking name..." class="input pr-10"
+          oninput="handleSearch()" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#94a3b8;">🔍</span>
       </div>
-      <input id="dateFilter" type="date" class="input sm:w-48" onchange="handleSearch()"/>
+      <input id="dateFilter" type="date" class="input sm:w-48" onchange="handleSearch()" />
       <button onclick="clearFilters()" class="btn-outline text-sm px-4">Clear</button>
     </div>
 
-    <!-- Table -->
     <div class="card overflow-hidden">
       <div class="overflow-x-auto">
         <table>
@@ -104,7 +49,7 @@
               <th>Date</th>
               <th>Booking Name</th>
               <th>Nationality</th>
-              <th>No. of Pax</th>
+              <th>Pax</th>
               <th>Check-In</th>
               <th>Check-Out</th>
               <th>Meal Plan</th>
@@ -116,106 +61,162 @@
       </div>
       <div id="emptyState" class="hidden text-center py-16">
         <p class="text-4xl mb-3">📋</p>
-        <p class="text-[#555]">No reservations found.</p>
-        <button onclick="openModal()" class="btn-gold mt-4 text-sm">Add your first reservation</button>
+        <p style="color:#64748b;">No reservations found.</p>
+        <button onclick="openModal()" class="btn-blue mt-4 text-sm">Add your first reservation</button>
       </div>
     </div>
-
   </main>
 
-  <!-- Add Reservation Modal -->
+  <!-- Modal -->
   <div id="addModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
     <div class="modal-box">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-xl text-white">Add Reservation</h3>
-        <button onclick="closeModal()" class="text-[#555] hover:text-white text-2xl leading-none">✕</button>
+        <h3 class="text-xl" style="color:#1e293b;">Add Reservation</h3>
+        <button onclick="closeModal()"
+          style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">✕</button>
       </div>
-
-      <!-- Booking -->
       <div class="space-y-4">
         <p class="section-title">Booking Details</p>
         <div class="grid grid-cols-2 gap-4">
+          <div class="floating"><input class="input" id="m_bookingName" type="text" placeholder=" " /><label>Booking
+              Name *</label></div>
           <div class="floating">
-            <input class="input" id="m_bookingName" type="text" placeholder=" "/>
-            <label>Booking Name *</label>
-          </div>
-          <div class="floating">
-            <select class="input" id="m_nationality">
-              <option value="" disabled selected hidden>Select</option>
-              <option>Nepalese</option>
+            <select class="input" id="m_nationality" onchange="this.classList.add('has-value')">
+              <option value="" disabled selected hidden></option>
+              <option>Afghan</option>
+              <option>American</option>
+              <option>Australian</option>
+              <option>Austrian</option>
+              <option>Bangladeshi</option>
+              <option>Belgian</option>
+              <option>Brazilian</option>
+              <option>British</option>
+              <option>Canadian</option>
+              <option>Chilean</option>
+              <option>Chinese</option>
+              <option>Colombian</option>
+              <option>Czech</option>
+              <option>Danish</option>
+              <option>Dutch</option>
+              <option>Egyptian</option>
+              <option>Emirati</option>
+              <option>Ethiopian</option>
+              <option>Filipino</option>
+              <option>Finnish</option>
+              <option>French</option>
+              <option>German</option>
+              <option>Greek</option>
+              <option>Hungarian</option>
               <option>Indian</option>
-              <option>Bhutanes</option>
-              
+              <option>Indonesian</option>
+              <option>Iranian</option>
+              <option>Irish</option>
+              <option>Israeli</option>
+              <option>Italian</option>
+              <option>Japanese</option>
+              <option>Jordanian</option>
+              <option>Kenyan</option>
+              <option>Korean</option>
+              <option>Kuwaiti</option>
+              <option>Lebanese</option>
+              <option>Malaysian</option>
+              <option>Maldivian</option>
+              <option>Mexican</option>
+              <option>Moroccan</option>
+              <option>Nepalese</option>
+              <option>New Zealander</option>
+              <option>Nigerian</option>
+              <option>Norwegian</option>
+              <option>Pakistani</option>
+              <option>Polish</option>
+              <option>Portuguese</option>
+              <option>Qatari</option>
+              <option>Romanian</option>
+              <option>Russian</option>
+              <option>Saudi</option>
+              <option>Singaporean</option>
+              <option>South African</option>
+              <option>Spanish</option>
+              <option>Sri Lankan</option>
+              <option>Swedish</option>
+              <option>Swiss</option>
+              <option>Thai</option>
+              <option>Turkish</option>
+              <option>Ukrainian</option>
+              <option>Vietnamese</option>
             </select>
             <label>Nationality</label>
           </div>
         </div>
-
-        <!-- Pax -->
         <p class="section-title mt-2">Number of Pax</p>
         <div class="grid grid-cols-2 gap-4">
-          <div class="floating"><input class="input" id="m_adults" type="number" placeholder=" " min="0"/><label>Adults</label></div>
-          <div class="floating"><input class="input" id="m_childWithBed" type="number" placeholder=" " min="0"/><label>Child with Bed</label></div>
-          <div class="floating"><input class="input" id="m_childWithoutBed" type="number" placeholder=" " min="0"/><label>Child without Bed (6–10)</label></div>
-          <div class="floating"><input class="input" id="m_childBelow5" type="number" placeholder=" " min="0"/><label>Child below 5 yrs</label></div>
+          <div class="floating"><input class="input" id="m_adults" type="number" placeholder=" "
+              min="0" /><label>Adults</label></div>
+          <div class="floating"><input class="input" id="m_childWithBed" type="number" placeholder=" "
+              min="0" /><label>Child with Bed</label></div>
+          <div class="floating"><input class="input" id="m_childWithoutBed" type="number" placeholder=" "
+              min="0" /><label>Child without Bed (6–10)</label></div>
+          <div class="floating"><input class="input" id="m_childBelow5" type="number" placeholder=" "
+              min="0" /><label>Child below 5 yrs</label></div>
         </div>
-
-        <!-- Room -->
         <p class="section-title mt-2">Room Details</p>
         <div class="grid grid-cols-2 gap-4">
-          <div class="floating"><input class="input" id="m_roomCategory" type="text" placeholder=" "/><label>Room Category</label></div>
-          <div class="floating"><input class="input" id="m_noOfRooms" type="text" placeholder=" "/><label>No. of Rooms</label></div>
+          <div class="floating"><input class="input" id="m_roomCategory" type="text" placeholder=" " /><label>Room
+              Category</label></div>
+          <div class="floating"><input class="input" id="m_noOfRooms" type="text" placeholder=" " /><label>No. of
+              Rooms</label></div>
           <div class="floating">
-            <select class="input" id="m_roomType">
-              <option value="" disabled selected hidden>Select</option>
-              <option>Single Room</option><option>Double Room</option><option>Twin Room</option><option>Suite</option>
+            <select class="input" id="m_roomType" onchange="this.classList.add('has-value')">
+              <option value="" disabled selected hidden></option>
+              <option>Single Room</option>
+              <option>Double Room</option>
+              <option>Twin Room</option>
+              <option>Suite</option>
             </select>
             <label>Room Type</label>
           </div>
-          <div class="floating"><input class="input" id="m_extraBed" type="number" placeholder=" " min="0"/><label>No. of Extra Bed</label></div>
+          <div class="floating"><input class="input" id="m_extraBed" type="number" placeholder=" " min="0" /><label>No.
+              of Extra Bed</label></div>
           <div class="floating">
-            <select class="input" id="m_mealPlan">
-              <option value="" disabled selected hidden>Select</option>
-              <option>EP</option><option>CP</option><option>MAP</option><option>AP</option><option>JP</option>
+            <select class="input" id="m_mealPlan" onchange="this.classList.add('has-value')">
+              <option value="" disabled selected hidden></option>
+              <option>EP</option>
+              <option>CP</option>
+              <option>MAP</option>
+              <option>AP</option>
+              <option>JP</option>
             </select>
             <label>Meal Plan</label>
           </div>
         </div>
-
-        <!-- Visits -->
         <p class="section-title mt-2">Visit Details</p>
         <div class="grid grid-cols-2 gap-4">
-          <div class="floating"><input class="input" id="m_visit1in" type="date"/><label>1st Visit Check-In</label></div>
-          <div class="floating"><input class="input" id="m_visit1out" type="date"/><label>1st Visit Check-Out</label></div>
-          <div class="floating"><input class="input" id="m_visit2in" type="date"/><label>2nd Visit Check-In</label></div>
-          <div class="floating"><input class="input" id="m_visit2out" type="date"/><label>2nd Visit Check-Out</label></div>
-          <div class="floating"><input class="input" id="m_checkinTime" type="text" placeholder=" "/><label>Check-In Time</label></div>
-          <div class="floating"><input class="input" id="m_checkoutTime" type="text" placeholder=" "/><label>Check-Out Time</label></div>
+          <div class="floating"><input class="input" id="m_visit1in" type="date" /><label>1st Visit Check-In</label>
+          </div>
+          <div class="floating"><input class="input" id="m_visit1out" type="date" /><label>1st Visit Check-Out</label>
+          </div>
+          <div class="floating"><input class="input" id="m_visit2in" type="date" /><label>2nd Visit Check-In</label>
+          </div>
+          <div class="floating"><input class="input" id="m_visit2out" type="date" /><label>2nd Visit Check-Out</label>
+          </div>
+          
         </div>
-
-        <!-- Note -->
         <p class="section-title mt-2">Note</p>
         <textarea class="input" id="m_note" placeholder="Additional notes..."></textarea>
-
-        <!-- Email -->
         <p class="section-title mt-2">Email Details</p>
-        <div class="floating mb-3">
-          <input class="input" id="m_subject" type="text" placeholder=" "/>
-          <label>Subject *</label>
-        </div>
-        <p class="text-sm text-[#c9a84c] mb-2">To <span class="text-[#555] text-xs">(max 5 emails)</span></p>
+        <div class="floating mb-3"><input class="input" id="m_subject" type="text" placeholder=" " /><label>Subject
+            *</label></div>
+        <p class="text-sm mb-2" style="color:#2563eb;">To <span style="color:#94a3b8;font-size:0.75rem;">(max 5
+            emails)</span></p>
         <div id="m_emailTags" class="flex flex-wrap gap-2 mb-3"></div>
         <div class="flex gap-2">
-          <input class="input" id="m_emailInput" type="email" placeholder="Enter email address"/>
-          <button onclick="addEmail()" class="btn-gold px-4 whitespace-nowrap">➕ Add</button>
+          <input class="input" id="m_emailInput" type="email" placeholder="Enter email address" />
+          <button onclick="addEmail()" class="btn-blue px-4 whitespace-nowrap">➕ Add</button>
         </div>
-        <p id="m_emailError" class="text-red-400 text-xs mt-1 hidden"></p>
-
-        <!-- Submit -->
+        <p id="m_emailError" class="text-red-500 text-xs mt-1 hidden"></p>
         <div class="flex gap-3 pt-4">
-          <button onclick="submitReservation()" class="btn-green flex-1">
-            <i class="fa fa-paper-plane mr-2"></i> Send & Save
-          </button>
+          <button onclick="submitReservation()" class="btn-green flex-1"><i class="fa fa-paper-plane"></i> Send &
+            Save</button>
           <button onclick="closeModal()" class="btn-outline flex-1">Cancel</button>
         </div>
       </div>
@@ -225,10 +226,8 @@
   <script src="sidebar.js"></script>
   <script>
     const API = "http://localhost:5000/api/reservations";
-    let emailList = [];
-    let searchTimeout = null;
+    let emailList = [], searchTimeout = null;
 
-    // ── Fetch & Render ──────────────────────────
     async function fetchReservations(search = "", date = "") {
       try {
         showSkeletons();
@@ -237,168 +236,103 @@
         if (search) params.push(`search=${encodeURIComponent(search)}`);
         if (date) params.push(`date=${date}`);
         if (params.length) url += "?" + params.join("&");
-
         const res = await fetch(url);
         const data = await res.json();
         if (data.success) renderTable(data.data);
-      } catch {
-        showToast("Failed to load reservations.", false);
-      }
+      } catch { showToast("Failed to load reservations.", false); }
+    }
+
+    function paxDisplay(pax) {
+      const adults = Number(pax?.adults) || 0;
+      const children = (Number(pax?.childWithBed) || 0) + (Number(pax?.childWithoutBed) || 0) + (Number(pax?.childBelow5) || 0);
+      return `${adults} Adult${adults !== 1 ? "s" : ""} / ${children} Child${children !== 1 ? "ren" : ""}`;
     }
 
     function renderTable(reservations) {
       const tbody = document.getElementById("reservationTableBody");
       const empty = document.getElementById("emptyState");
-      const count = document.getElementById("reservationCount");
-
-      count.textContent = `${reservations.length} reservation${reservations.length !== 1 ? "s" : ""} found`;
-
-      if (reservations.length === 0) {
-        tbody.innerHTML = "";
-        empty.classList.remove("hidden");
-        return;
-      }
-
+      document.getElementById("reservationCount").textContent = `${reservations.length} reservation${reservations.length !== 1 ? "s" : ""} found`;
+      if (reservations.length === 0) { tbody.innerHTML = ""; empty.classList.remove("hidden"); return; }
       empty.classList.add("hidden");
       tbody.innerHTML = reservations.map(r => {
-        const totalPax = (Number(r.pax?.adults) || 0) + (Number(r.pax?.childWithBed) || 0) + (Number(r.pax?.childWithoutBed) || 0) + (Number(r.pax?.childBelow5) || 0);
         const date = new Date(r.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-        return `
-          <tr>
-            <td>${date}</td>
-            <td class="text-white font-medium">${r.bookingName}</td>
-            <td>${r.nationality || "—"}</td>
-            <td><span class="badge">${totalPax} Pax</span></td>
-            <td>${r.visits?.visit1in || "—"}</td>
-            <td>${r.visits?.visit1out || "—"}</td>
-            <td><span class="badge">${r.room?.mealPlan || "—"}</span></td>
-            <td>
-              <a href="reservation-detail.html?id=${r._id}" class="btn-outline text-xs px-3 py-1">
-                View <i class="fa fa-arrow-right ml-1"></i>
-              </a>
-            </td>
-          </tr>
-        `;
+        return `<tr>
+        <td>${date}</td>
+        <td style="font-weight:500;">${r.bookingName}</td>
+        <td>${r.nationality || "—"}</td>
+        <td><span class="badge">${paxDisplay(r.pax)}</span></td>
+        <td>${r.visits?.visit1in !== "N/A" ? r.visits.visit1in : "—"}</td>
+        <td>${r.visits?.visit1out !== "N/A" ? r.visits.visit1out : "—"}</td>
+        <td><span class="badge">${r.room?.mealPlan || "—"}</span></td>
+        <td><a href="reservation-detail.html?id=${r._id}" class="btn-outline text-xs px-3 py-1">View <i class="fa fa-arrow-right"></i></a></td>
+      </tr>`;
       }).join("");
     }
 
     function showSkeletons() {
-      const tbody = document.getElementById("reservationTableBody");
-      tbody.innerHTML = Array(5).fill(`
-        <tr>
-          ${Array(8).fill(`<td><div class="skeleton h-4 w-24"></div></td>`).join("")}
-        </tr>
-      `).join("");
+      document.getElementById("reservationTableBody").innerHTML = Array(5).fill(`<tr>${Array(8).fill(`<td><div class="skeleton h-4 w-24"></div></td>`).join("")}</tr>`).join("");
     }
 
-    // ── Search ──────────────────────────────────
     function handleSearch() {
       clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        const search = document.getElementById("searchInput").value.trim();
-        const date = document.getElementById("dateFilter").value;
-        fetchReservations(search, date);
-      }, 400);
+      searchTimeout = setTimeout(() => fetchReservations(document.getElementById("searchInput").value.trim(), document.getElementById("dateFilter").value), 400);
     }
+    function clearFilters() { document.getElementById("searchInput").value = ""; document.getElementById("dateFilter").value = ""; fetchReservations(); }
 
-    function clearFilters() {
-      document.getElementById("searchInput").value = "";
-      document.getElementById("dateFilter").value = "";
-      fetchReservations();
-    }
+    function openModal() { document.getElementById("addModal").classList.add("active"); }
+    function closeModal() { document.getElementById("addModal").classList.remove("active"); }
+    function closeModalOnOverlay(e) { if (e.target === document.getElementById("addModal")) closeModal(); }
 
-    // ── Modal ───────────────────────────────────
-    function openModal() {
-      document.getElementById("addModal").classList.add("active");
-    }
-    function closeModal() {
-      document.getElementById("addModal").classList.remove("active");
-    }
-    function closeModalOnOverlay(e) {
-      if (e.target === document.getElementById("addModal")) closeModal();
-    }
-
-    // ── Email Tags ───────────────────────────────
     function addEmail() {
       const input = document.getElementById("m_emailInput");
       const errEl = document.getElementById("m_emailError");
       const email = input.value.trim();
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       errEl.classList.add("hidden");
-      if (!email) { showEmailError("Please enter an email."); return; }
-      if (!emailRegex.test(email)) { showEmailError("Invalid email address."); return; }
-      if (emailList.includes(email)) { showEmailError("Email already added."); return; }
-      if (emailList.length >= 5) { showEmailError("Maximum 5 emails allowed."); return; }
+      if (!email) { errEl.textContent = "Please enter an email."; errEl.classList.remove("hidden"); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = "Invalid email."; errEl.classList.remove("hidden"); return; }
+      if (emailList.includes(email)) { errEl.textContent = "Already added."; errEl.classList.remove("hidden"); return; }
+      if (emailList.length >= 5) { errEl.textContent = "Max 5 emails."; errEl.classList.remove("hidden"); return; }
       emailList.push(email);
-      renderEmailTags();
-      input.value = "";
+      renderEmailTags(); input.value = "";
     }
-
     function removeEmail(i) { emailList.splice(i, 1); renderEmailTags(); }
-
     function renderEmailTags() {
-      document.getElementById("m_emailTags").innerHTML = emailList.map((e, i) => `
-        <div class="email-tag"><span>${e}</span><button onclick="removeEmail(${i})"><i class="fa fa-times"></i></button></div>
-      `).join("");
+      document.getElementById("m_emailTags").innerHTML = emailList.map((e, i) => `<div class="email-tag"><span>${e}</span><button onclick="removeEmail(${i})"><i class="fa fa-times"></i></button></div>`).join("");
     }
-
-    function showEmailError(msg) {
-      const el = document.getElementById("m_emailError");
-      el.textContent = msg; el.classList.remove("hidden");
-    }
-
-    document.getElementById("m_emailInput")?.addEventListener("keydown", e => {
-      if (e.key === "Enter") { e.preventDefault(); addEmail(); }
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("m_emailInput")?.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addEmail(); } });
     });
 
-    // ── Submit ───────────────────────────────────
     async function submitReservation() {
       const bookingName = document.getElementById("m_bookingName").value.trim();
       const subject = document.getElementById("m_subject").value.trim();
-      const g = (id) => document.getElementById(id)?.value ?? "";
-
       if (!bookingName) { showToast("Please enter a booking name.", false); return; }
       if (emailList.length === 0) { showToast("Please add at least one email.", false); return; }
       if (!subject) { showToast("Please enter a subject.", false); return; }
-
+      const g = id => document.getElementById(id)?.value ?? "";
       const payload = {
-        to: emailList, subject, bookingName,
-        nationality: g("m_nationality"),
+        to: emailList, subject, bookingName, nationality: g("m_nationality"),
         pax: { adults: g("m_adults"), childWithBed: g("m_childWithBed"), childWithoutBed: g("m_childWithoutBed"), childBelow5: g("m_childBelow5") },
         room: { category: g("m_roomCategory"), noOfRooms: g("m_noOfRooms"), type: g("m_roomType"), extraBed: g("m_extraBed"), mealPlan: g("m_mealPlan") },
         visits: { visit1in: g("m_visit1in") || "N/A", visit1out: g("m_visit1out") || "N/A", visit2in: g("m_visit2in") || "N/A", visit2out: g("m_visit2out") || "N/A", checkinTime: g("m_checkinTime") || "N/A", checkoutTime: g("m_checkoutTime") || "N/A" },
         note: g("m_note"),
       };
-
       try {
         const res = await axios.post(API, payload, { headers: { "Content-Type": "application/json" } });
-        if (res.data.success) {
-          showToast("Reservation saved and email sent! ✓");
-          closeModal();
-          emailList = [];
-          renderEmailTags();
-          fetchReservations();
-        } else {
-          showToast(res.data.message, false);
-        }
-      } catch {
-        showToast("Error saving reservation.", false);
-      }
+        if (res.data.success) { showToast("Reservation saved and email sent! ✓"); closeModal(); emailList = []; renderEmailTags(); fetchReservations(); }
+        else showToast(res.data.message, false);
+      } catch { showToast("Error saving reservation.", false); }
     }
 
-    // ── Toast ─────────────────────────────────────
-    function showToast(message, success = true) {
-      const existing = document.querySelector(".toast");
-      if (existing) existing.remove();
-      const toast = document.createElement("div");
-      toast.className = `toast ${success ? "bg-[#1a2e1a] border border-green-700 text-green-400" : "bg-[#2e1a1a] border border-red-700 text-red-400"}`;
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+    function showToast(msg, success = true) {
+      const e = document.querySelector(".toast"); if (e) e.remove();
+      const t = document.createElement("div");
+      t.className = `toast ${success ? "toast-success" : "toast-error"}`; t.textContent = msg;
+      document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
     }
 
-    // ── Init ─────────────────────────────────────
     fetchReservations();
   </script>
 </body>
+
 </html>

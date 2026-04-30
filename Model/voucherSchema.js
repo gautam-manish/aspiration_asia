@@ -14,8 +14,6 @@ const hotelBlockSchema = new mongoose.Schema(
     visit1out:          { type: String, default: "N/A" },
     visit2in:           { type: String, default: "N/A" },
     visit2out:          { type: String, default: "N/A" },
-    checkinTime:        { type: String, default: "N/A" },
-    checkoutTime:       { type: String, default: "N/A" },
     includes:           { type: String, trim: true },
   },
   { _id: false }

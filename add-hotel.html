@@ -5,99 +5,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Add Hotel | Hotel Collection</title>
+    <!-- Add this as the FIRST script in <head> on every page except login.html -->
+    <script>
+        if (!localStorage.getItem("token")) {
+            window.location.replace("login.html");
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap"
         rel="stylesheet" />
+    <link rel="stylesheet" href="shared-theme.css" />
     <style>
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: #0f0f0f;
-        }
-
-        h1,
-        h2,
-        label {
-            font-family: 'Playfair Display', serif;
-        }
-
-        .gold {
-            color: #c9a84c;
-        }
-
-        .gold-border {
-            border-color: #c9a84c;
-        }
-
-        .gold-bg {
-            background: #c9a84c;
-        }
-
-        .input-field {
-            background: #1a1a1a;
-            border: 1px solid #2e2e2e;
-            color: #f0f0f0;
-            border-radius: 0.5rem;
-            padding: 0.65rem 1rem;
-            width: 100%;
-            transition: border-color 0.2s;
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: #c9a84c;
-        }
-
-        .input-field::placeholder {
-            color: #555;
-        }
-
-        select.input-field option {
-            background: #1a1a1a;
-        }
-
-        .card {
-            background: #161616;
-            border: 1px solid #2a2a2a;
-            border-radius: 1rem;
-        }
-
-        .btn-gold {
-            background: #c9a84c;
-            color: #0f0f0f;
-            font-weight: 600;
-            border-radius: 0.5rem;
-            padding: 0.65rem 1.5rem;
-            transition: background 0.2s, transform 0.1s;
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        .btn-gold:hover {
-            background: #b8943d;
-            transform: translateY(-1px);
-        }
-
-        .btn-outline {
-            border: 1px solid #c9a84c;
-            color: #c9a84c;
-            border-radius: 0.5rem;
-            padding: 0.65rem 1.5rem;
-            transition: all 0.2s;
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        .btn-outline:hover {
-            background: #c9a84c;
-            color: #0f0f0f;
-        }
-
         .meal-row {
             animation: fadeIn 0.2s ease;
         }
@@ -105,90 +25,66 @@
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-6px);
+                transform: translateY(-6px)
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            border-radius: 0.75rem;
-            font-size: 0.9rem;
-            z-index: 999;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0)
             }
         }
     </style>
 </head>
 
-<body class="min-h-screen text-white">
+<body class="min-h-screen">
 
-    
-
-    <!-- Main -->
     <main class="max-w-2xl mx-auto px-6 py-12">
+
         <div class="mb-8">
-            <h2 class="text-3xl text-white mb-1">Add New Hotel</h2>
-            <p class="text-[#666] text-sm">Fill in the details below to register a new hotel.</p>
+            <h2 class="text-3xl mb-1" style="color:#1e293b;">Add New Hotel</h2>
+            <p class="text-sm" style="color:#64748b;">Fill in the details below to register a new hotel.</p>
         </div>
 
         <div class="card p-8 space-y-6">
 
             <!-- Hotel Name -->
             <div>
-                <label class="block text-sm gold mb-2">Hotel Name</label>
-                <input id="hotelName" type="text" placeholder="e.g. Hotel Everest" class="input-field" />
+                <label class="block text-sm font-medium mb-2" style="color:#2563eb;">Hotel Name</label>
+                <input id="hotelName" type="text" placeholder="e.g. Hotel Everest" class="input" />
             </div>
 
             <!-- Country & City -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm gold mb-2">Country</label>
-                    <input id="country" type="text" placeholder="e.g. Nepal" class="input-field" />
+                    <label class="block text-sm font-medium mb-2" style="color:#2563eb;">Country</label>
+                    <input id="country" type="text" placeholder="e.g. Nepal" class="input" />
                 </div>
                 <div>
-                    <label class="block text-sm gold mb-2">City</label>
-                    <input id="city" type="text" placeholder="e.g. Kathmandu" class="input-field" />
+                    <label class="block text-sm font-medium mb-2" style="color:#2563eb;">City</label>
+                    <input id="city" type="text" placeholder="e.g. Kathmandu" class="input" />
                 </div>
             </div>
 
             <!-- Cost Per Room -->
             <div>
-                <label class="block text-sm gold mb-3">Cost Per Room</label>
+                <label class="block text-sm font-medium mb-3" style="color:#2563eb;">Cost Per Room</label>
                 <div id="mealPlanRows" class="space-y-3"></div>
-                <button onclick="addMealRow()"
-                    class="mt-3 flex items-center gap-2 text-sm text-[#c9a84c] hover:text-white transition">
+                <button onclick="addMealRow()" class="mt-3 flex items-center gap-2 text-sm transition"
+                    style="color:#2563eb;background:none;border:none;cursor:pointer;">
                     <span class="text-xl leading-none">＋</span> Add Meal Plan
                 </button>
             </div>
 
             <!-- Actions -->
             <div class="flex gap-3 pt-2">
-                <button onclick="saveHotel()" class="btn-gold flex-1">Save Hotel</button>
+                <button onclick="saveHotel()" class="btn-blue flex-1">Save Hotel</button>
                 <button onclick="resetForm()" class="btn-outline flex-1">Reset</button>
             </div>
 
         </div>
     </main>
 
+    <script src="sidebar.js"></script>
     <script>
         const API = "http://localhost:5000/api/hotels";
         const MEAL_PLANS = ["EP", "CP", "MAP", "AP", "JP"];
@@ -198,12 +94,12 @@
             const row = document.createElement("div");
             row.className = "meal-row flex items-center gap-3";
             row.innerHTML = `
-        <select class="input-field meal-plan-select">
+        <select class="input meal-plan-select" style="flex:1;">
           <option value="" disabled ${!mealPlan ? "selected" : ""}>Select Plan</option>
           ${MEAL_PLANS.map(p => `<option value="${p}" ${p === mealPlan ? "selected" : ""}>${p}</option>`).join("")}
         </select>
-        <input type="number" placeholder="Rate (e.g. 1200)" value="${rate}" class="input-field meal-rate-input" min="0"/>
-        <button onclick="this.parentElement.remove()" class="text-[#555] hover:text-red-400 transition text-xl leading-none flex-shrink-0">✕</button>
+        <input type="number" placeholder="Rate (e.g. 1200)" value="${rate}" class="input meal-rate-input" min="0" style="flex:1;"/>
+        <button onclick="this.parentElement.remove()" style="color:#94a3b8;font-size:1.2rem;background:none;border:none;cursor:pointer;flex-shrink:0;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✕</button>
       `;
             container.appendChild(row);
         }
@@ -220,7 +116,7 @@
             const existing = document.querySelector(".toast");
             if (existing) existing.remove();
             const toast = document.createElement("div");
-            toast.className = `toast ${success ? "bg-[#1a2e1a] border border-green-700 text-green-400" : "bg-[#2e1a1a] border border-red-700 text-red-400"}`;
+            toast.className = `toast ${success ? "toast-success" : "toast-error"}`;
             toast.textContent = message;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
@@ -231,10 +127,7 @@
             const country = document.getElementById("country").value.trim();
             const city = document.getElementById("city").value.trim();
 
-            if (!name || !country || !city) {
-                showToast("Please fill in all hotel details.", false);
-                return;
-            }
+            if (!name || !country || !city) { showToast("Please fill in all hotel details.", false); return; }
 
             const rows = document.querySelectorAll(".meal-row");
             const costPerRoom = [];
@@ -242,17 +135,11 @@
             for (const row of rows) {
                 const mealPlan = row.querySelector(".meal-plan-select").value;
                 const rate = row.querySelector(".meal-rate-input").value;
-                if (!mealPlan || rate === "") {
-                    showToast("Please complete all meal plan rows.", false);
-                    return;
-                }
+                if (!mealPlan || rate === "") { showToast("Please complete all meal plan rows.", false); return; }
                 costPerRoom.push({ mealPlan, rate: Number(rate) });
             }
 
-            if (costPerRoom.length === 0) {
-                showToast("At least one meal plan is required.", false);
-                return;
-            }
+            if (costPerRoom.length === 0) { showToast("At least one meal plan is required.", false); return; }
 
             try {
                 const res = await fetch(API, {
@@ -261,22 +148,13 @@
                     body: JSON.stringify({ name, country, city, costPerRoom }),
                 });
                 const data = await res.json();
-                if (data.success) {
-                    showToast("Hotel saved successfully! ✓");
-                    resetForm();
-                } else {
-                    showToast(data.message, false);
-                }
-            } catch (err) {
-                showToast("Server error. Please try again.", false);
-            }
+                if (data.success) { showToast("Hotel saved successfully! ✓"); resetForm(); }
+                else showToast(data.message, false);
+            } catch { showToast("Server error. Please try again.", false); }
         }
 
-        // Start with one row
         addMealRow();
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<script src="sidebar.js"></script>
 </body>
 
 </html>

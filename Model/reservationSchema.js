@@ -29,8 +29,7 @@ const reservationSchema = new mongoose.Schema(
       visit1out:    { type: String, default: "N/A" },
       visit2in:     { type: String, default: "N/A" },
       visit2out:    { type: String, default: "N/A" },
-      checkinTime:  { type: String, default: "N/A" },
-      checkoutTime: { type: String, default: "N/A" },
+      
     },
     note:      { type: String, trim: true },
     emailTo:   [{ type: String }],
