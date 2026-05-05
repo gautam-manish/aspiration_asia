@@ -65,7 +65,6 @@
       background: #f0f4f8;
       font-family: 'DM Sans', sans-serif;
       color: #1e293b;
-      display: flex;
     }
 
     #sidebar {
@@ -189,7 +188,6 @@
       transition: margin-left 0.3s ease;
       min-height: 100vh;
       background: #f0f4f8;
-      flex: 1;
     }
     #page-content.collapsed { margin-left: 64px; }
 
@@ -239,11 +237,12 @@
   sidebar.id = "sidebar";
 
   const links = [
-    { icon: "🏨", label: "View Hotels", href: "index.html" },
-    { icon: "➕", label: "Add Hotel", href: "add-hotel.html" },
-    { icon: "🧾", label: "Vouchers", href: "voucher.html" },
-    { icon: "📦", label: "Package Cost", href: "package-cost.html" },
-    { icon: "📋", label: "Reservations", href: "reservations.html" },
+    { icon: "🏨", label: "View Hotels",   href: "index.html" },
+    { icon: "➕", label: "Add Hotel",      href: "add-hotel.html" },
+    { icon: "🧾", label: "Vouchers",       href: "voucher.html" },
+    { icon: "📦", label: "Package Cost",   href: "package-cost.html" },
+    { icon: "📋", label: "Reservations",   href: "reservations.html" },
+    { icon: "🧾", label: "Invoice",         href: "invoices.html" },
   ];
 
   const currentPage = window.location.pathname.split("/").pop() || "index.html";

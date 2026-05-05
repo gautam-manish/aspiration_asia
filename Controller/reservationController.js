@@ -66,7 +66,8 @@ export const createReservation = async (req, res) => {
       <tr><td style="border:1px solid #ddd;padding:8px;">1st Visit Check-Out</td><td style="border:1px solid #ddd;padding:8px;">${safe(visits?.visit1out)}</td></tr>
       <tr><td style="border:1px solid #ddd;padding:8px;">2nd Visit Check-In</td><td style="border:1px solid #ddd;padding:8px;">${safe(visits?.visit2in)}</td></tr>
       <tr><td style="border:1px solid #ddd;padding:8px;">2nd Visit Check-Out</td><td style="border:1px solid #ddd;padding:8px;">${safe(visits?.visit2out)}</td></tr>
-     
+      <tr><td style="border:1px solid #ddd;padding:8px;">Check-In Time</td><td style="border:1px solid #ddd;padding:8px;">${safe(visits?.checkinTime)}</td></tr>
+      <tr><td style="border:1px solid #ddd;padding:8px;">Check-Out Time</td><td style="border:1px solid #ddd;padding:8px;">${safe(visits?.checkoutTime)}</td></tr>
     </table>
 
     ${note ? `
@@ -146,10 +147,12 @@ export const getReservationById = async (req, res) => {
 // ─────────────────────────────────────────
 export const updateReservation = async (req, res) => {
   try {
-    const { bookingName, nationality, pax, room, visits, note, emailTo, subject } = req.body;
+    if (Object.keys(req.body).length === 0) {
+      return res.status(400).json({ success: false, message: "No data provided to update", data: null });
+    }
     const reservation = await Reservation.findByIdAndUpdate(
       req.params.id,
-      { bookingName, nationality, pax, room, visits, note, emailTo, subject },
+      { $set: req.body },
       { new: true, runValidators: true }
     );
     if (!reservation) {
@@ -157,6 +160,6 @@ export const updateReservation = async (req, res) => {
     }
     res.status(200).json({ success: true, message: "Reservation updated successfully", data: reservation });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res.status(400).json({ success: false, message: error.message, data: null });
   }
 };

@@ -3,6 +3,7 @@ import {
   createReservation,
   getAllReservations,
   getReservationById,
+  updateReservation,
 } from "../Controller/reservationController.js";
 
 const router = express.Router();
@@ -11,6 +12,6 @@ const router = express.Router();
 // Base Route: /api/reservations
 // ─────────────────────────────────────────
 router.route("/").get(getAllReservations).post(createReservation);
-router.route("/:id").get(getReservationById);
+router.route("/:id").get(getReservationById).put(updateReservation);
 
 export default router;
