@@ -81,7 +81,7 @@ export const updateVoucher = async (req, res) => {
     const voucher = await Voucher.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!voucher) {

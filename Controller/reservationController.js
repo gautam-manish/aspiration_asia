@@ -153,7 +153,7 @@ export const updateReservation = async (req, res) => {
     const reservation = await Reservation.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
     if (!reservation) {
       return res.status(404).json({ success: false, message: "Reservation not found", data: null });

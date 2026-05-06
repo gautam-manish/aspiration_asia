@@ -141,7 +141,7 @@ export const updateHotel = async (req, res) => {
     const hotel = await Hotel.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!hotel) {

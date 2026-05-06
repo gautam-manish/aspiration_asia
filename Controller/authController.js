@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 // Change these to whatever you want
 // ─────────────────────────────────────────
 const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "aspiration@123";
 
 // ─────────────────────────────────────────
 // @desc    Login Admin
@@ -13,8 +12,11 @@ const ADMIN_PASSWORD = "aspiration@123";
 // @access  Public
 // ─────────────────────────────────────────
 export const login = async (req, res) => {
+    let ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
     try {
         const { username, password } = req.body;
+        // console.log(ADMIN_PASSWORD);
+
 
         if (!username || !password) {
             return res.status(400).json({

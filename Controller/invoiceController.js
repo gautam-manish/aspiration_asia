@@ -61,7 +61,7 @@ export const updateInvoice = async (req, res) => {
       return res.status(400).json({ success: false, message: "No data provided", data: null });
 
     const invoice = await Invoice.findByIdAndUpdate(
-      req.params.id, { $set: req.body }, { new: true, runValidators: true }
+      req.params.id, { $set: req.body }, { returnDocument: 'after', runValidators: true }
     );
     if (!invoice) return res.status(404).json({ success: false, message: "Invoice not found", data: null });
     res.status(200).json({ success: true, message: "Invoice updated successfully", data: invoice });

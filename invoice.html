@@ -1014,6 +1014,47 @@
 
         // ── Save Invoice ──────────────────────────────
         async function saveInvoice() {
+            // ── Validation ─────────────────────────────
+            const errors = [];
+
+            const invNumber = document.getElementById("inv_number").value.trim();
+            if (!invNumber) errors.push("Invoice Number is required.");
+
+            const invDate = document.getElementById("inv_date").value;
+            if (!invDate) errors.push("Invoice Date is required.");
+
+            const billName = document.getElementById("bill_name").value.trim();
+            if (!billName) errors.push("Bill To — Name is required.");
+
+            // Check line items
+            const rows = document.querySelectorAll("#lineBody tr");
+            if (rows.length === 0) {
+                errors.push("At least one line item is required.");
+            } else {
+                let hasValidLine = false;
+                rows.forEach((tr, i) => {
+                    const inputs = tr.querySelectorAll("input");
+                    if (inputs.length >= 3) {
+                        const desc = inputs[0].value.trim();
+                        const rate = Number(inputs[1].value) || 0;
+                        const qty  = Number(inputs[2].value) || 0;
+                        if (desc && rate > 0 && qty > 0) hasValidLine = true;
+                        if (!desc) errors.push(`Line item ${i + 1}: Description is required.`);
+                        if (rate <= 0) errors.push(`Line item ${i + 1}: Rate must be greater than 0.`);
+                        if (qty <= 0) errors.push(`Line item ${i + 1}: Qty must be greater than 0.`);
+                    }
+                });
+                if (!hasValidLine && errors.length === 0) {
+                    errors.push("At least one complete line item is required.");
+                }
+            }
+
+            if (errors.length > 0) {
+                showToast(errors[0], false);
+                return;
+            }
+
+            // ── Save ───────────────────────────────────
             const data = collectData();
             try {
                 let res;

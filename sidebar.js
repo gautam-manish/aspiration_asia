@@ -5,9 +5,22 @@
   // ── Auth Guard ────────────────────────────────
   const token = localStorage.getItem("token");
   if (!token) {
-    window.location.href = "login.html";
+    window.location.replace("login.html");
     return;
   }
+
+  // ── Disable bfcache (back-forward cache) ──────
+  // Having an 'unload' listener forces the browser to NOT store
+  // this page in bfcache, so pressing Back fully reloads the page
+  // (which re-runs the auth guard above and redirects to login).
+  window.addEventListener("unload", function () {});
+
+  // ── Catch any edge-case back/forward navigations ──
+  window.addEventListener("pageshow", function (e) {
+    if (!localStorage.getItem("token")) {
+      window.location.replace("login.html");
+    }
+  });
 
   // ── Attach token to all fetch requests ─────────
   // Override global fetch to always send Authorization header
@@ -18,7 +31,7 @@
     return originalFetch(url, options).then(async (response) => {
       if (response.status === 401) {
         localStorage.removeItem("token");
-        window.location.href = "login.html";
+        window.location.replace("login.html");
       }
       return response;
     });
@@ -32,7 +45,7 @@
       err => {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
-          window.location.href = "login.html";
+          window.location.replace("login.html");
         }
         return Promise.reject(err);
       }
@@ -47,7 +60,7 @@
           err => {
             if (err.response?.status === 401) {
               localStorage.removeItem("token");
-              window.location.href = "login.html";
+              window.location.replace("login.html");
             }
             return Promise.reject(err);
           }
@@ -243,6 +256,7 @@
     { icon: "📦", label: "Package Cost",   href: "package-cost.html" },
     { icon: "📋", label: "Reservations",   href: "reservations.html" },
     { icon: "🧾", label: "Invoice",         href: "invoices.html" },
+    { icon: "💵", label: "Cash Receipt",   href: "cash-receipt.html" },
   ];
 
   const currentPage = window.location.pathname.split("/").pop() || "index.html";
@@ -251,7 +265,7 @@
     <!-- Logo -->
     <div id="sidebar-logo">
       <span class="logo-icon">🏨</span>
-      <span class="logo-text">Hotel Collection</span>
+      <span class="logo-text">Aspiration Asia</span>
     </div>
 
     <!-- Admin Badge -->
@@ -314,7 +328,14 @@
   window.handleLogout = function () {
     if (confirm("Are you sure you want to logout?")) {
       localStorage.removeItem("token");
-      window.location.href = "login.html";
+
+      // Overwrite every entry in the history stack with login.html
+      // so pressing Back never shows a protected page URL.
+      const len = window.history.length;
+      for (let i = 0; i < len + 10; i++) {
+        window.history.pushState(null, "", "login.html");
+      }
+      window.location.replace("login.html");
     }
   };
 

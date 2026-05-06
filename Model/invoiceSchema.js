@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const lineItemSchema = new mongoose.Schema(
   {
-    description: { type: String, trim: true },
+    description: { type: String, trim: true, required: [true, "Line item description is required"] },
     details:     { type: String, trim: true },
-    qty:         { type: Number, default: 1 },
-    rate:        { type: Number, default: 0 },
+    qty:         { type: Number, default: 1, min: [1, "Qty must be at least 1"] },
+    rate:        { type: Number, default: 0, min: [0, "Rate cannot be negative"] },
     amount:      { type: Number, default: 0 },
   },
   { _id: false }
@@ -13,8 +13,8 @@ const lineItemSchema = new mongoose.Schema(
 
 const invoiceSchema = new mongoose.Schema(
   {
-    invoiceNumber: { type: String, trim: true },
-    invoiceDate:   { type: String, trim: true },
+    invoiceNumber: { type: String, trim: true, required: [true, "Invoice number is required"] },
+    invoiceDate:   { type: String, trim: true, required: [true, "Invoice date is required"] },
 
     from: {
       name:           { type: String, trim: true },
@@ -26,13 +26,16 @@ const invoiceSchema = new mongoose.Schema(
     },
 
     billTo: {
-      name:    { type: String, trim: true },
+      name:    { type: String, trim: true, required: [true, "Bill To name is required"] },
       email:   { type: String, trim: true },
       address: { type: String, trim: true },
       mobile:  { type: String, trim: true },
     },
 
-    lineItems: [lineItemSchema],
+    lineItems: {
+      type: [lineItemSchema],
+      validate: [arr => arr.length > 0, "At least one line item is required"],
+    },
 
     subtotal:      { type: Number, default: 0 },
     discountType:  { type: String, default: 'none' },

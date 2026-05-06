@@ -10,6 +10,7 @@ import emailRoute from "./Routes/emailRoutes.js";
 import reservationRoute from "./Routes/reservationRoutes.js";
 import voucherRoute from "./Routes/voucherRoutes.js";
 import invoiceRoute from "./Routes/invoiceRoutes.js";
+import cashReceiptRoute from "./Routes/cashReceiptRoutes.js";
 import authMiddleware from "./Middleware/authMiddleware.js";
 
 connectDB();
@@ -22,11 +23,12 @@ app.use(express.json());
 app.use("/api/auth", authRoute);
 
 // Protected
-app.use("/api/hotels",       authMiddleware, hotelRoute);
-app.use("/api/mail",         authMiddleware, emailRoute);
-app.use("/api/reservations", authMiddleware, reservationRoute);
-app.use("/api/vouchers",     authMiddleware, voucherRoute);
-app.use("/api/invoices",     authMiddleware, invoiceRoute);
+app.use("/api/hotels",        authMiddleware, hotelRoute);
+app.use("/api/mail",          authMiddleware, emailRoute);
+app.use("/api/reservations",  authMiddleware, reservationRoute);
+app.use("/api/vouchers",      authMiddleware, voucherRoute);
+app.use("/api/invoices",      authMiddleware, invoiceRoute);
+app.use("/api/cash-receipts", authMiddleware, cashReceiptRoute);
 
 app.listen(process.env.PORT, () => {
   console.log("Server running on port " + process.env.PORT);
