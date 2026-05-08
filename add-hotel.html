@@ -89,17 +89,20 @@
         const API = "http://localhost:5000/api/hotels";
         const MEAL_PLANS = ["EP", "CP", "MAP", "AP", "JP"];
 
-        function addMealRow(mealPlan = "", rate = "") {
+        function addMealRow(mealPlan = "", inrRate = "", usdRate = "") {
             const container = document.getElementById("mealPlanRows");
             const row = document.createElement("div");
-            row.className = "meal-row flex items-center gap-3";
+            row.className = "meal-row";
             row.innerHTML = `
-        <select class="input meal-plan-select" style="flex:1;">
-          <option value="" disabled ${!mealPlan ? "selected" : ""}>Select Plan</option>
-          ${MEAL_PLANS.map(p => `<option value="${p}" ${p === mealPlan ? "selected" : ""}>${p}</option>`).join("")}
-        </select>
-        <input type="number" placeholder="Rate (e.g. 1200)" value="${rate}" class="input meal-rate-input" min="0" style="flex:1;"/>
-        <button onclick="this.parentElement.remove()" style="color:#94a3b8;font-size:1.2rem;background:none;border:none;cursor:pointer;flex-shrink:0;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✕</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:center;">
+          <select class="input meal-plan-select">
+            <option value="" disabled ${!mealPlan ? "selected" : ""}>Select Plan</option>
+            ${MEAL_PLANS.map(p => `<option value="${p}" ${p === mealPlan ? "selected" : ""}>${p}</option>`).join("")}
+          </select>
+          <input type="number" placeholder="INR Rate" value="${inrRate}" class="input inr-rate-input" min="0"/>
+          <input type="number" placeholder="USD Rate" value="${usdRate}" class="input usd-rate-input" min="0"/>
+          <button onclick="this.parentElement.parentElement.remove()" style="color:#94a3b8;font-size:1.2rem;background:none;border:none;cursor:pointer;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✕</button>
+        </div>
       `;
             container.appendChild(row);
         }
@@ -134,9 +137,10 @@
 
             for (const row of rows) {
                 const mealPlan = row.querySelector(".meal-plan-select").value;
-                const rate = row.querySelector(".meal-rate-input").value;
-                if (!mealPlan || rate === "") { showToast("Please complete all meal plan rows.", false); return; }
-                costPerRoom.push({ mealPlan, rate: Number(rate) });
+                const inrRate = row.querySelector(".inr-rate-input").value;
+                const usdRate = row.querySelector(".usd-rate-input").value;
+                if (!mealPlan || inrRate === "" || usdRate === "") { showToast("Please complete all meal plan rows with INR and USD rates.", false); return; }
+                costPerRoom.push({ mealPlan, inrRate: Number(inrRate), usdRate: Number(usdRate) });
             }
 
             if (costPerRoom.length === 0) { showToast("At least one meal plan is required.", false); return; }

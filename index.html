@@ -134,7 +134,7 @@
           <p class="text-sm mt-1" style="color:#64748b;">📍 ${hotel.city}, ${hotel.country}</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          ${hotel.costPerRoom.map(c => `<span class="meal-tag">${c.mealPlan}: $${c.rate}</span>`).join("")}
+          ${hotel.costPerRoom.map(c => `<span class="meal-tag">${c.mealPlan}: ₹${c.inrRate} / $${c.usdRate}</span>`).join("")}
         </div>
         <div class="flex gap-2 mt-auto pt-2 border-t" style="border-color:#e2e8f0;">
           <button onclick='openEditModal(${JSON.stringify(hotel)})' class="btn-outline flex-1 text-sm">✏️ Edit</button>
@@ -175,23 +175,24 @@
             document.getElementById("editCity").value = hotel.city;
             const container = document.getElementById("editMealRows");
             container.innerHTML = "";
-            hotel.costPerRoom.forEach(c => addEditMealRow(c.mealPlan, c.rate));
+            hotel.costPerRoom.forEach(c => addEditMealRow(c.mealPlan, c.inrRate, c.usdRate));
             document.getElementById("editModal").classList.add("active");
         }
 
         function closeModal() { document.getElementById("editModal").classList.remove("active"); }
         function closeModalOnOverlay(e) { if (e.target === document.getElementById("editModal")) closeModal(); }
 
-        function addEditMealRow(mealPlan = "", rate = "") {
+        function addEditMealRow(mealPlan = "", inrRate = "", usdRate = "") {
             const container = document.getElementById("editMealRows");
             const row = document.createElement("div");
             row.className = "flex items-center gap-3";
             row.innerHTML = `
-      <select class="input edit-meal-select" onchange="this.classList.add('has-value')" style="flex:1;">
+      <select class="input edit-meal-select" onchange="this.classList.add('has-value')" style="flex:0.8;">
         <option value="" disabled ${!mealPlan ? "selected" : ""} hidden>Select Plan</option>
         ${MEAL_PLANS.map(p => `<option value="${p}" ${p === mealPlan ? "selected" : ""}>${p}</option>`).join("")}
       </select>
-      <input type="number" placeholder="Rate" value="${rate}" class="input edit-rate-input" min="0" style="flex:1;"/>
+      <input type="number" placeholder="INR Rate" value="${inrRate}" class="input edit-inr-input" min="0" style="flex:1;"/>
+      <input type="number" placeholder="USD Rate" value="${usdRate}" class="input edit-usd-input" min="0" style="flex:1;"/>
       <button onclick="this.parentElement.remove()" style="color:#94a3b8;font-size:1.2rem;background:none;border:none;cursor:pointer;flex-shrink:0;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✕</button>
     `;
             container.appendChild(row);
@@ -208,9 +209,10 @@
             const costPerRoom = [];
             for (const sel of rows) {
                 const mealPlan = sel.value;
-                const rate = sel.parentElement.querySelector(".edit-rate-input").value;
-                if (!mealPlan || rate === "") { showToast("Please complete all meal plan rows.", false); return; }
-                costPerRoom.push({ mealPlan, rate: Number(rate) });
+                const inrRate = sel.parentElement.querySelector(".edit-inr-input").value;
+                const usdRate = sel.parentElement.querySelector(".edit-usd-input").value;
+                if (!mealPlan || inrRate === "" || usdRate === "") { showToast("Please complete all meal plan rows with INR and USD rates.", false); return; }
+                costPerRoom.push({ mealPlan, inrRate: Number(inrRate), usdRate: Number(usdRate) });
             }
             if (costPerRoom.length === 0) { showToast("At least one meal plan required.", false); return; }
             try {

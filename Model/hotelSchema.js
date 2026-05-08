@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
- 
+
 const mealPlanSchema = new mongoose.Schema(
   {
     mealPlan: {
@@ -7,15 +7,20 @@ const mealPlanSchema = new mongoose.Schema(
       enum: ["EP", "CP", "MAP", "AP", "JP"],
       required: [true, "Meal plan is required"],
     },
-    rate: {
+    inrRate: {
       type: Number,
-      required: [true, "Rate is required"],
-      min: [0, "Rate cannot be negative"],
+      required: [true, "INR Rate is required"],
+      min: [0, "INR Rate cannot be negative"],
+    },
+    usdRate: {
+      type: Number,
+      required: [true, "USD Rate is required"],
+      min: [0, "USD Rate cannot be negative"],
     },
   },
-  { _id: false }
+  { _id: false },
 );
- 
+
 const hotelSchema = new mongoose.Schema(
   {
     name: {
@@ -43,10 +48,9 @@ const hotelSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
- 
+
 const Hotel = mongoose.model("Hotel", hotelSchema);
- 
+
 export default Hotel;
- 

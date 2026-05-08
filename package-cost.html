@@ -252,8 +252,8 @@
         if (hotel) {
           hotel.costPerRoom.forEach(c => {
             const opt = document.createElement("option");
-            opt.value = c.rate;
-            opt.textContent = `${c.mealPlan} — Rs.${c.rate}`;
+            opt.value = c.inrRate;
+            opt.textContent = `${c.mealPlan} — Rs.${c.inrRate}`;
             opt.dataset.meal = c.mealPlan;
             mealSelect.appendChild(opt);
           });
