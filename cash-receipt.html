@@ -226,6 +226,10 @@
 
         /* Print */
         @media print {
+            * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 
             html,
             body {
@@ -607,11 +611,24 @@
 
            
           <!-- Footer -->
-          <div class="receipt-footer" >
-            <div class="receipt-amount-box" >
-              Rs. ${amt}/-
-            </div>
-          </div>
+          <!-- Footer -->
+<div class="receipt-footer">
+  <div style="
+    background: #1e293b !important;
+    color: white !important;
+    border-radius: 20px !important;
+    padding: 8px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  ">
+    Rs. ${amt}/-
+  </div>
+</div>
 
         </div>
         </div>
