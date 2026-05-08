@@ -1,128 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Voucher Detail | Hotel Collection</title>
-  <script>if(!localStorage.getItem("token"))window.location.replace("login.html");</script>
+  <script>if (!localStorage.getItem("token")) window.location.replace("login.html");</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <link rel="stylesheet" href="shared-theme.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="shared-theme.css" />
   <style>
-    .floating label { background: white; }
-    .hotel-block-edit .floating label { background: #f8fafc; }
-    .modal-box .floating label { background: white; }
-    @media print {
-      body * { visibility: hidden; }
-      #pdfVoucher, #pdfVoucher * { visibility: visible; }
-      #pdfVoucher { position: absolute; left: 0; top: 0; width: 100%; background: white; }
+    .floating label {
+      background: white;
     }
-    #pdfVoucher table, #pdfVoucher td, #pdfVoucher tr { border: 1px solid rgb(109,152,187); }
+
+    .hotel-block-edit .floating label {
+      background: #f8fafc;
+    }
+
+    .modal-box .floating label {
+      background: white;
+    }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    @media print {
+
+      @page {
+        size: auto;
+        margin: 8mm;
+      }
+
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      body * {
+        visibility: hidden;
+      }
+
+      #pdfVoucher {
+        width: 210mm;
+        /* A4 width */
+        box-sizing: border-box;
+        background: white;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        page-break-inside: auto;
+      }
+
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+
+      #pdfVoucher,
+      #pdfVoucher * {
+        visibility: visible;
+      }
+
+      #pdfVoucher {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        width: 794px;
+        /* A4 width in px */
+        background: white;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      #pdfVoucher table,
+      #pdfVoucher tr,
+      #pdfVoucher td,
+      #pdfVoucher div {
+        page-break-inside: avoid;
+        width: 100%;
+        table-layout: fixed;
+        word-wrap: break-word;
+      }
+    }
+
+    #pdfVoucher table,
+    #pdfVoucher td,
+    #pdfVoucher tr {
+      border: 1px solid rgb(109, 152, 187);
+    }
   </style>
 </head>
-<body>
-<main class="max-w-4xl mx-auto px-6 py-10">
-  <a href="vouchers.html" class="inline-flex items-center gap-2 text-sm mb-6 transition" style="color:#64748b;">
-    <i class="fa fa-arrow-left"></i> Back to Vouchers
-  </a>
-  <div class="flex gap-3 mb-6 flex-wrap">
-    <button onclick="openEditModal()" class="btn-outline"><i class="fa fa-edit"></i> Edit Voucher</button>
-    <button onclick="window.print()" class="btn-green"><i class="fa fa-file-pdf"></i> Save as PDF</button>
-  </div>
-  <div id="content">
-    <div class="space-y-5">
-      <div class="skeleton h-8 w-64"></div>
-      <div class="card p-6 space-y-3">${Array(4).fill(`<div class="skeleton h-4 w-full"></div>`).join("")}</div>
-    </div>
-  </div>
-  <div id="pdfVoucher" style="display:none;"></div>
-</main>
 
-<!-- Edit Modal -->
-<div id="editModal" class="modal-overlay" onclick="closeEditOnOverlay(event)">
-  <div class="modal-box">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-xl" style="color:#1e293b;">Edit Voucher</h3>
-      <button onclick="closeEditModal()" style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">x</button>
+<body>
+  <main class="max-w-4xl mx-auto px-6 py-10">
+    <a href="voucher.html" class="inline-flex items-center gap-2 text-sm mb-6 transition" style="color:#64748b;">
+      <i class="fa fa-arrow-left"></i> Back to Vouchers
+    </a>
+    <div class="flex gap-3 mb-6 flex-wrap">
+      <button onclick="openEditModal()" class="btn-outline"><i class="fa fa-edit"></i> Edit Voucher</button>
+      <button onclick="downloadPDF()" class="btn-green">
+        <i class="fa fa-file-pdf"></i> Save as PDF
+      </button>
     </div>
-    <div class="space-y-4">
-      <p class="section-title">Guest Details</p>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="floating"><input class="input" id="e_guestName" type="text" placeholder=" "/><label>Guest Name *</label></div>
-        <div class="floating">
-          <select class="input" id="e_nationality" onchange="this.classList.add('has-value')">
-            <option value="" disabled selected hidden></option>
-            <option>Afghan</option><option>Albanian</option><option>American</option><option>Argentine</option><option>Australian</option><option>Austrian</option><option>Azerbaijani</option><option>Bangladeshi</option><option>Belgian</option><option>Brazilian</option><option>British</option><option>Bulgarian</option><option>Burmese</option><option>Canadian</option><option>Chilean</option><option>Chinese</option><option>Colombian</option><option>Croatian</option><option>Czech</option><option>Danish</option><option>Dutch</option><option>Egyptian</option><option>Emirati</option><option>Ethiopian</option><option>Filipino</option><option>Finnish</option><option>French</option><option>German</option><option>Greek</option><option>Hungarian</option><option>Indian</option><option>Indonesian</option><option>Iranian</option><option>Irish</option><option>Israeli</option><option>Italian</option><option>Japanese</option><option>Jordanian</option><option>Kenyan</option><option>Korean</option><option>Kuwaiti</option><option>Lebanese</option><option>Malaysian</option><option>Maldivian</option><option>Mexican</option><option>Moroccan</option><option>Nepalese</option><option>New Zealander</option><option>Nigerian</option><option>Norwegian</option><option>Pakistani</option><option>Polish</option><option>Portuguese</option><option>Qatari</option><option>Romanian</option><option>Russian</option><option>Saudi</option><option>Singaporean</option><option>South African</option><option>Spanish</option><option>Sri Lankan</option><option>Swedish</option><option>Swiss</option><option>Thai</option><option>Turkish</option><option>Ukrainian</option><option>Vietnamese</option>
-          </select>
-          <label>Nationality</label>
+
+    <div id="content">
+      <div class="space-y-5">
+        <div class="skeleton h-8 w-64"></div>
+        <div class="card p-6 space-y-3">${Array(4).fill(`<div class="skeleton h-4 w-full"></div>`).join("")}</div>
+      </div>
+    </div>
+    <div id="pdfVoucher" style="display:none;"></div>
+  </main>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal-overlay" onclick="closeEditOnOverlay(event)">
+    <div class="modal-box">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl" style="color:#1e293b;">Edit Voucher</h3>
+        <button onclick="closeEditModal()"
+          style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">x</button>
+      </div>
+      <div class="space-y-4">
+        <p class="section-title">Guest Details</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="floating"><input class="input" id="e_guestName" type="text" placeholder=" " /><label>Guest Name
+              *</label></div>
+          <div class="floating">
+            <select class="input" id="e_nationality" onchange="this.classList.add('has-value')">
+              <option value="" disabled selected hidden></option>
+              <option>Afghan</option>
+              <option>Albanian</option>
+              <option>American</option>
+              <option>Argentine</option>
+              <option>Australian</option>
+              <option>Austrian</option>
+              <option>Azerbaijani</option>
+              <option>Bangladeshi</option>
+              <option>Belgian</option>
+              <option>Brazilian</option>
+              <option>British</option>
+              <option>Bulgarian</option>
+              <option>Burmese</option>
+              <option>Canadian</option>
+              <option>Chilean</option>
+              <option>Chinese</option>
+              <option>Colombian</option>
+              <option>Croatian</option>
+              <option>Czech</option>
+              <option>Danish</option>
+              <option>Dutch</option>
+              <option>Egyptian</option>
+              <option>Emirati</option>
+              <option>Ethiopian</option>
+              <option>Filipino</option>
+              <option>Finnish</option>
+              <option>French</option>
+              <option>German</option>
+              <option>Greek</option>
+              <option>Hungarian</option>
+              <option>Indian</option>
+              <option>Indonesian</option>
+              <option>Iranian</option>
+              <option>Irish</option>
+              <option>Israeli</option>
+              <option>Italian</option>
+              <option>Japanese</option>
+              <option>Jordanian</option>
+              <option>Kenyan</option>
+              <option>Korean</option>
+              <option>Kuwaiti</option>
+              <option>Lebanese</option>
+              <option>Malaysian</option>
+              <option>Maldivian</option>
+              <option>Mexican</option>
+              <option>Moroccan</option>
+              <option>Nepalese</option>
+              <option>New Zealander</option>
+              <option>Nigerian</option>
+              <option>Norwegian</option>
+              <option>Pakistani</option>
+              <option>Polish</option>
+              <option>Portuguese</option>
+              <option>Qatari</option>
+              <option>Romanian</option>
+              <option>Russian</option>
+              <option>Saudi</option>
+              <option>Singaporean</option>
+              <option>South African</option>
+              <option>Spanish</option>
+              <option>Sri Lankan</option>
+              <option>Swedish</option>
+              <option>Swiss</option>
+              <option>Thai</option>
+              <option>Turkish</option>
+              <option>Ukrainian</option>
+              <option>Vietnamese</option>
+            </select>
+            <label>Nationality</label>
+          </div>
+        </div>
+        <p class="section-title mt-2">Number of Pax</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="floating"><input class="input" id="e_adults" type="number" placeholder=" "
+              min="0" /><label>Adults</label></div>
+          <div class="floating"><input class="input" id="e_childWithBed" type="number" placeholder=" "
+              min="0" /><label>Child with Bed</label></div>
+          <div class="floating"><input class="input" id="e_childWithoutBed" type="number" placeholder=" "
+              min="0" /><label>Child without Bed (6-10)</label></div>
+          <div class="floating"><input class="input" id="e_childBelow5" type="number" placeholder=" "
+              min="0" /><label>Child below 5 yrs</label></div>
+        </div>
+        <!-- Hotel Entries header with Add button -->
+        <div class="flex items-center justify-between mt-2">
+          <p class="section-title mb-0">Hotel Entries</p>
+          <button onclick="addEditHotelBlock()"
+            style="color:#2563eb;font-size:0.85rem;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <span>+</span> Add Hotel
+          </button>
+        </div>
+        <div id="e_hotelBlocks" class="space-y-4"></div>
+        <div class="flex gap-3 pt-4">
+          <button onclick="updateVoucher()" class="btn-blue flex-1"><i class="fa fa-save"></i> Update</button>
+          <button onclick="closeEditModal()" class="btn-outline flex-1">Cancel</button>
         </div>
       </div>
-      <p class="section-title mt-2">Number of Pax</p>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="floating"><input class="input" id="e_adults" type="number" placeholder=" " min="0"/><label>Adults</label></div>
-        <div class="floating"><input class="input" id="e_childWithBed" type="number" placeholder=" " min="0"/><label>Child with Bed</label></div>
-        <div class="floating"><input class="input" id="e_childWithoutBed" type="number" placeholder=" " min="0"/><label>Child without Bed (6-10)</label></div>
-        <div class="floating"><input class="input" id="e_childBelow5" type="number" placeholder=" " min="0"/><label>Child below 5 yrs</label></div>
-      </div>
-      <!-- Hotel Entries header with Add button -->
-      <div class="flex items-center justify-between mt-2">
-        <p class="section-title mb-0">Hotel Entries</p>
-        <button onclick="addEditHotelBlock()" style="color:#2563eb;font-size:0.85rem;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;">
-          <span>+</span> Add Hotel
-        </button>
-      </div>
-      <div id="e_hotelBlocks" class="space-y-4"></div>
-      <div class="flex gap-3 pt-4">
-        <button onclick="updateVoucher()" class="btn-blue flex-1"><i class="fa fa-save"></i> Update</button>
-        <button onclick="closeEditModal()" class="btn-outline flex-1">Cancel</button>
-      </div>
     </div>
   </div>
-</div>
 
-<script src="sidebar.js"></script>
-<script>
-  const HOTELS_API = "http://localhost:5000/api/hotels";
-  const VOUCHERS_API = "http://localhost:5000/api/vouchers";
-  let currentVoucher = null;
-  let hotelsData = [];
-  const id = new URLSearchParams(window.location.search).get("id");
+  <script src="sidebar.js"></script>
+  <script>
+    const HOTELS_API = "http://localhost:5000/api/hotels";
+    const VOUCHERS_API = "http://localhost:5000/api/vouchers";
+    let currentVoucher = null;
+    let hotelsData = [];
+    const id = new URLSearchParams(window.location.search).get("id");
 
-  // ── Load hotels for dropdown ──────────────────
-  async function loadHotels() {
-    try {
-      const res = await fetch(HOTELS_API);
-      const data = await res.json();
-      if (data.success) hotelsData = data.data;
-    } catch {}
-  }
+    // ── Load hotels for dropdown ──────────────────
+    async function loadHotels() {
+      try {
+        const res = await fetch(HOTELS_API);
+        const data = await res.json();
+        if (data.success) hotelsData = data.data;
+      } catch { }
+    }
 
-  // ── Load Voucher ─────────────────────────────
-  async function loadVoucher() {
-    if (!id) { document.getElementById("content").innerHTML = `<p style="color:red;">No voucher ID.</p>`; return; }
-    try {
-      const res = await fetch(`${VOUCHERS_API}/${id}`);
-      const data = await res.json();
-      if (data.success) { currentVoucher = data.data; renderDetail(data.data); buildPDF(data.data); }
-      else document.getElementById("content").innerHTML = `<p style="color:red;">${data.message}</p>`;
-    } catch { document.getElementById("content").innerHTML = `<p style="color:red;">Failed to load.</p>`; }
-  }
+    // ── Load Voucher ─────────────────────────────
+    async function loadVoucher() {
+      if (!id) { document.getElementById("content").innerHTML = `<p style="color:red;">No voucher ID.</p>`; return; }
+      try {
+        const res = await fetch(`${VOUCHERS_API}/${id}`);
+        const data = await res.json();
+        if (data.success) { currentVoucher = data.data; renderDetail(data.data); buildPDF(data.data); }
+        else document.getElementById("content").innerHTML = `<p style="color:red;">${data.message}</p>`;
+      } catch { document.getElementById("content").innerHTML = `<p style="color:red;">Failed to load.</p>`; }
+    }
 
-  function row(label, value) {
-    return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${value || "?"}</span></div>`;
-  }
+    function row(label, value) {
+      return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${value || "?"}</span></div>`;
+    }
 
-  function paxDisplay(pax) {
-    const adults = Number(pax?.adults) || 0;
-    const children = (Number(pax?.childWithBed)||0) + (Number(pax?.childWithoutBed)||0) + (Number(pax?.childBelow5)||0);
-    return `${adults} Adult${adults !== 1 ? "s" : ""} / ${children} Child${children !== 1 ? "ren" : ""}`;
-  }
+    function paxDisplay(pax) {
+      const adults = Number(pax?.adults) || 0;
+      const children = (Number(pax?.childWithBed) || 0) + (Number(pax?.childWithoutBed) || 0) + (Number(pax?.childBelow5) || 0);
+      const adultStr = adults > 0 ? `${adults} Adult${adults !== 1 ? "s" : ""}` : "—";
+      const childStr = children > 0 ? `${children} Child${children !== 1 ? "ren" : ""}` : "—";
+      return `${adultStr} / ${childStr}`;
+    }
 
-  function renderDetail(v) {
-    document.title = `${v.guestName} | Voucher`;
-    const date = new Date(v.createdAt).toLocaleDateString("en-GB", {day:"2-digit", month:"long", year:"numeric"});
-    document.getElementById("content").innerHTML = `
+    function renderDetail(v) {
+      document.title = `${v.guestName} | Voucher`;
+      const date = new Date(v.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+      document.getElementById("content").innerHTML = `
       <div class="flex items-start justify-between mb-6">
         <div>
           <h2 class="text-3xl" style="color:#1e293b;">${v.guestName}</h2>
@@ -138,10 +294,10 @@
       <div class="card p-6 mb-5">
         <p class="section-title">Pax Details</p>
         ${row("Summary", `<span class="badge">${paxDisplay(v.pax)}</span>`)}
-        ${row("Adults", v.pax?.adults)}
-        ${row("Child with Bed", v.pax?.childWithBed)}
-        ${row("Child without Bed (6-10 yrs)", v.pax?.childWithoutBed)}
-        ${row("Child below 5 yrs", v.pax?.childBelow5)}
+        ${row("Adults", v.pax?.adults || "—")}
+        ${row("Child with Bed", v.pax?.childWithBed || "—")}
+        ${row("Child without Bed (6-10 yrs)", v.pax?.childWithoutBed || "—")}
+        ${row("Child below 5 yrs", v.pax?.childBelow5 || "—")}
       </div>
       ${(v.hotels || []).map((h, i) => `
         <div class="card p-6 mb-5">
@@ -158,38 +314,70 @@
           ${row("2nd Visit Check-In", h.visit2in)}
           ${row("2nd Visit Check-Out", h.visit2out)}
           
-          ${row("Includes", h.includes)}
+          ${row("Includes", h.includes?.trim() || "—")}
         </div>
       `).join("")}
       <a href="voucher.html" class="btn-blue"><i class="fa fa-arrow-left"></i> Back</a>
     `;
-  }
+    }
 
-  // ── Build PDF ─────────────────────────────────
-  function buildPDF(v) {
-    const totalPax = (Number(v.pax?.adults)||0) + (Number(v.pax?.childWithBed)||0) + (Number(v.pax?.childWithoutBed)||0) + (Number(v.pax?.childBelow5)||0);
-    const hotelTables = (v.hotels || []).map((h, i) => `
-      <div style="margin-top:24px;">
-        <div style="background:#2563eb;color:white;text-align:center;padding:8px;font-weight:bold;">HOTEL #${i+1} - ${h.hotelName || ""}</div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <tr><td style="padding:7px;font-weight:600;width:40%;">CONFIRMATION NUMBER</td><td style="padding:7px;font-weight:bold;">${h.confirmationNumber || ""}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">HOTEL NAME</td><td style="padding:7px;">${h.hotelName || ""}</td></tr>
-          <tr><td style="padding:7px;font-weight:600;">CITY / COUNTRY</td><td style="padding:7px;">${h.hotelCity ? `${h.hotelCity}, ${h.hotelCountry}` : ""}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">ROOM CATEGORY</td><td style="padding:7px;">${h.roomCategory || ""}</td></tr>
-          <tr><td style="padding:7px;font-weight:600;">NO. OF ROOMS</td><td style="padding:7px;">${h.noOfRooms || ""}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">ROOM TYPE</td><td style="padding:7px;">${h.roomType || ""}</td></tr>
-          <tr><td style="padding:7px;font-weight:600;">MEAL PLAN</td><td style="padding:7px;">${h.mealPlan || ""}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">1ST VISIT</td><td style="padding:7px;">CHECK-IN: ${h.visit1in || "N/A"} &nbsp; CHECK-OUT: ${h.visit1out || "N/A"}</td></tr>
-          <tr><td style="padding:7px;font-weight:600;">2ND VISIT</td><td style="padding:7px;">CHECK-IN: ${h.visit2in || "N/A"} &nbsp; CHECK-OUT: ${h.visit2out || "N/A"}</td></tr>
-         
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">INCLUDES</td><td style="padding:7px;">${h.includes || ""}</td></tr>
-        </table>
-      </div>`).join("");
+    // ── Build PDF ─────────────────────────────────
+    function buildPDF(v) {
+      const totalPax = (Number(v.pax?.adults) || 0) + (Number(v.pax?.childWithBed) || 0) + (Number(v.pax?.childWithoutBed) || 0) + (Number(v.pax?.childBelow5) || 0);
+      const hotels = v.hotels || [];
 
-    const el = document.getElementById("pdfVoucher");
-    el.style.display = "block";
-    el.innerHTML = `
-      <div style="max-width:900px;margin:auto;background:white;padding:30px;font-family:Arial,sans-serif;color:#000;">
+      const hotelTables = hotels.map((h, i) => {
+        const startNewPage = i === 1 || (i > 1 && (i % 2 === 1));
+
+        return `
+    ${startNewPage ? `<div style="page-break-before:always;break-before:page;height:0;font-size:0;line-height:0;">&nbsp;</div>` : ""}
+    <div style="margin-top:24px;">
+      <div style="
+        background:#2563eb;
+        text-align:center;
+        padding:8px;
+        font-weight:bold;
+        color:white;
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+      ">
+        HOTEL #${i + 1} - ${h.hotelName || ""}
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr><td style="padding:7px;font-weight:600;width:40%;">CONFIRMATION NUMBER</td><td style="padding:7px;font-weight:bold;">${h.confirmationNumber || ""}</td></tr>
+        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">HOTEL NAME</td><td style="padding:7px;">${h.hotelName || ""}</td></tr>
+        <tr><td style="padding:7px;font-weight:600;">CITY / COUNTRY</td><td style="padding:7px;">${h.hotelCity ? `${h.hotelCity}, ${h.hotelCountry}` : ""}</td></tr>
+        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">ROOM CATEGORY</td><td style="padding:7px;">${h.roomCategory || ""}</td></tr>
+        <tr><td style="padding:7px;font-weight:600;">NO. OF ROOMS</td><td style="padding:7px;">${h.noOfRooms || ""}</td></tr>
+        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">ROOM TYPE</td><td style="padding:7px;">${h.roomType || ""}</td></tr>
+        <tr><td style="padding:7px;font-weight:600;">MEAL PLAN</td><td style="padding:7px;">${h.mealPlan || ""}</td></tr>
+        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+          <td style="padding:7px;font-weight:600;">1ST VISIT</td>
+          <td style="padding:7px;">CHECK-IN: ${h.visit1in || "N/A"} &nbsp; CHECK-OUT: ${h.visit1out || "N/A"}</td>
+        </tr>
+        <tr>
+          <td style="padding:7px;font-weight:600;">2ND VISIT</td>
+          <td style="padding:7px;">CHECK-IN: ${h.visit2in || "N/A"} &nbsp; CHECK-OUT: ${h.visit2out || "N/A"}</td>
+        </tr>
+        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+          <td style="padding:7px;font-weight:600;">INCLUDES</td>
+          <td style="padding:7px;">${h.includes || "—"}</td>
+        </tr>
+      </table>
+    </div>
+  `;
+      }).join("");
+
+      const el = document.getElementById("pdfVoucher");
+      el.style.display = "block";
+      el.innerHTML = `
+      <div style="width:100%;
+  margin:0;
+  background:white;
+  padding:6px 10px;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+  color:#000;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <img src="https://i.ibb.co/bRJr7nNM/images.png" style="height:80px;"/>
           <div style="text-align:right;font-size:13px;">
@@ -208,53 +396,53 @@
         <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;">
           <tr><td style="padding:7px;font-weight:600;width:40%;">TOTAL PAX</td><td style="padding:7px;">${totalPax}</td></tr>
           <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">ADULTS</td><td style="padding:7px;">${v.pax?.adults || 0}</td></tr>
-          <tr><td style="padding:7px;font-weight:600;">CHILD WITH BED</td><td style="padding:7px;">${v.pax?.childWithBed || 0}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">CHILD WITHOUT BED (6-10 YRS)</td><td style="padding:7px;">${v.pax?.childWithoutBed || 0}</td></tr>
-          <tr><td style="padding:7px;font-weight:600;">CHILD BELOW 5 YRS</td><td style="padding:7px;">${v.pax?.childBelow5 || 0}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;">CHILD WITH BED</td><td style="padding:7px;">${v.pax?.childWithBed || "—"}</td></tr>
+          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">CHILD WITHOUT BED (6-10 YRS)</td><td style="padding:7px;">${v.pax?.childWithoutBed || "—"}</td></tr>
+          <tr><td style="padding:7px;font-weight:600;">CHILD BELOW 5 YRS</td><td style="padding:7px;">${v.pax?.childBelow5 || "—"}</td></tr>
         </table>
         ${hotelTables}
       </div>`;
-  }
+    }
 
-  // ── Build hotel options for dropdown ──────────
-  function hotelOptions(selectedName) {
-    return `<option value="" disabled ${!selectedName ? "selected" : ""} hidden></option>` +
-      hotelsData.map(h => `<option value="${h._id}" data-city="${h.city}" data-country="${h.country}" ${h.name === selectedName ? "selected" : ""}>${h.name}</option>`).join("");
-  }
+    // ── Build hotel options for dropdown ──────────
+    function hotelOptions(selectedName) {
+      return `<option value="" disabled ${!selectedName ? "selected" : ""} hidden></option>` +
+        hotelsData.map(h => `<option value="${h._id}" data-city="${h.city}" data-country="${h.country}" ${h.name === selectedName ? "selected" : ""}>${h.name}</option>`).join("");
+    }
 
-  // ── Auto-fill city/country on hotel select ────
-  function onEditHotelSelect(select) {
-    select.classList.add("has-value");
-    const block = select.closest(".hotel-block-edit");
-    const opt = select.options[select.selectedIndex];
-    const cityInput = block.querySelector(".e-city");
-    const countryInput = block.querySelector(".e-country");
-    cityInput.value = opt.dataset.city || "";
-    countryInput.value = opt.dataset.country || "";
-    [cityInput, countryInput].forEach(inp => {
-      inp.setAttribute("placeholder", "X");
-      setTimeout(() => inp.setAttribute("placeholder", " "), 10);
-    });
-  }
+    // ── Auto-fill city/country on hotel select ────
+    function onEditHotelSelect(select) {
+      select.classList.add("has-value");
+      const block = select.closest(".hotel-block-edit");
+      const opt = select.options[select.selectedIndex];
+      const cityInput = block.querySelector(".e-city");
+      const countryInput = block.querySelector(".e-country");
+      cityInput.value = opt.dataset.city || "";
+      countryInput.value = opt.dataset.country || "";
+      [cityInput, countryInput].forEach(inp => {
+        inp.setAttribute("placeholder", "X");
+        setTimeout(() => inp.setAttribute("placeholder", " "), 10);
+      });
+    }
 
-  // ── Renumber hotel headings after remove ──────
-  function renumberBlocks() {
-    document.querySelectorAll(".hotel-block-edit").forEach((block, i) => {
-      const heading = block.querySelector(".hotel-heading");
-      if (heading) heading.textContent = `Hotel #${i + 1}`;
-    });
-  }
+    // ── Renumber hotel headings after remove ──────
+    function renumberBlocks() {
+      document.querySelectorAll(".hotel-block-edit").forEach((block, i) => {
+        const heading = block.querySelector(".hotel-heading");
+        if (heading) heading.textContent = `Hotel #${i + 1}`;
+      });
+    }
 
-  // ── Build a single hotel block element ────────
-  function buildHotelBlock(h, index) {
-    const isNew = !h || Object.keys(h).length === 0;
-    const confirmNum = isNew
-      ? Math.floor(10000000 + Math.random() * 90000000).toString()
-      : (h.confirmationNumber || "");
+    // ── Build a single hotel block element ────────
+    function buildHotelBlock(h, index) {
+      const isNew = !h || Object.keys(h).length === 0;
+      const confirmNum = isNew
+        ? Math.floor(10000000 + Math.random() * 90000000).toString()
+        : (h.confirmationNumber || "");
 
-    const block = document.createElement("div");
-    block.className = "hotel-block-edit card p-4";
-    block.innerHTML = `
+      const block = document.createElement("div");
+      block.className = "hotel-block-edit card p-4";
+      block.innerHTML = `
       <div class="flex items-center justify-between mb-3">
         <p class="hotel-heading" style="font-size:0.85rem;color:#2563eb;font-weight:600;">Hotel #${index + 1}</p>
         <button onclick="this.closest('.hotel-block-edit').remove();renumberBlocks();" class="btn-red text-xs">
@@ -291,14 +479,14 @@
         <div class="floating">
           <select class="input e-roomType ${!isNew && h.roomType ? "has-value" : ""}" onchange="this.classList.add('has-value')">
             <option value="" disabled ${!(!isNew && h.roomType) ? "selected" : ""} hidden></option>
-            ${["Single Room","Double Room","Twin Room","Suite"].map(t => `<option ${!isNew && h.roomType === t ? "selected" : ""}>${t}</option>`).join("")}
+            ${["Single Room", "Double Room", "Twin Room", "Suite"].map(t => `<option ${!isNew && h.roomType === t ? "selected" : ""}>${t}</option>`).join("")}
           </select>
           <label>Room Type</label>
         </div>
         <div class="floating">
           <select class="input e-mealPlan ${!isNew && h.mealPlan ? "has-value" : ""}" onchange="this.classList.add('has-value')">
             <option value="" disabled ${!(!isNew && h.mealPlan) ? "selected" : ""} hidden></option>
-            ${["EP","CP","MAP","AP","JP"].map(m => `<option ${!isNew && h.mealPlan === m ? "selected" : ""}>${m}</option>`).join("")}
+            ${["EP", "CP", "MAP", "AP", "JP"].map(m => `<option ${!isNew && h.mealPlan === m ? "selected" : ""}>${m}</option>`).join("")}
           </select>
           <label>Meal Plan</label>
         </div>
@@ -324,103 +512,140 @@
           <label>Includes</label>
         </div>
       </div>`;
-    return block;
-  }
+      return block;
+    }
 
-  // ── Add new empty hotel block ─────────────────
-  function addEditHotelBlock() {
-    const container = document.getElementById("e_hotelBlocks");
-    const count = container.querySelectorAll(".hotel-block-edit").length;
-    container.appendChild(buildHotelBlock({}, count));
-  }
+    // ── Add new empty hotel block ─────────────────
+    function addEditHotelBlock() {
+      const container = document.getElementById("e_hotelBlocks");
+      const count = container.querySelectorAll(".hotel-block-edit").length;
+      container.appendChild(buildHotelBlock({}, count));
+    }
 
-  // ── Open Edit Modal ───────────────────────────
-  function openEditModal() {
-    if (!currentVoucher) return;
-    const v = currentVoucher;
-    document.getElementById("e_guestName").value = v.guestName || "";
-    const natSel = document.getElementById("e_nationality");
-    natSel.value = v.nationality || "";
-    if (v.nationality) natSel.classList.add("has-value");
-    document.getElementById("e_adults").value = v.pax?.adults || "";
-    document.getElementById("e_childWithBed").value = v.pax?.childWithBed || "";
-    document.getElementById("e_childWithoutBed").value = v.pax?.childWithoutBed || "";
-    document.getElementById("e_childBelow5").value = v.pax?.childBelow5 || "";
+    // ── Open Edit Modal ───────────────────────────
+    function openEditModal() {
+      if (!currentVoucher) return;
+      const v = currentVoucher;
+      document.getElementById("e_guestName").value = v.guestName || "";
+      const natSel = document.getElementById("e_nationality");
+      natSel.value = v.nationality || "";
+      if (v.nationality) natSel.classList.add("has-value");
+      document.getElementById("e_adults").value = v.pax?.adults || "";
+      document.getElementById("e_childWithBed").value = v.pax?.childWithBed || "";
+      document.getElementById("e_childWithoutBed").value = v.pax?.childWithoutBed || "";
+      document.getElementById("e_childBelow5").value = v.pax?.childBelow5 || "";
 
-    const container = document.getElementById("e_hotelBlocks");
-    container.innerHTML = "";
-    (v.hotels || []).forEach((h, i) => container.appendChild(buildHotelBlock(h, i)));
+      const container = document.getElementById("e_hotelBlocks");
+      container.innerHTML = "";
+      (v.hotels || []).forEach((h, i) => container.appendChild(buildHotelBlock(h, i)));
 
-    document.getElementById("editModal").classList.add("active");
-  }
+      document.getElementById("editModal").classList.add("active");
+    }
 
-  function closeEditModal() { document.getElementById("editModal").classList.remove("active"); }
-  function closeEditOnOverlay(e) { if (e.target === document.getElementById("editModal")) closeEditModal(); }
+    function closeEditModal() { document.getElementById("editModal").classList.remove("active"); }
+    function closeEditOnOverlay(e) { if (e.target === document.getElementById("editModal")) closeEditModal(); }
 
-  // ── Update Voucher ────────────────────────────
-  async function updateVoucher() {
-    const guestName = document.getElementById("e_guestName").value.trim();
-    if (!guestName) { showToast("Guest name is required.", false); return; }
+    // ── Update Voucher ────────────────────────────
+    async function updateVoucher() {
+      const guestName = document.getElementById("e_guestName").value.trim();
+      if (!guestName) { showToast("Guest name is required.", false); return; }
 
-    const hotels = Array.from(document.querySelectorAll(".hotel-block-edit")).map(block => {
-      const sel = block.querySelector(".e-hotelSelect");
-      const selectedOpt = sel?.options[sel.selectedIndex];
-      return {
-        confirmationNumber: block.querySelector(".e-conf")?.value || "",
-        hotelName:    selectedOpt?.value ? selectedOpt.text : "",
-        hotelCity:    block.querySelector(".e-city")?.value || "",
-        hotelCountry: block.querySelector(".e-country")?.value || "",
-        roomCategory: block.querySelector(".e-roomCategory")?.value || "",
-        noOfRooms:    block.querySelector(".e-noOfRooms")?.value || "",
-        roomType:     block.querySelector(".e-roomType")?.value || "",
-        mealPlan:     block.querySelector(".e-mealPlan")?.value || "",
-        visit1in:     block.querySelector(".e-v1in")?.value || "N/A",
-        visit1out:    block.querySelector(".e-v1out")?.value || "N/A",
-        visit2in:     block.querySelector(".e-v2in")?.value || "N/A",
-        visit2out:    block.querySelector(".e-v2out")?.value || "N/A",
-        
-        includes:     block.querySelector(".e-includes")?.value || "",
+      const hotels = Array.from(document.querySelectorAll(".hotel-block-edit")).map(block => {
+        const sel = block.querySelector(".e-hotelSelect");
+        const selectedOpt = sel?.options[sel.selectedIndex];
+        return {
+          confirmationNumber: block.querySelector(".e-conf")?.value || "",
+          hotelName: selectedOpt?.value ? selectedOpt.text : "",
+          hotelCity: block.querySelector(".e-city")?.value || "",
+          hotelCountry: block.querySelector(".e-country")?.value || "",
+          roomCategory: block.querySelector(".e-roomCategory")?.value || "",
+          noOfRooms: block.querySelector(".e-noOfRooms")?.value || "",
+          roomType: block.querySelector(".e-roomType")?.value || "",
+          mealPlan: block.querySelector(".e-mealPlan")?.value || "",
+          visit1in: block.querySelector(".e-v1in")?.value || "N/A",
+          visit1out: block.querySelector(".e-v1out")?.value || "N/A",
+          visit2in: block.querySelector(".e-v2in")?.value || "N/A",
+          visit2out: block.querySelector(".e-v2out")?.value || "N/A",
+
+          includes: block.querySelector(".e-includes")?.value || "",
+        };
+      });
+
+      const payload = {
+        guestName,
+        nationality: document.getElementById("e_nationality").value,
+        pax: {
+          adults: document.getElementById("e_adults").value || 0,
+          childWithBed: document.getElementById("e_childWithBed").value || 0,
+          childWithoutBed: document.getElementById("e_childWithoutBed").value || 0,
+          childBelow5: document.getElementById("e_childBelow5").value || 0,
+        },
+        hotels,
       };
-    });
 
-    const payload = {
-      guestName,
-      nationality: document.getElementById("e_nationality").value,
-      pax: {
-        adults:          document.getElementById("e_adults").value || 0,
-        childWithBed:    document.getElementById("e_childWithBed").value || 0,
-        childWithoutBed: document.getElementById("e_childWithoutBed").value || 0,
-        childBelow5:     document.getElementById("e_childBelow5").value || 0,
-      },
-      hotels,
-    };
+      try {
+        const res = await axios.put(`${VOUCHERS_API}/${id}`, payload, { headers: { "Content-Type": "application/json" } });
+        if (res.data.success) {
+          showToast("Voucher updated! ✓");
+          closeEditModal();
+          currentVoucher = res.data.data;
+          renderDetail(res.data.data);
+          buildPDF(res.data.data);
+        } else {
+          showToast(res.data.message, false);
+        }
+      } catch { showToast("Error updating voucher.", false); }
+    }
 
-    try {
-      const res = await axios.put(`${VOUCHERS_API}/${id}`, payload, { headers: { "Content-Type": "application/json" } });
-      if (res.data.success) {
-        showToast("Voucher updated! ✓");
-        closeEditModal();
-        currentVoucher = res.data.data;
-        renderDetail(res.data.data);
-        buildPDF(res.data.data);
-      } else {
-        showToast(res.data.message, false);
-      }
-    } catch { showToast("Error updating voucher.", false); }
-  }
+    // ── Toast ─────────────────────────────────────
+    function showToast(msg, success = true) {
+      const e = document.querySelector(".toast"); if (e) e.remove();
+      const t = document.createElement("div");
+      t.className = `toast ${success ? "toast-success" : "toast-error"}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+    function downloadPDF() {
+      window.alert("Do you wanna donwload the pdf");
+      const element = document.getElementById("pdfVoucher");
+      element.style.display = "block";
 
-  // ── Toast ─────────────────────────────────────
-  function showToast(msg, success = true) {
-    const e = document.querySelector(".toast"); if (e) e.remove();
-    const t = document.createElement("div");
-    t.className = `toast ${success ? "toast-success" : "toast-error"}`;
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
-  }
+      const opt = {
+        margin: [10, 10, 10, 10], // mm-like spacing
+        filename: `voucher-${id || "download"}.pdf`,
+        image: { type: "jpeg", quality: 1 },
 
-  // ── Init ─────────────────────────────────────
-  loadHotels().then(() => loadVoucher());
-</script>
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          scrollY: 0
+        },
+
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait"
+        },
+
+        pagebreak: {
+          mode: ["css"],
+        }
+      };
+
+      html2pdf()
+        .set(opt)
+        .from(element)
+        .save()
+        .then(() => {
+          element.style.display = "none";
+        });
+    }
+
+    // ── Init ─────────────────────────────────────
+    loadHotels().then(() => loadVoucher());
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
+
 </html>
