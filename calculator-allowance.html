@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Allowance Calculator | Hotel Collection</title>
+  <script>if(!localStorage.getItem("token"))window.location.replace("login.html");</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="shared-theme.css"/>
+  <style>
+    .floating label { background: white; }
+    .card-section { background:white; border:1px solid #e2e8f0; border-radius:1rem; padding:24px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+    .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #f1f5f9; }
+    .section-title { font-size:1rem; font-weight:700; color:#1e293b; font-family:'Playfair Display',serif; }
+
+    /* Tab buttons */
+    .tab-bar { display:flex; gap:8px; background:white; border:1px solid #e2e8f0; border-radius:10px; padding:4px; margin-bottom:24px; }
+    .tab-btn { flex:1; padding:10px; border:none; border-radius:7px; font-size:0.88rem; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; color:#64748b; background:transparent; }
+    .tab-btn.active { background:#2563eb; color:white; box-shadow:0 2px 8px rgba(37,99,235,0.25); }
+    .tab-btn:not(.active):hover { background:#f0f4f8; }
+
+    /* Allowance client block */
+    .client-block { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:20px; margin-bottom:16px; animation:fadeIn 0.2s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+    .client-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .client-num { font-size:0.85rem; font-weight:700; color:#2563eb; }
+
+    /* Item row */
+    .item-row { display:grid; grid-template-columns:1fr 160px auto; gap:10px; align-items:center; margin-bottom:8px; animation:fadeIn 0.15s ease; }
+
+    /* Result table */
+    .result-table { width:100%; border-collapse:collapse; margin-top:8px; }
+    .result-table th { background:#f0f4f8; padding:8px 12px; font-size:0.72rem; color:#2563eb; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; text-align:left; }
+    .result-table td { padding:8px 12px; font-size:0.85rem; color:#1e293b; border-bottom:1px solid #f1f5f9; }
+    .result-table td:last-child { text-align:right; font-weight:500; }
+    .result-table .total-row td { font-weight:700; background:#eff6ff; color:#2563eb; }
+
+    /* Summary strip */
+    .summary-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+    .sum-box { background:white; border:1px solid #e2e8f0; border-radius:10px; padding:16px; text-align:center; }
+    .sum-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; font-weight:600; margin-bottom:4px; }
+    .sum-val { font-size:1.1rem; font-weight:700; }
+
+    .add-btn { display:flex; align-items:center; gap:6px; font-size:0.82rem; color:#2563eb; background:none; border:none; cursor:pointer; padding:6px 0; font-family:'DM Sans',sans-serif; }
+    .add-btn:hover { color:#1d4ed8; }
+    .del-btn { color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1rem; padding:4px 6px; transition:color 0.2s; }
+    .del-btn:hover { color:#ef4444; }
+
+    .inv-input { width:100%; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; font-size:0.85rem; font-family:'DM Sans',sans-serif; color:#1e293b; background:#f8fafc; outline:none; transition:border-color 0.2s; }
+    .inv-input:focus { border-color:#2563eb; background:white; }
+    .inv-input::placeholder { color:#94a3b8; }
+
+    .toast { position:fixed; bottom:2rem; right:2rem; padding:1rem 1.5rem; border-radius:0.75rem; font-size:0.9rem; z-index:999; animation:slideUp 0.3s ease; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  </style>
+</head>
+<body>
+<main class="max-w-4xl mx-auto px-6 py-10">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="calculator-landing.html" style="color:#64748b;font-size:0.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <i class="fa fa-arrow-left"></i> Back
+      </a>
+      <h2 class="text-2xl" style="color:#1e293b;font-family:'Playfair Display',serif;" id="pageTitle">New Calculation</h2>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="saveAll()" class="btn-blue"><i class="fa fa-save"></i> Save</button>
+    </div>
+  </div>
+
+  <!-- Title input -->
+  <div class="card-section mb-4">
+    <div class="inv-label mb-2" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:600;">Record Title</div>
+    <input class="inv-input" id="rec_title" placeholder="e.g. March 2025 Calculation" style="font-size:1rem;font-weight:600;"/>
+  </div>
+
+  <!-- Summary Strip -->
+  <div class="summary-strip">
+    <div class="sum-box">
+      <div class="sum-label">Total Allowance</div>
+      <div class="sum-val" id="s_allowance" style="color:#2563eb;">Rs. 0.00</div>
+    </div>
+    <div class="sum-box">
+      <div class="sum-label">Total Expense</div>
+      <div class="sum-val" id="s_expense" style="color:#dc2626;">Rs. 0.00</div>
+    </div>
+    <div class="sum-box">
+      <div class="sum-label">Total Payment</div>
+      <div class="sum-val" id="s_payment" style="color:#16a34a;">Rs. 0.00</div>
+    </div>
+    <div class="sum-box">
+      <div class="sum-label">Debit / Credit</div>
+      <div class="sum-val" id="s_balance">Rs. 0.00</div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab_allowance" onclick="switchTab('allowance')">
+      <i class="fa fa-user-check mr-1"></i> Allowance
+    </button>
+    <button class="tab-btn" id="tab_expense_payment" onclick="switchTab('expense_payment')">
+      <i class="fa fa-receipt mr-1"></i> Expense &amp; Payment
+    </button>
+  </div>
+
+  <!-- ── ALLOWANCE TAB ── -->
+  <div id="panel_allowance">
+
+    <div id="clientBlocksContainer"></div>
+
+    <button class="add-btn" onclick="addClientBlock()" style="margin-top:4px;">
+      <i class="fa fa-plus-circle"></i> Add Client
+    </button>
+
+    <!-- Allowance Result Table -->
+    <div id="allowanceResultWrap" class="card-section mt-6" style="display:none;">
+      <div class="section-title mb-3">Allowance Summary</div>
+      <table class="result-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>Client</th>
+            <th>Period</th>
+            <th>Purpose</th>
+            <th style="text-align:right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="allowanceResultBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── EXPENSE & PAYMENT TAB ── -->
+  <div id="panel_expense_payment" style="display:none;">
+
+    <!-- Expense -->
+    <div class="card-section">
+      <div class="section-header">
+        <div class="section-title">Expenses</div>
+        <button class="add-btn" onclick="addExpenseRow()"><i class="fa fa-plus-circle"></i> Add Expense</button>
+      </div>
+      <div id="expenseContainer" class="space-y-2"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;">
+        <span style="font-size:0.85rem;color:#64748b;margin-right:12px;">Total Expense:</span>
+        <span id="expenseTotal" style="font-size:0.9rem;font-weight:700;color:#dc2626;">Rs. 0.00</span>
+      </div>
+    </div>
+
+    <!-- Payment -->
+    <div class="card-section">
+      <div class="section-header">
+        <div class="section-title">Payments</div>
+        <button class="add-btn" onclick="addPaymentRow()"><i class="fa fa-plus-circle"></i> Add Payment</button>
+      </div>
+      <div id="paymentContainer" class="space-y-2"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;">
+        <span style="font-size:0.85rem;color:#64748b;margin-right:12px;">Total Payment:</span>
+        <span id="paymentTotal" style="font-size:0.9rem;font-weight:700;color:#16a34a;">Rs. 0.00</span>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+<script src="sidebar.js"></script>
+<script>
+  const API = "http://localhost:5000/api/calculator";
+  let currentId = null;
+  let clientCount = 0;
+  let expCount = 0;
+  let payCount = 0;
+
+  // ── Tab switching ─────────────────────────────
+  function switchTab(tab) {
+    document.getElementById("panel_allowance").style.display        = tab === "allowance" ? "" : "none";
+    document.getElementById("panel_expense_payment").style.display  = tab === "expense_payment" ? "" : "none";
+    document.getElementById("tab_allowance").className              = `tab-btn ${tab === "allowance" ? "active" : ""}`;
+    document.getElementById("tab_expense_payment").className        = `tab-btn ${tab === "expense_payment" ? "active" : ""}`;
+    if (tab === "allowance") renderAllowanceResult();
+  }
+
+  // ── Number formatter ──────────────────────────
+  function fmt(n) { return "Rs. " + Number(n||0).toLocaleString("en-IN", {minimumFractionDigits:2}); }
+
+  // ── Recalculate summary ───────────────────────
+  function recalc() {
+    // Allowance
+    let totalAllowance = 0;
+    document.querySelectorAll(".client-block").forEach(block => {
+      let clientTotal = 0;
+      block.querySelectorAll(".item-amt").forEach(inp => { clientTotal += Number(inp.value)||0; });
+      const totalEl = block.querySelector(".client-total");
+      if (totalEl) totalEl.textContent = fmt(clientTotal);
+      totalAllowance += clientTotal;
+    });
+
+    // Expense
+    let totalExpense = 0;
+    document.querySelectorAll(".exp-amt").forEach(inp => { totalExpense += Number(inp.value)||0; });
+    document.getElementById("expenseTotal").textContent = fmt(totalExpense);
+
+    // Payment
+    let totalPayment = 0;
+    document.querySelectorAll(".pay-amt").forEach(inp => { totalPayment += Number(inp.value)||0; });
+    document.getElementById("paymentTotal").textContent = fmt(totalPayment);
+
+    // Summary
+    const balance = totalAllowance + totalExpense - totalPayment;
+    document.getElementById("s_allowance").textContent = fmt(totalAllowance);
+    document.getElementById("s_expense").textContent   = fmt(totalExpense);
+    document.getElementById("s_payment").textContent   = fmt(totalPayment);
+    const balEl = document.getElementById("s_balance");
+    balEl.textContent  = fmt(balance);
+    balEl.style.color  = balance >= 0 ? "#16a34a" : "#dc2626";
+  }
+
+  // ── Add Client Block ──────────────────────────
+  function addClientBlock(data = {}) {
+    clientCount++;
+    const cid = `client_${clientCount}`;
+    const container = document.getElementById("clientBlocksContainer");
+    const div = document.createElement("div");
+    div.className = "client-block";
+    div.id = cid;
+    div.innerHTML = `
+      <div class="client-header">
+        <span class="client-num">Client #${clientCount}</span>
+        <button class="del-btn" onclick="document.getElementById('${cid}').remove();renumberClients();recalc();renderAllowanceResult();">
+          <i class="fa fa-times"></i> Remove
+        </button>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div>
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:600;margin-bottom:5px;">Client Name</div>
+          <input class="inv-input client-name" type="text" placeholder="e.g. John Doe" value="${data.clientName||""}" oninput="recalc();renderAllowanceResult()"/>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:600;margin-bottom:5px;">Start Date</div>
+          <input class="inv-input client-start" type="date" value="${data.startDate||""}" onchange="recalc();renderAllowanceResult()"/>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:600;margin-bottom:5px;">End Date</div>
+          <input class="inv-input client-end" type="date" value="${data.endDate||""}" onchange="recalc();renderAllowanceResult()"/>
+        </div>
+      </div>
+      <div class="item-rows-container space-y-2"></div>
+      <button class="add-btn mt-2" onclick="addItemRow(this.previousElementSibling)">
+        <i class="fa fa-plus-circle"></i> Add Purpose
+      </button>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid #e2e8f0;">
+        <span style="font-size:0.82rem;color:#64748b;margin-right:10px;">Client Total:</span>
+        <span class="client-total" style="font-size:0.9rem;font-weight:700;color:#2563eb;">Rs. 0.00</span>
+      </div>
+    `;
+    container.appendChild(div);
+
+    // Add existing items if loading
+    const rowsContainer = div.querySelector(".item-rows-container");
+    if (data.items && data.items.length) {
+      data.items.forEach(item => addItemRow(rowsContainer, item.purpose, item.amount));
+    } else {
+      addItemRow(rowsContainer);
+    }
+    recalc();
+  }
+
+  function renumberClients() {
+    document.querySelectorAll(".client-block .client-num").forEach((el, i) => {
+      el.textContent = `Client #${i + 1}`;
+    });
+    clientCount = document.querySelectorAll(".client-block").length;
+  }
+
+  // ── Add Item Row ──────────────────────────────
+  function addItemRow(container, purpose = "", amount = "") {
+    expCount++;
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `
+      <input class="inv-input item-purpose" type="text" placeholder="Purpose" value="${purpose}" oninput="recalc();renderAllowanceResult()"/>
+      <input class="inv-input item-amt" type="number" placeholder="Amount" value="${amount}" min="0" oninput="recalc();renderAllowanceResult()"/>
+      <button class="del-btn" onclick="this.parentElement.remove();recalc();renderAllowanceResult();">
+        <i class="fa fa-times"></i>
+      </button>
+    `;
+    container.appendChild(row);
+    recalc();
+  }
+
+  // ── Allowance Result Table ────────────────────
+  function renderAllowanceResult() {
+    const tbody  = document.getElementById("allowanceResultBody");
+    const wrap   = document.getElementById("allowanceResultWrap");
+    const blocks = document.querySelectorAll(".client-block");
+    if (!blocks.length) { wrap.style.display = "none"; return; }
+    wrap.style.display = "";
+
+    let rows = "";
+    let grandTotal = 0;
+    blocks.forEach((block, bi) => {
+      const name  = block.querySelector(".client-name")?.value || "—";
+      const start = block.querySelector(".client-start")?.value || "";
+      const end   = block.querySelector(".client-end")?.value   || "";
+      const period = start && end ? `${start} - ${end}` : start || end || "—";
+      const items = block.querySelectorAll(".item-row");
+      let clientTotal = 0;
+      let firstRow = true;
+
+      items.forEach(row => {
+        const purpose = row.querySelector(".item-purpose")?.value || "—";
+        const amt     = Number(row.querySelector(".item-amt")?.value) || 0;
+        clientTotal += amt;
+        if (firstRow) {
+          rows += `<tr>
+            <td rowspan="${items.length + 1}" style="font-weight:600;border-right:1px solid #f1f5f9;vertical-align:top;padding-top:10px;">${bi+1}</td>
+            <td rowspan="${items.length + 1}" style="border-right:1px solid #f1f5f9;vertical-align:top;padding-top:10px;">
+              <div style="font-weight:600;">${name}</div>
+              <div style="font-size:0.78rem;color:#64748b;">${period}</div>
+            </td>
+            <td>${purpose}</td>
+            <td style="text-align:right;">${fmt(amt)}</td>
+          </tr>`;
+          firstRow = false;
+        } else {
+          rows += `<tr><td>${purpose}</td><td style="text-align:right;">${fmt(amt)}</td></tr>`;
+        }
+      });
+
+      rows += `<tr class="total-row">
+        <td colspan="2" style="text-align:right;">Total</td>
+        <td style="text-align:right;">${fmt(clientTotal)}</td>
+      </tr>`;
+      grandTotal += clientTotal;
+    });
+
+    rows += `<tr style="background:#1e293b;">
+      <td colspan="5" style="text-align:right;font-weight:700;color:white;font-size:0.9rem;">Grand Total: ${fmt(grandTotal)}</td>
+    </tr>`;
+
+    tbody.innerHTML = rows;
+  }
+
+  // ── Expense rows ──────────────────────────────
+  function addExpenseRow(purpose = "", amount = "") {
+    const container = document.getElementById("expenseContainer");
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `
+      <input class="inv-input exp-purpose" type="text" placeholder="Purpose" value="${purpose}" oninput="recalc()"/>
+      <input class="inv-input exp-amt" type="number" placeholder="Amount" value="${amount}" min="0" oninput="recalc()"/>
+      <button class="del-btn" onclick="this.parentElement.remove();recalc();">
+        <i class="fa fa-times"></i>
+      </button>
+    `;
+    container.appendChild(row);
+    recalc();
+  }
+
+  // ── Payment rows ──────────────────────────────
+  function addPaymentRow(ref = "", amount = "") {
+    const container = document.getElementById("paymentContainer");
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `
+      <input class="inv-input pay-ref" type="text" placeholder="Reference Number" value="${ref}" oninput="recalc()"/>
+      <input class="inv-input pay-amt" type="number" placeholder="Amount" value="${amount}" min="0" oninput="recalc()"/>
+      <button class="del-btn" onclick="this.parentElement.remove();recalc();">
+        <i class="fa fa-times"></i>
+      </button>
+    `;
+    container.appendChild(row);
+    recalc();
+  }
+
+  // ── Collect data ──────────────────────────────
+  function collectData() {
+    const allowances = [];
+    document.querySelectorAll(".client-block").forEach(block => {
+      const items = [];
+      let total = 0;
+      block.querySelectorAll(".item-row").forEach(row => {
+        const purpose = row.querySelector(".item-purpose")?.value || "";
+        const amount  = Number(row.querySelector(".item-amt")?.value) || 0;
+        items.push({ purpose, amount });
+        total += amount;
+      });
+      allowances.push({
+        clientName: block.querySelector(".client-name")?.value || "",
+        startDate:  block.querySelector(".client-start")?.value || "",
+        endDate:    block.querySelector(".client-end")?.value   || "",
+        items,
+        total,
+      });
+    });
+
+    const expenses = [];
+    document.querySelectorAll("#expenseContainer .item-row").forEach(row => {
+      expenses.push({
+        purpose: row.querySelector(".exp-purpose")?.value || "",
+        amount:  Number(row.querySelector(".exp-amt")?.value) || 0,
+      });
+    });
+
+    const payments = [];
+    document.querySelectorAll("#paymentContainer .item-row").forEach(row => {
+      payments.push({
+        referenceNumber: row.querySelector(".pay-ref")?.value || "",
+        amount:          Number(row.querySelector(".pay-amt")?.value) || 0,
+      });
+    });
+
+    const totalAllowance = allowances.reduce((s, c) => s + c.total, 0);
+    const totalExpense   = expenses.reduce((s, e) => s + e.amount, 0);
+    const totalPayment   = payments.reduce((s, p) => s + p.amount, 0);
+    const balance        = totalAllowance + totalExpense - totalPayment;
+
+    return {
+      title: document.getElementById("rec_title").value.trim() || "Allowance/Expense Calculation",
+      allowances, expenses, payments,
+      totalAllowance, totalExpense, totalPayment, balance,
+    };
+  }
+
+  // ── Save ──────────────────────────────────────
+  async function saveAll() {
+    const data = collectData();
+    try {
+      let res;
+      if (currentId) {
+        res = await axios.put(`${API}/${currentId}`, data, { headers:{"Content-Type":"application/json"} });
+      } else {
+        res = await axios.post(API, data, { headers:{"Content-Type":"application/json"} });
+        if (res.data.success) currentId = res.data.data._id;
+      }
+      if (res.data.success) showToast("Saved successfully! ✓");
+      else showToast(res.data.message, false);
+    } catch { showToast("Error saving.", false); }
+  }
+
+  // ── Load from ?id= ────────────────────────────
+  async function loadById(id) {
+    try {
+      const res  = await fetch(`${API}/${id}`);
+      const data = await res.json();
+      if (!data.success) return;
+      const r = data.data;
+      currentId = r._id;
+      document.getElementById("rec_title").value = r.title || "";
+      document.getElementById("pageTitle").textContent = r.title || "Edit Calculation";
+
+      // Allowances
+      document.getElementById("clientBlocksContainer").innerHTML = "";
+      clientCount = 0;
+      (r.allowances || []).forEach(c => addClientBlock(c));
+
+      // Expenses
+      document.getElementById("expenseContainer").innerHTML = "";
+      (r.expenses || []).forEach(e => addExpenseRow(e.purpose, e.amount));
+
+      // Payments
+      document.getElementById("paymentContainer").innerHTML = "";
+      (r.payments || []).forEach(p => addPaymentRow(p.referenceNumber, p.amount));
+
+      recalc();
+      renderAllowanceResult();
+    } catch { showToast("Failed to load record.", false); }
+  }
+
+  // ── Toast ─────────────────────────────────────
+  function showToast(msg, success=true) {
+    const e=document.querySelector(".toast"); if(e) e.remove();
+    const t=document.createElement("div");
+    t.className=`toast ${success?"toast-success":"toast-error"}`; t.textContent=msg;
+    document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
+  }
+
+  // ── Init ──────────────────────────────────────
+  setTimeout(async () => {
+    const urlId = new URLSearchParams(window.location.search).get("id");
+    if (urlId) {
+      await loadById(urlId);
+    } else {
+      addClientBlock();
+      addExpenseRow();
+      addPaymentRow();
+    }
+  }, 100);
+</script>
+</body>
+</html>

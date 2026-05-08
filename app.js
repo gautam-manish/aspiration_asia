@@ -11,6 +11,7 @@ import reservationRoute from "./Routes/reservationRoutes.js";
 import voucherRoute from "./Routes/voucherRoutes.js";
 import invoiceRoute from "./Routes/invoiceRoutes.js";
 import cashReceiptRoute from "./Routes/cashReceiptRoutes.js";
+import calculatorRoute from "./Routes/calculatorRoutes.js";
 import authMiddleware from "./Middleware/authMiddleware.js";
 
 connectDB();
@@ -29,6 +30,7 @@ app.use("/api/reservations",  authMiddleware, reservationRoute);
 app.use("/api/vouchers",      authMiddleware, voucherRoute);
 app.use("/api/invoices",      authMiddleware, invoiceRoute);
 app.use("/api/cash-receipts", authMiddleware, cashReceiptRoute);
+app.use("/api/calculator",    authMiddleware, calculatorRoute);
 
 app.listen(process.env.PORT, () => {
   console.log("Server running on port " + process.env.PORT);

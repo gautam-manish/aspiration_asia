@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Allowance / Expense Calculator | Hotel Collection</title>
+  <script>if(!localStorage.getItem("token"))window.location.replace("login.html");</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="shared-theme.css"/>
+  <style>
+    table { width:100%; border-collapse:collapse; }
+    thead tr { background:#eff6ff; }
+    th { padding:12px 16px; text-align:left; font-size:0.78rem; color:#2563eb; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
+    td { padding:12px 16px; font-size:0.88rem; color:#1e293b; border-bottom:1px solid #f1f5f9; }
+    tbody tr:hover { background:#f8fafc; }
+    .badge { display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; border-radius:4px; padding:2px 8px; font-size:0.75rem; color:#2563eb; font-weight:500; }
+    .badge-green { background:#f0fdf4; border-color:#86efac; color:#16a34a; }
+    .badge-red { background:#fef2f2; border-color:#fecaca; color:#dc2626; }
+    .summary-card { background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px 24px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+    .summary-label { font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; font-weight:600; margin-bottom:6px; }
+    .summary-value { font-size:1.3rem; font-weight:700; color:#1e293b; }
+    .skeleton { background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .toast { position:fixed; bottom:2rem; right:2rem; padding:1rem 1.5rem; border-radius:0.75rem; font-size:0.9rem; z-index:999; animation:slideUp 0.3s ease; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  </style>
+</head>
+<body>
+<main class="max-w-6xl mx-auto px-6 py-10">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+    <div>
+      <h2 class="text-3xl" style="color:#1e293b;font-family:'Playfair Display',serif;">Allowance / Expense Calculator</h2>
+      <p id="recordCount" class="text-sm mt-1" style="color:#64748b;">Loading...</p>
+    </div>
+    <a href="calculator-allowance.html" class="btn-blue"><i class="fa fa-plus"></i> Calculate Allowance / Expenses</a>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+    <div class="summary-card">
+      <div class="summary-label">Total Allowance</div>
+      <div class="summary-value" id="sum_allowance" style="color:#2563eb;">—</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Total Expense</div>
+      <div class="summary-value" id="sum_expense" style="color:#dc2626;">—</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Total Payment</div>
+      <div class="summary-value" id="sum_payment" style="color:#16a34a;">—</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Debit / Credit</div>
+      <div class="summary-value" id="sum_balance">—</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Allowance</th>
+            <th>Expense</th>
+            <th>Payment</th>
+            <th>Balance</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div id="emptyState" class="hidden text-center py-16">
+      <p class="text-4xl mb-3">🧮</p>
+      <p style="color:#64748b;">No records found.</p>
+      <a href="calculator-allowance.html" class="btn-blue inline-flex mt-4 text-sm">Create your first record</a>
+    </div>
+  </div>
+
+</main>
+<script src="sidebar.js"></script>
+<script>
+  const API = "http://localhost:5000/api/calculator";
+
+  async function fetchRecords() {
+    try {
+      showSkeletons();
+      const res  = await fetch(API);
+      const data = await res.json();
+      if (data.success) renderAll(data.data);
+    } catch { showToast("Failed to load records.", false); }
+  }
+
+  function fmt(n) { return "Rs. " + Number(n||0).toLocaleString("en-IN", {minimumFractionDigits:2}); }
+
+  function renderAll(records) {
+    document.getElementById("recordCount").textContent = `${records.length} record${records.length!==1?"s":""} found`;
+
+    // Summary totals across ALL records
+    let sumA = 0, sumE = 0, sumP = 0;
+    records.forEach(r => { sumA += r.totalAllowance||0; sumE += r.totalExpense||0; sumP += r.totalPayment||0; });
+    const bal = sumA + sumE - sumP;
+    document.getElementById("sum_allowance").textContent = fmt(sumA);
+    document.getElementById("sum_expense").textContent   = fmt(sumE);
+    document.getElementById("sum_payment").textContent   = fmt(sumP);
+    const balEl = document.getElementById("sum_balance");
+    balEl.textContent = fmt(bal);
+    balEl.style.color = bal >= 0 ? "#16a34a" : "#dc2626";
+
+    const tbody = document.getElementById("tableBody");
+    const empty = document.getElementById("emptyState");
+    if (!records.length) { tbody.innerHTML = ""; empty.classList.remove("hidden"); return; }
+    empty.classList.add("hidden");
+
+    tbody.innerHTML = records.map((r, i) => {
+      const date = new Date(r.createdAt).toLocaleDateString("en-GB", {day:"2-digit", month:"short", year:"numeric"});
+      const bal  = (r.totalAllowance||0) + (r.totalExpense||0) - (r.totalPayment||0);
+      return `<tr>
+        <td style="color:#94a3b8;font-size:0.8rem;">${i+1}</td>
+        <td style="font-weight:500;">${r.title || "—"}</td>
+        <td style="color:#64748b;">${date}</td>
+        <td style="color:#2563eb;font-weight:600;">${fmt(r.totalAllowance)}</td>
+        <td style="color:#dc2626;font-weight:600;">${fmt(r.totalExpense)}</td>
+        <td style="color:#16a34a;font-weight:600;">${fmt(r.totalPayment)}</td>
+        <td><span class="badge ${bal>=0?"badge-green":"badge-red"}">${fmt(bal)}</span></td>
+        <td>
+          <div style="display:flex;gap:8px;">
+            <a href="calculator-allowance.html?id=${r._id}" class="btn-outline" style="font-size:0.78rem;padding:4px 12px;">
+              <i class="fa fa-edit"></i> Edit
+            </a>
+            <button onclick="deleteRecord('${r._id}')" style="border:1px solid #fecaca;color:#ef4444;border-radius:6px;padding:4px 10px;font-size:0.78rem;background:transparent;cursor:pointer;" onmouseover="this.style.background='#ef4444';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#ef4444'">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join("");
+  }
+
+  function showSkeletons() {
+    document.getElementById("tableBody").innerHTML = Array(4).fill(`
+      <tr>${Array(8).fill(`<td><div class="skeleton h-4 w-20"></div></td>`).join("")}</tr>
+    `).join("");
+  }
+
+  async function deleteRecord(id) {
+    if (!confirm("Delete this record?")) return;
+    try {
+      const res  = await fetch(`${API}/${id}`, { method:"DELETE" });
+      const data = await res.json();
+      if (data.success) { showToast("Deleted! ✓"); fetchRecords(); }
+      else showToast(data.message, false);
+    } catch { showToast("Error deleting.", false); }
+  }
+
+  function showToast(msg, success=true) {
+    const e=document.querySelector(".toast"); if(e) e.remove();
+    const t=document.createElement("div");
+    t.className=`toast ${success?"toast-success":"toast-error"}`; t.textContent=msg;
+    document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
+  }
+
+  fetchRecords();
+</script>
+</body>
+</html>

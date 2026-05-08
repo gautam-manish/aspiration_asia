@@ -257,6 +257,7 @@
     { icon: "📋", label: "Reservations",   href: "reservations.html" },
     { icon: "🧾", label: "Invoice",         href: "invoices.html" },
     { icon: "💵", label: "Cash Receipt",   href: "cash-receipt.html" },
+    { icon: "🧮", label: "Allowance/Expense </br>Calculator", href: "calculator-landing.html" },
   ];
 
   const currentPage = window.location.pathname.split("/").pop() || "index.html";
