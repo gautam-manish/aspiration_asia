@@ -6,7 +6,11 @@ import Voucher from "../Model/voucherSchema.js";
 // ─────────────────────────────────────────
 export const createVoucher = async (req, res) => {
   try {
-    const { guestName, nationality, pax, hotels } = req.body;
+    const {
+      guestName, nationality,
+      contactNumber, mealInstruction, wheelChair, arrivalFlightDetails, preferredFloor,
+      pax, hotels,
+    } = req.body;
 
     if (!guestName) {
       return res.status(400).json({ success: false, message: "Guest name is required", data: null });
@@ -15,7 +19,11 @@ export const createVoucher = async (req, res) => {
       return res.status(400).json({ success: false, message: "At least one hotel entry is required", data: null });
     }
 
-    const voucher = await Voucher.create({ guestName, nationality, pax, hotels });
+    const voucher = await Voucher.create({
+      guestName, nationality,
+      contactNumber, mealInstruction, wheelChair, arrivalFlightDetails, preferredFloor,
+      pax, hotels,
+    });
 
     res.status(201).json({ success: true, message: "Voucher created successfully", data: voucher });
   } catch (error) {
@@ -81,7 +89,7 @@ export const updateVoucher = async (req, res) => {
     const voucher = await Voucher.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { returnDocument: 'after', runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!voucher) {

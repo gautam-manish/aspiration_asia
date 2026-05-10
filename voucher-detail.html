@@ -23,13 +23,7 @@
       background: white;
     }
 
-    .page-break {
-      page-break-before: always;
-      break-before: page;
-    }
-
     @media print {
-
       @page {
         size: auto;
         margin: 8mm;
@@ -46,24 +40,6 @@
         visibility: hidden;
       }
 
-      #pdfVoucher {
-        width: 210mm;
-        /* A4 width */
-        box-sizing: border-box;
-        background: white;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        page-break-inside: auto;
-      }
-
-      tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
-      }
-
       #pdfVoucher,
       #pdfVoucher * {
         visibility: visible;
@@ -74,7 +50,6 @@
         left: -9999px;
         top: 0;
         width: 794px;
-        /* A4 width in px */
         background: white;
         padding: 20px;
         box-sizing: border-box;
@@ -83,11 +58,28 @@
       #pdfVoucher table,
       #pdfVoucher tr,
       #pdfVoucher td,
-      #pdfVoucher div {
-        page-break-inside: avoid;
+      #pdfVoucher th {
         width: 100%;
         table-layout: fixed;
         word-wrap: break-word;
+      }
+
+      #pdfVoucher .hotel-page {
+        page-break-before: always;
+        break-before: page;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        
+      }
+
+      .hotel-page {
+        overflow: hidden !important;
+        background: white !important;
+      }
+
+      .hotel-page:first-child {
+        page-break-before: auto !important;
+        break-before: auto !important;
       }
     }
 
@@ -120,15 +112,19 @@
     <div id="pdfVoucher" style="display:none;"></div>
   </main>
 
-  <!-- Edit Modal -->
+  <!-- ═══════════════════════════════════════════
+       EDIT MODAL
+  ════════════════════════════════════════════ -->
   <div id="editModal" class="modal-overlay" onclick="closeEditOnOverlay(event)">
     <div class="modal-box">
       <div class="flex items-center justify-between mb-6">
         <h3 class="text-xl" style="color:#1e293b;">Edit Voucher</h3>
         <button onclick="closeEditModal()"
-          style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">x</button>
+          style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">✕</button>
       </div>
       <div class="space-y-4">
+
+        <!-- Guest Details -->
         <p class="section-title">Guest Details</p>
         <div class="grid grid-cols-2 gap-4">
           <div class="floating"><input class="input" id="e_guestName" type="text" placeholder=" " /><label>Guest Name
@@ -206,7 +202,19 @@
             </select>
             <label>Nationality</label>
           </div>
+          <div class="floating"><input class="input" id="e_contactNumber" type="number" placeholder=" " /><label>Contact
+              Number</label></div>
+          <div class="floating"><input class="input" id="e_preferredFloor" type="text"
+              placeholder=" " /><label>Preferred Floor</label></div>
+          <div class="floating col-span-2"><input class="input" id="e_mealInstruction" type="text"
+              placeholder=" " /><label>Meal Instruction</label></div>
+          <div class="floating"><input class="input" id="e_wheelChair" type="text" placeholder=" " /><label>Wheel
+              Chair</label></div>
+          <div class="floating"><input class="input" id="e_arrivalFlightDetails" type="text"
+              placeholder=" " /><label>Arrival Flight Details</label></div>
         </div>
+
+        <!-- Pax -->
         <p class="section-title mt-2">Number of Pax</p>
         <div class="grid grid-cols-2 gap-4">
           <div class="floating"><input class="input" id="e_adults" type="number" placeholder=" "
@@ -218,7 +226,8 @@
           <div class="floating"><input class="input" id="e_childBelow5" type="number" placeholder=" "
               min="0" /><label>Child below 5 yrs</label></div>
         </div>
-        <!-- Hotel Entries header with Add button -->
+
+        <!-- Hotels -->
         <div class="flex items-center justify-between mt-2">
           <p class="section-title mb-0">Hotel Entries</p>
           <button onclick="addEditHotelBlock()"
@@ -227,6 +236,7 @@
           </button>
         </div>
         <div id="e_hotelBlocks" class="space-y-4"></div>
+
         <div class="flex gap-3 pt-4">
           <button onclick="updateVoucher()" class="btn-blue flex-1"><i class="fa fa-save"></i> Update</button>
           <button onclick="closeEditModal()" class="btn-outline flex-1">Cancel</button>
@@ -243,7 +253,7 @@
     let hotelsData = [];
     const id = new URLSearchParams(window.location.search).get("id");
 
-    // ── Load hotels for dropdown ──────────────────
+    // ── Load hotels ───────────────────────────────
     async function loadHotels() {
       try {
         const res = await fetch(HOTELS_API);
@@ -252,7 +262,7 @@
       } catch { }
     }
 
-    // ── Load Voucher ─────────────────────────────
+    // ── Load Voucher ──────────────────────────────
     async function loadVoucher() {
       if (!id) { document.getElementById("content").innerHTML = `<p style="color:red;">No voucher ID.</p>`; return; }
       try {
@@ -264,121 +274,91 @@
     }
 
     function row(label, value) {
-      return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${value || "?"}</span></div>`;
+      return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${value || "—"}</span></div>`;
     }
 
     function paxDisplay(pax) {
       const adults = Number(pax?.adults) || 0;
       const children = (Number(pax?.childWithBed) || 0) + (Number(pax?.childWithoutBed) || 0) + (Number(pax?.childBelow5) || 0);
-      const adultStr = adults > 0 ? `${adults} Adult${adults !== 1 ? "s" : ""}` : "—";
-      const childStr = children > 0 ? `${children} Child${children !== 1 ? "ren" : ""}` : "—";
-      return `${adultStr} / ${childStr}`;
+      return `${adults} Adult${adults !== 1 ? "s" : ""} / ${children} Child${children !== 1 ? "ren" : ""}`;
     }
-
+    function ensureUrl(url) {
+      if (!url || url.trim() === "") return "";
+      url = url.trim();
+      if (!/^https?:\/\//.test(url)) {
+        url = "https://" + url;
+      }
+      return url;
+    }
+    // ── Render Detail (screen) ────────────────────
     function renderDetail(v) {
       document.title = `${v.guestName} | Voucher`;
       const date = new Date(v.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
       document.getElementById("content").innerHTML = `
-      <div class="flex items-start justify-between mb-6">
-        <div>
-          <h2 class="text-3xl" style="color:#1e293b;">${v.guestName}</h2>
-          <p class="text-sm mt-1" style="color:#64748b;">Created on ${date}</p>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h2 class="text-3xl" style="color:#1e293b;">${v.guestName}</h2>
+            <p class="text-sm mt-1" style="color:#64748b;">Created on ${date}</p>
+          </div>
+          <span class="badge">${v.hotels?.length || 0} Hotel${v.hotels?.length !== 1 ? "s" : ""}</span>
         </div>
-        <span class="badge">${v.hotels?.length || 0} Hotel${v.hotels?.length !== 1 ? "s" : ""}</span>
-      </div>
-      <div class="card p-6 mb-5">
-        <p class="section-title">Guest Details</p>
-        ${row("Guest Name", `<span style="font-weight:600;">${v.guestName}</span>`)}
-        ${row("Nationality", v.nationality)}
-      </div>
-      <div class="card p-6 mb-5">
-        <p class="section-title">Pax Details</p>
-        ${row("Summary", `<span class="badge">${paxDisplay(v.pax)}</span>`)}
-        ${row("Adults", v.pax?.adults || "—")}
-        ${row("Child with Bed", v.pax?.childWithBed || "—")}
-        ${row("Child without Bed (6-10 yrs)", v.pax?.childWithoutBed || "—")}
-        ${row("Child below 5 yrs", v.pax?.childBelow5 || "—")}
-      </div>
-      ${(v.hotels || []).map((h, i) => `
+
         <div class="card p-6 mb-5">
-          <p class="section-title">Hotel #${i + 1} - ${h.hotelName || "?"}</p>
-          ${row("Confirmation No.", `<span style="font-weight:700;">${h.confirmationNumber || "?"}</span>`)}
-          ${row("Hotel Name", h.hotelName)}
-          ${row("City / Country", h.hotelCity && h.hotelCountry ? `${h.hotelCity}, ${h.hotelCountry}` : "?")}
-          ${row("Room Category", h.roomCategory)}
-          ${row("No. of Rooms", h.noOfRooms)}
-          ${row("Room Type", h.roomType)}
-          ${row("Meal Plan", h.mealPlan ? `<span class="badge">${h.mealPlan}</span>` : "?")}
-          ${row("1st Visit Check-In", h.visit1in)}
-          ${row("1st Visit Check-Out", h.visit1out)}
-          ${row("2nd Visit Check-In", h.visit2in)}
-          ${row("2nd Visit Check-Out", h.visit2out)}
-          
-          ${row("Includes", h.includes?.trim() || "—")}
+          <p class="section-title">Guest Details</p>
+          ${row("Guest Name", `<span style="font-weight:600;">${v.guestName}</span>`)}
+          ${row("Nationality", v.nationality)}
+          ${row("Contact Number", v.contactNumber)}
+          ${row("Meal Instruction", v.mealInstruction)}
+          ${row("Wheel Chair", v.wheelChair)}
+          ${row("Arrival Flight Details", v.arrivalFlightDetails)}
+          ${row("Preferred Floor", v.preferredFloor)}
         </div>
-      `).join("")}
-      <a href="voucher.html" class="btn-blue"><i class="fa fa-arrow-left"></i> Back</a>
-    `;
+
+        <div class="card p-6 mb-5">
+          <p class="section-title">Pax Details</p>
+          ${row("Summary", `<span class="badge">${paxDisplay(v.pax)}</span>`)}
+          ${row("Adults", v.pax?.adults || "—")}
+          ${row("Child with Bed", v.pax?.childWithBed || "—")}
+          ${row("Child without Bed (6-10 yrs)", v.pax?.childWithoutBed || "—")}
+          ${row("Child below 5 yrs", v.pax?.childBelow5 || "—")}
+        </div>
+
+        ${(v.hotels || []).map((h, i) => `
+          <div class="card p-6 mb-5">
+            <p class="section-title">Hotel #${i + 1} - ${h.hotelName || "?"}</p>
+            ${row("Confirmation No.", `<span style="font-weight:700;">${h.confirmationNumber || "?"}</span>`)}
+            ${row("Hotel Name", h.hotelName)}
+            ${row("City / Country", h.hotelCity && h.hotelCountry ? `${h.hotelCity}, ${h.hotelCountry}` : "?")}
+            ${row("Room Category", h.roomCategory)}
+            ${row("No. of Rooms", h.noOfRooms)}
+            ${row("Room Type", h.roomType)}
+            ${row("Meal Plan", h.mealPlan ? `<span class="badge">${h.mealPlan}</span>` : "?")}
+            ${row("Hotel Contact", h.hotelContactNumber)}
+            ${row("Google Maps", h.googleMapsLink ? `<a href="${ensureUrl(h.googleMapsLink)}" target="_blank" style="color:#2563eb;">${h.googleMapsLink}</a>` : "—")}
+            ${row("1st Visit", `Check-In: ${h.visit1in || "N/A"}<br/>Check-Out: ${h.visit1out || "N/A"}`)}
+            ${row("2nd Visit", `Check-In: ${h.visit2in || "N/A"}<br/>Check-Out: ${h.visit2out || "N/A"}`)}
+            ${row("Includes", h.includes?.trim() || "—")}
+          </div>
+        `).join("")}
+
+        <a href="voucher.html" class="btn-blue"><i class="fa fa-arrow-left"></i> Back</a>
+      `;
     }
 
-    // ── Build PDF ─────────────────────────────────
+    // ══════════════════════════════════════════════
+    // BUILD PDF
+    // ══════════════════════════════════════════════
     function buildPDF(v) {
-      const totalPax = (Number(v.pax?.adults) || 0) + (Number(v.pax?.childWithBed) || 0) + (Number(v.pax?.childWithoutBed) || 0) + (Number(v.pax?.childBelow5) || 0);
+      const totalPax = (Number(v.pax?.adults) || 0)
+        + (Number(v.pax?.childWithBed) || 0)
+        + (Number(v.pax?.childWithoutBed) || 0)
+        + (Number(v.pax?.childBelow5) || 0);
+
       const hotels = v.hotels || [];
 
-      const hotelTables = hotels.map((h, i) => {
-        const startNewPage = i === 1 || (i > 1 && (i % 2 === 1));
-
-        return `
-    ${startNewPage ? `<div style="page-break-before:always;break-before:page;height:0;font-size:0;line-height:0;">&nbsp;</div>` : ""}
-    <div style="margin-top:24px;">
-      <div style="
-        background:#2563eb;
-        text-align:center;
-        padding:8px;
-        font-weight:bold;
-        color:white;
-        -webkit-print-color-adjust:exact;
-        print-color-adjust:exact;
-      ">
-        HOTEL #${i + 1} - ${h.hotelName || ""}
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        <tr><td style="padding:7px;font-weight:600;width:40%;">CONFIRMATION NUMBER</td><td style="padding:7px;font-weight:bold;">${h.confirmationNumber || ""}</td></tr>
-        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">HOTEL NAME</td><td style="padding:7px;">${h.hotelName || ""}</td></tr>
-        <tr><td style="padding:7px;font-weight:600;">CITY / COUNTRY</td><td style="padding:7px;">${h.hotelCity ? `${h.hotelCity}, ${h.hotelCountry}` : ""}</td></tr>
-        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">ROOM CATEGORY</td><td style="padding:7px;">${h.roomCategory || ""}</td></tr>
-        <tr><td style="padding:7px;font-weight:600;">NO. OF ROOMS</td><td style="padding:7px;">${h.noOfRooms || ""}</td></tr>
-        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">ROOM TYPE</td><td style="padding:7px;">${h.roomType || ""}</td></tr>
-        <tr><td style="padding:7px;font-weight:600;">MEAL PLAN</td><td style="padding:7px;">${h.mealPlan || ""}</td></tr>
-        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-          <td style="padding:7px;font-weight:600;">1ST VISIT</td>
-          <td style="padding:7px;">CHECK-IN: ${h.visit1in || "N/A"} &nbsp; CHECK-OUT: ${h.visit1out || "N/A"}</td>
-        </tr>
-        <tr>
-          <td style="padding:7px;font-weight:600;">2ND VISIT</td>
-          <td style="padding:7px;">CHECK-IN: ${h.visit2in || "N/A"} &nbsp; CHECK-OUT: ${h.visit2out || "N/A"}</td>
-        </tr>
-        <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-          <td style="padding:7px;font-weight:600;">INCLUDES</td>
-          <td style="padding:7px;">${h.includes || "—"}</td>
-        </tr>
-      </table>
-    </div>
-  `;
-      }).join("");
-
-      const el = document.getElementById("pdfVoucher");
-      el.style.display = "block";
-      el.innerHTML = `
-      <div style="width:100%;
-  margin:0;
-  background:white;
-  padding:6px 10px;
-  box-sizing:border-box;
-  font-family:Arial,sans-serif;
-  color:#000;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+      // ── Shared header HTML ─────────────────────
+      const companyHeader = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
           <img src="https://i.ibb.co/bRJr7nNM/images.png" style="height:80px;"/>
           <div style="text-align:right;font-size:13px;">
             <p style="font-weight:600;">Aspiration Asia Trekking and Expedition Pvt Ltd.</p>
@@ -388,29 +368,141 @@
             <p>Contact: +977-982761738 / +977-9851021924</p>
           </div>
         </div>
-        <div style="border:1px solid #ccc;text-align:center;margin-top:20px;padding:8px;font-weight:bold;color:#2563eb;font-size:16px;">HOTEL CONFIRMATION VOUCHER</div>
-        <div style="text-align:center;margin-top:16px;">
-          <p style="color:#dc2626;font-weight:600;font-size:18px;">${v.guestName}</p>
-          <p style="color:#ef4444;font-size:14px;">${v.nationality || ""}</p>
-        </div>
-        <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;">
-          <tr><td style="padding:7px;font-weight:600;width:40%;">TOTAL PAX</td><td style="padding:7px;">${totalPax}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">ADULTS</td><td style="padding:7px;">${v.pax?.adults || 0}</td></tr>
-          <tr><td style="padding:7px;font-weight:600;">CHILD WITH BED</td><td style="padding:7px;">${v.pax?.childWithBed || "—"}</td></tr>
-          <tr style="background:rgb(206,218,228);"><td style="padding:7px;font-weight:600;">CHILD WITHOUT BED (6-10 YRS)</td><td style="padding:7px;">${v.pax?.childWithoutBed || "—"}</td></tr>
-          <tr><td style="padding:7px;font-weight:600;">CHILD BELOW 5 YRS</td><td style="padding:7px;">${v.pax?.childBelow5 || "—"}</td></tr>
-        </table>
-        ${hotelTables}
-      </div>`;
+        <div style="border:1px solid #ccc;text-align:center;padding:8px;font-weight:bold;color:#2563eb;font-size:16px;margin-bottom:14px;">
+          HOTEL CONFIRMATION VOUCHER
+        </div>`;
+
+      // ── Footer HTML ────────────────────────────
+      const footerHTML = `
+        <div style="margin-top:28px;font-family:Arial,sans-serif;font-size:12px;color:#1e293b;">
+          <div style="height:3px;background:#2563eb;-webkit-print-color-adjust:exact;print-color-adjust:exact;margin-bottom:16px;"></div>
+          <div style="background:#eff6ff;padding:12px 16px;border-radius:6px;margin-bottom:16px;">
+            <p style="font-weight:700;font-size:13px;color:#1e3a8a;margin-bottom:8px;">CANCELLATION POLICY</p>
+            <ul style="list-style:disc;padding-left:18px;line-height:1.8;color:#1e293b;">
+              <li>All hotel bookings are subject to availability and confirmation.</li>
+              <li>Cancellations made <strong>15 days</strong> before arrival – No Refund</li>
+              <li>Cancellations made <strong>15–35 days</strong>before arrival – 50% cancellation charge.</li>
+              <li>No-show or early checkout – No refund applicable.</li>
+              <li>During peak season, festivals, long weekends, or special events, separate cancellation policies may apply.</li>
+              <li>Refund processing time depends on hotel and banking procedures.( Min 2 weeks +)</li>
+            </ul>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:16px;">
+            <div style="text-align:center;">
+              <img src="YOUR_STAMP_IMAGE_URL_HERE" style="height:90px;width:90px;object-fit:contain;" onerror="this.style.display='none'"/>
+              <div style="width:90px;height:90px;border:2px dashed #94a3b8;display:flex;align-items:center;justify-content:center;font-size:11px;color:#94a3b8;border-radius:6px;margin-top:0px;" id="stampPlaceholder">
+                Official Stamp
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:180px;border-top:1px solid #1e293b;padding-top:6px;font-size:12px;color:#475569;">Authorized Signature</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:4px;">Aspiration Asia Trekking & Expedition</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:14px;font-size:11px;color:#94a3b8;font-style:italic;">
+            This is a computer generated voucher. For queries contact: sales@aspirationasia.com
+          </div>
+        </div>`;
+
+      // ── Client info page (Page 1) ──────────────
+      const clientPage = `
+        <div style="font-family:Arial,sans-serif;color:#000;padding:0;">
+          ${companyHeader}
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:0;">
+            <tr><td style="padding:7px;font-weight:600;width:40%;">GUEST NAME</td><td style="padding:7px;font-weight:700;">${v.guestName}</td></tr>
+            <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">NATIONALITY</td><td style="padding:7px;">${v.nationality || "—"}</td></tr>
+            <tr><td style="padding:7px;font-weight:600;">CONTACT NUMBER</td><td style="padding:7px;">${v.contactNumber || "—"}</td></tr>
+            <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">MEAL INSTRUCTION</td><td style="padding:7px;">${v.mealInstruction || "—"}</td></tr>
+            <tr><td style="padding:7px;font-weight:600;">WHEEL CHAIR</td><td style="padding:7px;">${v.wheelChair || "—"}</td></tr>
+            <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">ARRIVAL FLIGHT DETAILS</td><td style="padding:7px;">${v.arrivalFlightDetails || "—"}</td></tr>
+            <tr><td style="padding:7px;font-weight:600;">PREFERRED FLOOR</td><td style="padding:7px;">${v.preferredFloor || "—"}</td></tr>
+            <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">TOTAL PAX</td><td style="padding:7px;">${totalPax}</td></tr>
+            <tr><td style="padding:7px;font-weight:600;">ADULTS</td><td style="padding:7px;">${v.pax?.adults || 0}</td></tr>
+            <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">CHILD WITH BED</td><td style="padding:7px;">${v.pax?.childWithBed || "—"}</td></tr>
+            <tr><td style="padding:7px;font-weight:600;">CHILD WITHOUT BED (6-10 YRS)</td><td style="padding:7px;">${v.pax?.childWithoutBed || "—"}</td></tr>
+            <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">CHILD BELOW 5 YRS</td><td style="padding:7px;">${v.pax?.childBelow5 || "—"}</td></tr>
+          </table>
+        </div>`;
+
+      // ── Hotel pages: one per page with page-break-before ──
+      const allHotelDivs = hotels.map((h, i) => {
+        const isLastHotel = i === hotels.length - 1;
+        const mapsCell = h.googleMapsLink
+          ? `<a href="${ensureUrl(h.googleMapsLink)}" style="color:#2563eb;text-decoration:underline;word-break:break-all;">${h.googleMapsLink}</a>`
+          : "—";
+        return `
+          <div class="hotel-page" style=" margin-top:25px;
+          page-break-before: always;
+  break-before: page;
+  page-break-after: auto;
+  break-after: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  overflow: hidden;
+  background: white;
+  position: relative;
+  display: block;">
+            <div style="font-family:Arial,sans-serif;color:#000;padding:0;">
+              <div style="
+                background:#2563eb;
+  color:white;
+  text-align:center;
+  padding:8px;
+  font-weight:bold;
+  font-size:14px;
+  display:block;
+  position:relative;
+  z-index:2;
+  margin-top:0;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+              ">HOTEL #${i + 1} - ${h.hotelName || ""}</div>
+              <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <tr><td style="padding:7px;font-weight:600;width:40%;">CONFIRMATION NUMBER</td><td style="padding:7px;font-weight:bold;">${h.confirmationNumber || ""}</td></tr>
+                <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">HOTEL NAME</td><td style="padding:7px;">${h.hotelName || ""}</td></tr>
+                <tr><td style="padding:7px;font-weight:600;">CITY / COUNTRY</td><td style="padding:7px;">${h.hotelCity ? `${h.hotelCity}, ${h.hotelCountry}` : "—"}</td></tr>
+                <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">ROOM CATEGORY</td><td style="padding:7px;">${h.roomCategory || ""}</td></tr>
+                <tr><td style="padding:7px;font-weight:600;">NO. OF ROOMS</td><td style="padding:7px;">${h.noOfRooms || ""}</td></tr>
+                <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">ROOM TYPE</td><td style="padding:7px;">${h.roomType || ""}</td></tr>
+                <tr><td style="padding:7px;font-weight:600;">MEAL PLAN</td><td style="padding:7px;">${h.mealPlan || ""}</td></tr>
+                <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">HOTEL CONTACT</td><td style="padding:7px;">${h.hotelContactNumber || "—"}</td></tr>
+                <tr><td style="padding:7px;font-weight:600;">GOOGLE MAPS</td><td style="padding:7px;">${mapsCell}</td></tr>
+                <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                  <td style="padding:7px;font-weight:600;">1ST VISIT</td>
+                  <td style="padding:7px;"><strong>Check-In:</strong> ${h.visit1in || "N/A"}<br/><strong>Check-Out:</strong> ${h.visit1out || "N/A"}</td>
+                </tr>
+                <tr>
+                  <td style="padding:7px;font-weight:600;">2ND VISIT</td>
+                  <td style="padding:7px;"><strong>Check-In:</strong> ${h.visit2in || "N/A"}<br/><strong>Check-Out:</strong> ${h.visit2out || "N/A"}</td>
+                </tr>
+                <tr style="background:rgb(206,218,228);-webkit-print-color-adjust:exact;print-color-adjust:exact;"><td style="padding:7px;font-weight:600;">INCLUDES</td><td style="padding:7px;">${h.includes || "—"}</td></tr>
+<tr><td style="padding:7px;font-weight:600;">EMERGENCY NUMBER</td><td style="padding:7px;font-weight:600;color:#dc2626;">+977 982-7621738</td></tr>
+              </table>
+              </table>
+              ${isLastHotel ? footerHTML : ""}
+            </div>
+          </div>`;
+      }).join("");
+
+      const el = document.getElementById("pdfVoucher");
+      el.style.display = "block";
+      el.innerHTML = `
+        <div style="width:100%;margin:0;background:white;padding:6px 10px;box-sizing:border-box;font-family:Arial,sans-serif;color:#000;">
+          ${clientPage}
+          ${allHotelDivs}
+        </div>`;
     }
 
-    // ── Build hotel options for dropdown ──────────
+    // ══════════════════════════════════════════════
+    // HOTEL BLOCK BUILDER (Edit Modal)
+    // ══════════════════════════════════════════════
     function hotelOptions(selectedName) {
-      return `<option value="" disabled ${!selectedName ? "selected" : ""} hidden></option>` +
-        hotelsData.map(h => `<option value="${h._id}" data-city="${h.city}" data-country="${h.country}" ${h.name === selectedName ? "selected" : ""}>${h.name}</option>`).join("");
+      return `<option value="" disabled ${!selectedName ? "selected" : ""} hidden></option>`
+        + hotelsData.map(h =>
+          `<option value="${h._id}" data-city="${h.city}" data-country="${h.country}" ${h.name === selectedName ? "selected" : ""}>${h.name}</option>`
+        ).join("");
     }
 
-    // ── Auto-fill city/country on hotel select ────
     function onEditHotelSelect(select) {
       select.classList.add("has-value");
       const block = select.closest(".hotel-block-edit");
@@ -425,15 +517,13 @@
       });
     }
 
-    // ── Renumber hotel headings after remove ──────
     function renumberBlocks() {
       document.querySelectorAll(".hotel-block-edit").forEach((block, i) => {
-        const heading = block.querySelector(".hotel-heading");
-        if (heading) heading.textContent = `Hotel #${i + 1}`;
+        const h = block.querySelector(".hotel-heading");
+        if (h) h.textContent = `Hotel #${i + 1}`;
       });
     }
 
-    // ── Build a single hotel block element ────────
     function buildHotelBlock(h, index) {
       const isNew = !h || Object.keys(h).length === 0;
       const confirmNum = isNew
@@ -443,79 +533,85 @@
       const block = document.createElement("div");
       block.className = "hotel-block-edit card p-4";
       block.innerHTML = `
-      <div class="flex items-center justify-between mb-3">
-        <p class="hotel-heading" style="font-size:0.85rem;color:#2563eb;font-weight:600;">Hotel #${index + 1}</p>
-        <button onclick="this.closest('.hotel-block-edit').remove();renumberBlocks();" class="btn-red text-xs">
-          <i class="fa fa-times"></i> Remove
-        </button>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div class="floating col-span-2">
-          <input class="input e-conf" type="text" value="${confirmNum}" placeholder=" "/>
-          <label>Confirmation Number</label>
+        <div class="flex items-center justify-between mb-3">
+          <p class="hotel-heading" style="font-size:0.85rem;color:#2563eb;font-weight:600;">Hotel #${index + 1}</p>
+          <button onclick="this.closest('.hotel-block-edit').remove();renumberBlocks();" class="btn-red text-xs">
+            <i class="fa fa-times"></i> Remove
+          </button>
         </div>
-        <div class="floating col-span-2">
-          <select class="input e-hotelSelect ${!isNew && h.hotelName ? "has-value" : ""}" onchange="onEditHotelSelect(this)">
-            ${hotelOptions(!isNew ? h.hotelName : "")}
-          </select>
-          <label>Hotel Name</label>
-        </div>
-        <div class="floating">
-          <input class="input e-city" type="text" value="${!isNew ? (h.hotelCity || "") : ""}" placeholder=" " readonly/>
-          <label>City</label>
-        </div>
-        <div class="floating">
-          <input class="input e-country" type="text" value="${!isNew ? (h.hotelCountry || "") : ""}" placeholder=" " readonly/>
-          <label>Country</label>
-        </div>
-        <div class="floating">
-          <input class="input e-roomCategory" type="text" value="${!isNew ? (h.roomCategory || "") : ""}" placeholder=" "/>
-          <label>Room Category</label>
-        </div>
-        <div class="floating">
-          <input class="input e-noOfRooms" type="text" value="${!isNew ? (h.noOfRooms || "") : ""}" placeholder=" "/>
-          <label>No. of Rooms</label>
-        </div>
-        <div class="floating">
-          <select class="input e-roomType ${!isNew && h.roomType ? "has-value" : ""}" onchange="this.classList.add('has-value')">
-            <option value="" disabled ${!(!isNew && h.roomType) ? "selected" : ""} hidden></option>
-            ${["Single Room", "Double Room", "Twin Room", "Suite"].map(t => `<option ${!isNew && h.roomType === t ? "selected" : ""}>${t}</option>`).join("")}
-          </select>
-          <label>Room Type</label>
-        </div>
-        <div class="floating">
-          <select class="input e-mealPlan ${!isNew && h.mealPlan ? "has-value" : ""}" onchange="this.classList.add('has-value')">
-            <option value="" disabled ${!(!isNew && h.mealPlan) ? "selected" : ""} hidden></option>
-            ${["EP", "CP", "MAP", "AP", "JP"].map(m => `<option ${!isNew && h.mealPlan === m ? "selected" : ""}>${m}</option>`).join("")}
-          </select>
-          <label>Meal Plan</label>
-        </div>
-        <div class="floating">
-          <input class="input e-v1in" type="date" value="${!isNew && h.visit1in && h.visit1in !== 'N/A' ? h.visit1in : ""}"/>
-          <label>1st Check-In</label>
-        </div>
-        <div class="floating">
-          <input class="input e-v1out" type="date" value="${!isNew && h.visit1out && h.visit1out !== 'N/A' ? h.visit1out : ""}"/>
-          <label>1st Check-Out</label>
-        </div>
-        <div class="floating">
-          <input class="input e-v2in" type="date" value="${!isNew && h.visit2in && h.visit2in !== 'N/A' ? h.visit2in : ""}"/>
-          <label>2nd Check-In</label>
-        </div>
-        <div class="floating">
-          <input class="input e-v2out" type="date" value="${!isNew && h.visit2out && h.visit2out !== 'N/A' ? h.visit2out : ""}"/>
-          <label>2nd Check-Out</label>
-        </div>
-        
-        <div class="floating col-span-2">
-          <input class="input e-includes" type="text" value="${!isNew ? (h.includes || "") : ""}" placeholder=" "/>
-          <label>Includes</label>
-        </div>
-      </div>`;
+        <div class="grid grid-cols-2 gap-3">
+          <div class="floating col-span-2">
+            <input class="input e-conf" type="text" value="${confirmNum}" placeholder=" "/>
+            <label>Confirmation Number</label>
+          </div>
+          <div class="floating col-span-2">
+            <select class="input e-hotelSelect ${!isNew && h.hotelName ? "has-value" : ""}" onchange="onEditHotelSelect(this)">
+              ${hotelOptions(!isNew ? h.hotelName : "")}
+            </select>
+            <label>Hotel Name</label>
+          </div>
+          <div class="floating">
+            <input class="input e-city" type="text" value="${!isNew ? (h.hotelCity || "") : ""}" placeholder=" " readonly/>
+            <label>City</label>
+          </div>
+          <div class="floating">
+            <input class="input e-country" type="text" value="${!isNew ? (h.hotelCountry || "") : ""}" placeholder=" " readonly/>
+            <label>Country</label>
+          </div>
+          <div class="floating">
+            <input class="input e-roomCategory" type="text" value="${!isNew ? (h.roomCategory || "") : ""}" placeholder=" "/>
+            <label>Room Category</label>
+          </div>
+          <div class="floating">
+            <input class="input e-noOfRooms" type="text" value="${!isNew ? (h.noOfRooms || "") : ""}" placeholder=" "/>
+            <label>No. of Rooms</label>
+          </div>
+          <div class="floating">
+            <select class="input e-roomType ${!isNew && h.roomType ? "has-value" : ""}" onchange="this.classList.add('has-value')">
+              <option value="" disabled ${!(!isNew && h.roomType) ? "selected" : ""} hidden></option>
+              ${["Single Room", "Double Room", "Twin Room", "Suite"].map(t => `<option ${!isNew && h.roomType === t ? "selected" : ""}>${t}</option>`).join("")}
+            </select>
+            <label>Room Type</label>
+          </div>
+          <div class="floating">
+            <select class="input e-mealPlan ${!isNew && h.mealPlan ? "has-value" : ""}" onchange="this.classList.add('has-value')">
+              <option value="" disabled ${!(!isNew && h.mealPlan) ? "selected" : ""} hidden></option>
+              ${["EP", "CP", "MAP", "AP", "JP"].map(m => `<option ${!isNew && h.mealPlan === m ? "selected" : ""}>${m}</option>`).join("")}
+            </select>
+            <label>Meal Plan</label>
+          </div>
+          <div class="floating">
+            <input class="input e-v1in" type="date" value="${!isNew && h.visit1in && h.visit1in !== "N/A" ? h.visit1in : ""}"/>
+            <label>1st Check-In</label>
+          </div>
+          <div class="floating">
+            <input class="input e-v1out" type="date" value="${!isNew && h.visit1out && h.visit1out !== "N/A" ? h.visit1out : ""}"/>
+            <label>1st Check-Out</label>
+          </div>
+          <div class="floating">
+            <input class="input e-v2in" type="date" value="${!isNew && h.visit2in && h.visit2in !== "N/A" ? h.visit2in : ""}"/>
+            <label>2nd Check-In</label>
+          </div>
+          <div class="floating">
+            <input class="input e-v2out" type="date" value="${!isNew && h.visit2out && h.visit2out !== "N/A" ? h.visit2out : ""}"/>
+            <label>2nd Check-Out</label>
+          </div>
+          <div class="floating">
+            <input class="input e-hotelContact" type="number" value="${!isNew ? (h.hotelContactNumber || "") : ""}" placeholder=" "/>
+            <label>Hotel Contact Number</label>
+          </div>
+          <div class="floating">
+            <input class="input e-mapsLink" type="text" value="${!isNew ? (h.googleMapsLink || "") : ""}" placeholder=" "/>
+            <label>Google Maps Link</label>
+          </div>
+          <div class="floating col-span-2">
+            <input class="input e-includes" type="text" value="${!isNew ? (h.includes || "") : ""}" placeholder=" "/>
+            <label>Includes</label>
+          </div>
+        </div>`;
       return block;
     }
 
-    // ── Add new empty hotel block ─────────────────
     function addEditHotelBlock() {
       const container = document.getElementById("e_hotelBlocks");
       const count = container.querySelectorAll(".hotel-block-edit").length;
@@ -527,9 +623,16 @@
       if (!currentVoucher) return;
       const v = currentVoucher;
       document.getElementById("e_guestName").value = v.guestName || "";
+      document.getElementById("e_contactNumber").value = v.contactNumber || "";
+      document.getElementById("e_mealInstruction").value = v.mealInstruction || "";
+      document.getElementById("e_wheelChair").value = v.wheelChair || "";
+      document.getElementById("e_arrivalFlightDetails").value = v.arrivalFlightDetails || "";
+      document.getElementById("e_preferredFloor").value = v.preferredFloor || "";
+
       const natSel = document.getElementById("e_nationality");
       natSel.value = v.nationality || "";
       if (v.nationality) natSel.classList.add("has-value");
+
       document.getElementById("e_adults").value = v.pax?.adults || "";
       document.getElementById("e_childWithBed").value = v.pax?.childWithBed || "";
       document.getElementById("e_childWithoutBed").value = v.pax?.childWithoutBed || "";
@@ -566,7 +669,8 @@
           visit1out: block.querySelector(".e-v1out")?.value || "N/A",
           visit2in: block.querySelector(".e-v2in")?.value || "N/A",
           visit2out: block.querySelector(".e-v2out")?.value || "N/A",
-
+          hotelContactNumber: block.querySelector(".e-hotelContact")?.value || "",
+          googleMapsLink: block.querySelector(".e-mapsLink")?.value || "",
           includes: block.querySelector(".e-includes")?.value || "",
         };
       });
@@ -574,6 +678,11 @@
       const payload = {
         guestName,
         nationality: document.getElementById("e_nationality").value,
+        contactNumber: document.getElementById("e_contactNumber").value,
+        mealInstruction: document.getElementById("e_mealInstruction").value,
+        wheelChair: document.getElementById("e_wheelChair").value,
+        arrivalFlightDetails: document.getElementById("e_arrivalFlightDetails").value,
+        preferredFloor: document.getElementById("e_preferredFloor").value,
         pax: {
           adults: document.getElementById("e_adults").value || 0,
           childWithBed: document.getElementById("e_childWithBed").value || 0,
@@ -597,6 +706,29 @@
       } catch { showToast("Error updating voucher.", false); }
     }
 
+    // ── Download PDF ──────────────────────────────
+    function downloadPDF() {
+      const element = document.getElementById("pdfVoucher");
+      element.style.display = "block";
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `voucher-${id || "download"}.pdf`,
+        image: { type: "jpeg", quality: 1 },
+        html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: {
+          mode: ["avoid-all", "css", "legacy"],
+          before: ".hotel-page",
+          avoid: ["table", "tr", ".hotel-page"]
+        },
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        element.style.display = "none";
+      });
+    }
+
     // ── Toast ─────────────────────────────────────
     function showToast(msg, success = true) {
       const e = document.querySelector(".toast"); if (e) e.remove();
@@ -606,43 +738,8 @@
       document.body.appendChild(t);
       setTimeout(() => t.remove(), 3000);
     }
-    function downloadPDF() {
-      window.alert("Do you wanna donwload the pdf");
-      const element = document.getElementById("pdfVoucher");
-      element.style.display = "block";
 
-      const opt = {
-        margin: [10, 10, 10, 10], // mm-like spacing
-        filename: `voucher-${id || "download"}.pdf`,
-        image: { type: "jpeg", quality: 1 },
-
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          scrollY: 0
-        },
-
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait"
-        },
-
-        pagebreak: {
-          mode: ["css"],
-        }
-      };
-
-      html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
-        .then(() => {
-          element.style.display = "none";
-        });
-    }
-
-    // ── Init ─────────────────────────────────────
+    // ── Init ──────────────────────────────────────
     loadHotels().then(() => loadVoucher());
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
