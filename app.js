@@ -13,6 +13,7 @@ import invoiceRoute from "./Routes/invoiceRoutes.js";
 import cashReceiptRoute from "./Routes/cashReceiptRoutes.js";
 import calculatorRoute from "./Routes/calculatorRoutes.js";
 import authMiddleware from "./Middleware/authMiddleware.js";
+import clientRoutes from './Routes/clientRoutes.js';
 
 connectDB();
 
@@ -31,7 +32,10 @@ app.use("/api/vouchers",      authMiddleware, voucherRoute);
 app.use("/api/invoices",      authMiddleware, invoiceRoute);
 app.use("/api/cash-receipts", authMiddleware, cashReceiptRoute);
 app.use("/api/calculator",    authMiddleware, calculatorRoute);
+app.use('/api/clients', clientRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log("Server running on port " + process.env.PORT);
 });
+
+

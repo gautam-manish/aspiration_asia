@@ -330,10 +330,10 @@
 
         /* ── Preview-only styles ── */
         .pv-label {
-            font-size: 0.65rem;
+            font-size: 0.9rem;
             font-weight: 700;
             letter-spacing: 0.12em;
-            color: #94a3b8;
+            color: black;
             text-transform: uppercase;
             margin-bottom: 3px;
             font-family: 'DM Sans', sans-serif;
@@ -442,6 +442,10 @@
         <input id="inv_discount" class="inv-input sm" type="number" value="0" min="0"
             style="width: 80px; height: 36px; border-color: #e2e8f0; margin-right: 8px; display: none;"
             oninput="recalc()" placeholder="0" />
+        <!-- <label  for="">Advance:</label> -->
+        <input id="inv_advance" class="inv-input sm" type="number" value="" min="0"
+            style="width:100px;height:36px;border-color:#e2e8f0;margin-right:8px;" oninput="recalc()"
+            placeholder="Advance" />
         <button class="tab-btn" onclick="saveInvoice()" style="border-color:#16a34a;color:#16a34a;" id="saveBtn">
             <i class="fa fa-save"></i> Save Invoice
         </button>
@@ -477,13 +481,19 @@
                         </div>
                     </div>
                     <div style="text-align:right;min-width:170px;">
-                        <div class="pv-label">Invoice</div>
+                        <div class="pv-label" style="font-weight: bold; font-size: 20px;">Invoice</div>
                         <div id="pv_number" style="font-size:0.9rem;font-weight:600;color:#1e293b;margin-bottom:10px;">
                         </div>
-                        <div class="pv-label">Date</div>
-                        <div id="pv_date" style="font-size:0.85rem;color:#1e293b;margin-bottom:10px;"></div>
-                        <div class="pv-label">Balance Due</div>
-                        <div id="pv_hdr_balance" style="font-size:0.95rem;font-weight:700;color:#1e293b;"></div>
+                        <div class="invoicedate"
+                            style="display: flex; justify-content: space-evenly; align-items: center;">
+                            <div class="pv-label" style="margin-right: -20px; padding-bottom: 4px;">Date:</div>
+                            <div id="pv_date"
+                                style="font-size:1rem;color:#1e293b;margin-bottom:10px; margin-right: -50px; margin-left: -10px;">
+                            </div>
+
+                        </div>
+                        <!-- <div class="pv-label">Balance Due</div>
+                        <div id="pv_hdr_balance" style="font-size:0.95rem;font-weight:700;color:#1e293b;"></div> -->
                     </div>
                 </div>
 
@@ -491,7 +501,7 @@
 
                 <!-- BILL TO -->
                 <div style="padding:14px 40px 16px;">
-                    <div class="pv-label" style="margin-bottom:5px;">Bill To</div>
+                    <div class="pv-label" style="margin-bottom:5px; font-size: 15px;">Bill To</div>
                     <div id="pv_bill_name" style="font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:4px;">
                     </div>
                     <div id="pv_bill_email" style="font-size:0.82rem;color:#2563eb;margin-bottom:3px;"></div>
@@ -505,11 +515,12 @@
                 <div style="padding:0 40px;">
                     <table style="width:100%;border-collapse:collapse;">
                         <thead>
-                            <tr>
-                                <th class="pv-line-th" style="text-align:left;width:50%;">Description</th>
-                                <th class="pv-line-th" style="text-align:right;width:20%;">Rate</th>
-                                <th class="pv-line-th" style="text-align:center;width:10%;">Qty</th>
-                                <th class="pv-line-th" style="text-align:right;width:20%;">Amount</th>
+                            <tr style="font-weight: bold; ">
+                                <th class="pv-line-th" style="text-align:left;width:50%; font-size: 14px; padding-left: 10px;">Description
+                                </th>
+                                <th class="pv-line-th" style="text-align:center;width:20%; font-size: 14px;">Rate</th>
+                                <th class="pv-line-th" style="text-align:center;width:10%; font-size: 14px;">Qty</th>
+                                <th class="pv-line-th" style="text-align:right;width:20%; font-size: 14px; padding-right: 10px;">Amount</th>
                             </tr>
                         </thead>
                         <tbody id="pv_line_body"></tbody>
@@ -519,16 +530,22 @@
                 <!-- TOTALS (right-aligned) -->
                 <div style="padding:12px 40px 8px;display:flex;justify-content:flex-end;">
                     <div style="width:300px;">
-                        <div class="pv-total-row">
-                            <span
-                                style="font-weight:600;color:#1e293b;text-transform:uppercase;letter-spacing:0.06em;font-size:0.75rem;">Subtotal</span>
-                            <span id="pv_subtotal" style="color:#1e293b;font-weight:500;"></span>
-                        </div>
 
+                        <div id="pv_advance_row" class="pv-total-row" style="display:none;">
+                            <span
+                                style="font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.06em;font-size:0.75rem;">Booking
+                                Amount</span>
+                            <span id="pv_advance_amt" style="color:#16a34a;font-weight:500;"></span>
+                        </div>
                         <div id="pv_discount_row" class="pv-total-row">
                             <span id="pv_discount_label"
                                 style="font-weight:600;color:#1e293b;text-transform:uppercase;letter-spacing:0.06em;font-size:0.75rem;">Discount</span>
                             <span id="pv_discount_amt" style="color:#ef4444;font-weight:500;"></span>
+                        </div>
+                        <div class="pv-total-row">
+                            <span
+                                style="font-weight:600;color:#1e293b;text-transform:uppercase;letter-spacing:0.06em;font-size:0.75rem;">Subtotal</span>
+                            <span id="pv_subtotal" style="color:#1e293b;font-weight:500;"></span>
                         </div>
                         <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:0.9rem;">
                             <span
@@ -554,6 +571,17 @@
                 <div id="pv_terms_wrap" style="padding:0 40px 32px;display:none;">
                     <div class="pv-label" style="margin-bottom:4px;">Terms &amp; Conditions</div>
                     <div id="pv_terms" style="font-size:0.82rem;color:#64748b;white-space:pre-wrap;"></div>
+                </div>
+                <!-- ACCOUNT DETAILS -->
+                <div id="pv_account_details" style="padding:0 40px 32px;">
+                    <div class="pv-label" style="margin-bottom:8px;">Account Details</div>
+                    <div style="font-size:0.85rem;color:#475569;line-height:1.8;">
+                        <div>Account number: 94EBLN02600105200710ASPIR</div>
+                        <div>Account name: Everest Bank Limited</div>
+                        <div>IFSC: HDFC0000240</div>
+                        <div>Bank Name: HDFC Bank</div>
+                        <div>Branch: Sandoz Bazar</div>
+                    </div>
                 </div>
 
             </div>
@@ -611,12 +639,11 @@
                         <div class="space-y-2" id="fromEdit">
                             <div>
                                 <div class="inv-label">Name</div><input class="inv-input" id="from_name"
-                                    value="Aspiration Asia Trekking and Expedition Pvt Ltd."
-                                    placeholder="Company Name" />
+                                    value="Aspiration Asia Trekking & Expedition Pvt Ltd" placeholder="Company Name" />
                             </div>
                             <div>
                                 <div class="inv-label">Email</div><input class="inv-input" id="from_email"
-                                    value="aspirationasia@gmail.com" type="email" placeholder="email@company.com" />
+                                    value="account@aspirationasia.com" type="email" placeholder="email@company.com" />
                             </div>
                             <div>
                                 <div class="inv-label">Address</div><input class="inv-input" id="from_addr1"
@@ -710,14 +737,17 @@
 
                     <!-- Totals -->
                     <div class="totals-box">
-                        <div class="total-row">
-                            <span>Subtotal</span>
-                            <span id="disp_subtotal">0.00</span>
+                        <div class="total-row" id="edit_advance_row" style="display:none;">
+                            <span>Booking Amount</span>
+                            <span id="disp_advance">0.00</span>
                         </div>
-
                         <div class="total-row" id="edit_discount_row" style="display:none;">
                             <span>Discount</span>
                             <span id="disp_discount">0.00</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span id="disp_subtotal">0.00</span>
                         </div>
                         <div class="total-row grand">
                             <span>Total</span>
@@ -796,6 +826,7 @@
             document.getElementById('currencySelect').style.display = isEdit ? '' : 'none';
             document.getElementById('inv_discount_type').style.display = isEdit ? '' : 'none';
             document.getElementById('inv_discount').style.display = (isEdit && document.getElementById('inv_discount_type').value !== 'none') ? '' : 'none';
+            document.getElementById("inv_advance").style.display = isEdit ? "" : "none";
             if (!isEdit) populatePreview();
         }
 
@@ -850,16 +881,18 @@
             });
 
             // Totals
-            let subtotal = 0;
+            let baseSubtotal = 0;
             document.querySelectorAll('#lineBody tr').forEach(tr => {
                 const inputs = tr.querySelectorAll('input');
-                if (inputs.length >= 3) subtotal += (Number(inputs[1].value) || 0) * (Number(inputs[2].value) || 0);
+                if (inputs.length >= 3) baseSubtotal += (Number(inputs[1].value) || 0) * (Number(inputs[2].value) || 0);
             });
-            const discount = calcDiscount(subtotal);
-            const total = subtotal - discount;
+            const discount = calcDiscount(baseSubtotal);
+            const total = baseSubtotal - discount;
+            const subtotal = total - (Number(document.getElementById("inv_advance")?.value) || 0);
             const discType = document.getElementById('inv_discount_type')?.value || 'none';
             const discVal = Number(document.getElementById('inv_discount')?.value) || 0;
 
+            // Discount applies to both subtotal and total; booking amount applies only to subtotal
             document.getElementById('pv_subtotal').textContent = sym + fmtNum(subtotal);
 
             const discRow = document.getElementById('pv_discount_row');
@@ -872,10 +905,21 @@
 
             document.getElementById('pv_total').textContent = sym + fmtNum(total);
 
+            const advance = Number(document.getElementById("inv_advance")?.value) || 0;
+            const pvAdvRow = document.getElementById("pv_advance_row");
+            if (advance > 0) {
+                pvAdvRow.style.display = "flex";
+                document.getElementById("pv_advance_amt").textContent = sym + fmtNum(advance);
+                document.getElementById("pv_balance_footer").textContent = prefix + sym + fmtNum(subtotal);
+            } else {
+                pvAdvRow.style.display = "none";
+                document.getElementById("pv_balance_footer").textContent = prefix + sym + fmtNum(total);
+            }
+
             // Balance Due (header + footer)
-            const balanceStr = prefix + sym + fmtNum(total);
-            document.getElementById('pv_hdr_balance').textContent = balanceStr;
-            document.getElementById('pv_balance_footer').textContent = balanceStr;
+            // const balanceStr = prefix + sym + fmtNum(total);
+            // document.getElementById('pv_hdr_balance').textContent = balanceStr;
+            // document.getElementById('pv_balance_footer').textContent = balanceStr;
 
             // Notes / Terms
             const notes = document.getElementById('inv_notes').value;
@@ -944,7 +988,7 @@
             }
         }, 0);
         function recalc() {
-            let subtotal = 0;
+            let baseSubtotal = 0;
             document.querySelectorAll("#lineBody tr").forEach(tr => {
                 const inputs = tr.querySelectorAll("input");
                 const textareas = tr.querySelectorAll("textarea");
@@ -952,7 +996,7 @@
                     const rate = Number(inputs[1].value) || 0;
                     const qty = Number(inputs[2].value) || 0;
                     const amt = qty * rate;
-                    subtotal += amt;
+                    baseSubtotal += amt;
                     tr.querySelector(".line-amt").textContent = currentCurrency + amt.toFixed(2);
                     const texts = tr.querySelectorAll(".line-text");
                     if (texts[0]) texts[0].textContent = inputs[0].value;
@@ -961,8 +1005,10 @@
                     if (texts[3]) texts[3].textContent = qty;
                 }
             });
-            const discount = calcDiscount(subtotal);
-            const total = subtotal - discount;
+            const discount = calcDiscount(baseSubtotal);
+            const total = baseSubtotal - discount;
+            const advance = Number(document.getElementById("inv_advance")?.value) || 0;
+            const subtotal = total - advance;
             document.getElementById("disp_subtotal").textContent = currentCurrency + subtotal.toFixed(2);
             // Show/hide discount row in edit form
             const editDiscRow = document.getElementById("edit_discount_row");
@@ -971,6 +1017,13 @@
                 document.getElementById("disp_discount").textContent = currentCurrency + discount.toFixed(2);
             } else {
                 editDiscRow.style.display = 'none';
+            }
+            const editAdvRow = document.getElementById("edit_advance_row");
+            if (advance > 0) {
+                editAdvRow.style.display = "";
+                document.getElementById("disp_advance").textContent = currentCurrency + fmtNum(advance);
+            } else {
+                editAdvRow.style.display = "none";
             }
             document.getElementById("disp_total").textContent = currentCurrency + total.toFixed(2);
         }
@@ -991,9 +1044,11 @@
                 }
             });
 
-            const subtotal = lineItems.reduce((s, i) => s + i.amount, 0);
-            const discount = calcDiscount(subtotal);
-            const total = subtotal - discount;
+            const baseSubtotal = lineItems.reduce((s, i) => s + i.amount, 0);
+            const discount = calcDiscount(baseSubtotal);
+            const total = baseSubtotal - discount;
+            const advance = Number(document.getElementById("inv_advance")?.value) || 0;
+            const subtotal = total - advance;
 
             return {
                 invoiceNumber: document.getElementById("inv_number").value,
@@ -1016,6 +1071,7 @@
                 subtotal, discount, total,
                 discountType: document.getElementById("inv_discount_type").value,
                 discountValue: Number(document.getElementById("inv_discount").value) || 0,
+                advance: Number(document.getElementById("inv_advance")?.value) || 0,
                 notes: document.getElementById("inv_notes").value,
                 terms: document.getElementById("inv_terms").value,
                 currency: document.getElementById("currencySelect").value,
@@ -1130,6 +1186,7 @@
             document.getElementById("inv_discount_type").value = inv.discountType || "none";
             document.getElementById("inv_discount").value = inv.discountValue || 0;
             toggleDiscountInput();
+            document.getElementById("inv_advance").value = inv.advance || 0;
             document.getElementById("currencySelect").value = inv.currency || "$";
             currentCurrency = inv.currency || "$";
             document.getElementById("inv_notes").value = inv.notes || "";
