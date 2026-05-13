@@ -484,7 +484,7 @@
                         </div>
                     </div>
                     <div style="text-align:right;min-width:160px;">
-                        <div class="pv-label" style="font-weight: bold; font-size: 20px;">Invoice</div>
+                        <div id="pv_title" class="pv-label" style="font-weight: bold; font-size: 20px;">Invoice</div>
                         <div id="pv_number" style="font-size:0.92rem;font-weight:600;color:#1e293b;margin-bottom:6px;">
                         </div>
                         <div class="invoicedate"
@@ -954,6 +954,7 @@
             }
 
             // Invoice meta
+            document.getElementById('pv_title').textContent = document.getElementById('inv_title').value || 'Invoice';
             document.getElementById('pv_number').textContent = document.getElementById('inv_number').value;
             const rawDate = document.getElementById('inv_date').value;
             document.getElementById('pv_date').textContent = rawDate
@@ -1174,7 +1175,6 @@
                     email: document.getElementById("from_email").value,
                     address1: document.getElementById("from_addr1").value,
                     address2: document.getElementById("from_addr2").value,
-                    zip: document.getElementById("from_zip").value,
                     phone: document.getElementById("from_phone").value,
                 },
                 billTo: {
@@ -1293,7 +1293,6 @@
             document.getElementById("from_email").value = inv.from?.email || "";
             document.getElementById("from_addr1").value = inv.from?.address1 || "";
             document.getElementById("from_addr2").value = inv.from?.address2 || "";
-            document.getElementById("from_zip").value = inv.from?.zip || "";
             document.getElementById("from_phone").value = inv.from?.phone || "";
             document.getElementById("bill_name").value = inv.billTo?.name || "";
             document.getElementById("bill_email").value = inv.billTo?.email || "";
