@@ -816,14 +816,13 @@
             'Rs ': { main: 'Rupees', sub: 'Paisa' },
         };
 
-        // ── Number to Words converter ─────────────────
+        // ── Number to Words converter (Lakh/Crore format) ──
         function numberToWords(num) {
             if (num === 0) return 'Zero';
             const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
                 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
                 'Seventeen', 'Eighteen', 'Nineteen'];
             const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-            const scales = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
 
             function convertChunk(n) {
                 let str = '';
@@ -850,18 +849,27 @@
             if (intPart === 0 && decPart === 0) return 'Zero';
 
             let words = '';
-            let scaleIdx = 0;
             if (intPart === 0) {
                 words = 'Zero';
             } else {
-                while (intPart > 0) {
-                    const chunk = intPart % 1000;
-                    if (chunk !== 0) {
-                        const chunkWords = convertChunk(chunk);
-                        words = chunkWords + (scales[scaleIdx] ? ' ' + scales[scaleIdx] : '') + (words ? ' ' : '') + words;
+                // South Asian: ones/tens/hundreds, then groups of 2 digits
+                // Structure: Arab (10^9), Crore (10^7), Lakh (10^5), Thousand (10^3), Hundreds
+                const divisors = [
+                    { value: 1000000000, label: 'Arab' },
+                    { value: 10000000,   label: 'Crore' },
+                    { value: 100000,     label: 'Lakh' },
+                    { value: 1000,       label: 'Thousand' },
+                ];
+
+                for (const { value, label } of divisors) {
+                    if (intPart >= value) {
+                        const count = Math.floor(intPart / value);
+                        words += (words ? ' ' : '') + convertChunk(count) + ' ' + label;
+                        intPart %= value;
                     }
-                    intPart = Math.floor(intPart / 1000);
-                    scaleIdx++;
+                }
+                if (intPart > 0) {
+                    words += (words ? ' ' : '') + convertChunk(intPart);
                 }
             }
 
