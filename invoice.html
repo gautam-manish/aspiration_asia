@@ -557,9 +557,15 @@
 
                 <!-- BALANCE DUE FOOTER -->
                 <div
-                    style="margin:4px 40px 28px;border-top:2px solid #e2e8f0;padding:14px 0;display:flex;justify-content:space-between;align-items:center;">
+                    style="margin:4px 40px 0;border-top:2px solid #e2e8f0;padding:14px 0;display:flex;justify-content:space-between;align-items:center;">
                     <span class="pv-label" style="margin-bottom:0;">Balance Due</span>
                     <span id="pv_balance_footer" style="font-size:1.15rem;font-weight:700;color:#1e293b;"></span>
+                </div>
+
+                <!-- AMOUNT IN WORDS -->
+                <div id="pv_amount_words_wrap" style="margin:0 40px 28px;padding:8px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">
+                    <span style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:600;">Amount in Words</span>
+                    <div id="pv_amount_words" style="font-size:0.85rem;color:#1e293b;font-weight:600;font-style:italic;margin-top:3px;"></div>
                 </div>
 
                 <!-- NOTES -->
@@ -779,6 +785,74 @@
         // ── Currency prefix map ───────────────────────
         const currencyPrefix = { '$': 'USD ', '€': 'EUR ', '£': 'GBP ', '₹': 'INR ', 'Rs ': 'NPR ' };
 
+        // ── Currency word map (for "amount in words") ─
+        const currencyWordMap = {
+            '$':   { main: 'Dollars', sub: 'Cents' },
+            '€':   { main: 'Euros',   sub: 'Cents' },
+            '£':   { main: 'Pounds',  sub: 'Pence' },
+            '₹':   { main: 'Rupees',  sub: 'Paisa' },
+            'Rs ': { main: 'Rupees',  sub: 'Paisa' },
+        };
+
+        // ── Number to Words converter ─────────────────
+        function numberToWords(num) {
+            if (num === 0) return 'Zero';
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+                'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+                'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const scales = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
+
+            function convertChunk(n) {
+                let str = '';
+                if (n >= 100) {
+                    str += ones[Math.floor(n / 100)] + ' Hundred';
+                    n %= 100;
+                    if (n > 0) str += ' and ';
+                }
+                if (n >= 20) {
+                    str += tens[Math.floor(n / 10)];
+                    n %= 10;
+                    if (n > 0) str += '-' + ones[n];
+                } else if (n > 0) {
+                    str += ones[n];
+                }
+                return str;
+            }
+
+            // Split into integer and decimal parts
+            const parts = Math.abs(num).toFixed(2).split('.');
+            let intPart = parseInt(parts[0], 10);
+            const decPart = parseInt(parts[1], 10);
+
+            if (intPart === 0 && decPart === 0) return 'Zero';
+
+            let words = '';
+            let scaleIdx = 0;
+            if (intPart === 0) {
+                words = 'Zero';
+            } else {
+                while (intPart > 0) {
+                    const chunk = intPart % 1000;
+                    if (chunk !== 0) {
+                        const chunkWords = convertChunk(chunk);
+                        words = chunkWords + (scales[scaleIdx] ? ' ' + scales[scaleIdx] : '') + (words ? ' ' : '') + words;
+                    }
+                    intPart = Math.floor(intPart / 1000);
+                    scaleIdx++;
+                }
+            }
+
+            // Build final string with currency
+            const cw = currencyWordMap[currentCurrency] || { main: '', sub: '' };
+            let result = words.trim() + (cw.main ? ' ' + cw.main : '');
+            if (decPart > 0) {
+                result += ' and ' + convertChunk(decPart) + (cw.sub ? ' ' + cw.sub : '');
+            }
+            result += ' Only';
+            return result;
+        }
+
         // ── Number formatter (comma-separated) ────────
         function fmtNum(n) {
             return Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -907,14 +981,20 @@
 
             const advance = Number(document.getElementById("inv_advance")?.value) || 0;
             const pvAdvRow = document.getElementById("pv_advance_row");
+            let balanceDueAmount;
             if (advance > 0) {
                 pvAdvRow.style.display = "flex";
                 document.getElementById("pv_advance_amt").textContent = sym + fmtNum(advance);
                 document.getElementById("pv_balance_footer").textContent = prefix + sym + fmtNum(subtotal);
+                balanceDueAmount = subtotal;
             } else {
                 pvAdvRow.style.display = "none";
                 document.getElementById("pv_balance_footer").textContent = prefix + sym + fmtNum(total);
+                balanceDueAmount = total;
             }
+
+            // Amount in Words
+            document.getElementById('pv_amount_words').textContent = numberToWords(balanceDueAmount);
 
             // Balance Due (header + footer)
             // const balanceStr = prefix + sym + fmtNum(total);
