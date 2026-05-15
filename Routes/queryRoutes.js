@@ -1,21 +1,21 @@
 import express from "express";
 import {
-  getNextQueryId,
-  createQuery,
-  getAllQueries,
-  getQueryById,
-  updateQuery,
-  updateQueryStatus,
+  getNextBookingId,
+  createBooking,
+  getAllBookings,
+  getBookingById,
+  updateBooking,
+  updateBookingStatus,
 } from "../Controller/bookingController.js";
 
 const router = express.Router();
 
 // ─────────────────────────────────────────
-// Base Route: /api/queries
+// Base Route: /api/bookings
 // ─────────────────────────────────────────
-router.route("/next-id").get(getNextQueryId);       // GET  /api/queries/next-id
-router.route("/").get(getAllQueries).post(createQuery); // GET  /api/queries  |  POST /api/queries
-router.route("/:id").get(getQueryById).put(updateQuery); // GET  /api/queries/:id  |  PUT /api/queries/:id
-router.route("/:id/status").patch(updateQueryStatus);  // PATCH /api/queries/:id/status
+router.route("/next-id").get(getNextBookingId); // GET  /api/bookings/next-id
+router.route("/").get(getAllBookings).post(createBooking); // GET  /api/bookings  |  POST /api/bookings
+router.route("/:id").get(getBookingById).put(updateBooking); // GET  /api/bookings/:id  |  PUT /api/bookings/:id
+router.route("/:id/status").patch(updateBookingStatus); // PATCH /api/bookings/:id/status
 
 export default router;

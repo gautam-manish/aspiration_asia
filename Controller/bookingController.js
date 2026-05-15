@@ -1,59 +1,94 @@
-import Query from "../Model/bookingSchema.js";
+import Booking from "../Model/bookingSchema.js";
 
 // ─────────────────────────────────────────
-// Helper: generate next Query ID
+// Helper: generate next Booking ID
 // Format: ASA{year}{runningNumber}
 // Running number starts at 100 and is global
 // (not reset per year — just the prefix changes)
 // ─────────────────────────────────────────
 async function generateQueryId() {
-  const year   = new Date().getFullYear();
+  const year = new Date().getFullYear();
   const prefix = `ASA${year}`;
 
-  // Count ALL queries that have this year's prefix
-  const count = await Query.countDocuments({
-    queryId: { $regex: `^${prefix}` }
+  // Count ALL bookings that have this year's prefix
+  const count = await Booking.countDocuments({
+    queryId: { $regex: `^${prefix}` },
   });
 
   return `${prefix}${100 + count}`;
 }
 
 // ─────────────────────────────────────────
-// @desc    Get next Query ID (for frontend display)
-// @route   GET /api/queries/next-id
+// @desc    Get next Booking ID (for frontend display)
+// @route   GET /api/bookings/next-id
 // ─────────────────────────────────────────
-export const getNextQueryId = async (req, res) => {
+export const getNextBookingId = async (req, res) => {
   try {
     const queryId = await generateQueryId();
-    res.status(200).json({ success: true, message: "Next query ID generated", data: null, queryId });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Next booking ID generated",
+        data: null,
+        queryId,
+      });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };
 
 // ─────────────────────────────────────────
-// @desc    Create Query
-// @route   POST /api/queries
+// @desc    Create Booking
+// @route   POST /api/bookings
 // ─────────────────────────────────────────
-export const createQuery = async (req, res) => {
+export const createBooking = async (req, res) => {
   try {
     const {
       queryId: providedId,
-      clientName, email, mobile, address,
-      destination, pickupPoint, dropPoint,
-      arrivalDate, departureDate, noOfDays,
-      adults, childEB, childNoEB, childU5, rooms,
-      hotelCategory, mealPlan,
+      clientName,
+      email,
+      mobile,
+      address,
+      destination,
+      pickupPoint,
+      dropPoint,
+      arrivalDate,
+      departureDate,
+      noOfDays,
+      adults,
+      childEB,
+      childNoEB,
+      childU5,
+      rooms,
+      hotelCategory,
+      mealPlan,
     } = req.body;
 
     if (!clientName) {
-      return res.status(400).json({ success: false, message: "Client / Agent name is required", data: null });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Client / Agent name is required",
+          data: null,
+        });
     }
     if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required", data: null });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required", data: null });
     }
     if (!destination) {
-      return res.status(400).json({ success: false, message: "Destination is required", data: null });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Destination is required",
+          data: null,
+        });
     }
 
     // Use provided ID or generate one (handles race conditions gracefully)
@@ -62,39 +97,52 @@ export const createQuery = async (req, res) => {
       queryId = await generateQueryId();
     } else {
       // Make sure provided ID isn't already taken (race condition)
-      const exists = await Query.findOne({ queryId });
+      const exists = await Booking.findOne({ queryId });
       if (exists) queryId = await generateQueryId();
     }
 
-    const query = await Query.create({
+    const booking = await Booking.create({
       queryId,
-      clientName, email, mobile, address,
-      destination, pickupPoint, dropPoint,
-      arrivalDate:   arrivalDate   ? new Date(arrivalDate)   : undefined,
+      clientName,
+      email,
+      mobile,
+      address,
+      destination,
+      pickupPoint,
+      dropPoint,
+      arrivalDate: arrivalDate ? new Date(arrivalDate) : undefined,
       departureDate: departureDate ? new Date(departureDate) : undefined,
       noOfDays,
-      adults:    Number(adults)   || 0,
-      childEB:   Number(childEB)  || 0,
-      childNoEB: Number(childNoEB)|| 0,
-      childU5:   Number(childU5)  || 0,
-      rooms:     Number(rooms)    || 0,
+      adults: Number(adults) || 0,
+      childEB: Number(childEB) || 0,
+      childNoEB: Number(childNoEB) || 0,
+      childU5: Number(childU5) || 0,
+      rooms: Number(rooms) || 0,
       hotelCategory: hotelCategory || "",
-      mealPlan:      mealPlan      || "",
+      mealPlan: mealPlan || "",
       status: "confirmed",
     });
 
-    res.status(201).json({ success: true, message: "Query created successfully", data: query });
+    res
+      .status(201)
+      .json({
+        success: true,
+        message: "Booking created successfully",
+        data: booking,
+      });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };
 
 // ─────────────────────────────────────────
-// @desc    Get All Queries
+// @desc    Get All Bookings
 //          Filters: status, search (clientName / queryId / destination)
-// @route   GET /api/queries?status=confirmed&search=john
+// @route   GET /api/bookings?status=confirmed&search=john
 // ─────────────────────────────────────────
-export const getAllQueries = async (req, res) => {
+export const getAllBookings = async (req, res) => {
   try {
     const { status, search } = req.query;
     const filter = {};
@@ -110,96 +158,136 @@ export const getAllQueries = async (req, res) => {
     if (search) {
       filter.$or = [
         { clientName: { $regex: search, $options: "i" } },
-        { queryId:    { $regex: search, $options: "i" } },
-        { destination:{ $regex: search, $options: "i" } },
+        { queryId: { $regex: search, $options: "i" } },
+        { destination: { $regex: search, $options: "i" } },
       ];
     }
 
-    const queries = await Query.find(filter).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, message: "Queries fetched successfully", data: queries });
+    const bookings = await Booking.find(filter).sort({ createdAt: -1 });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Bookings fetched successfully",
+        data: bookings,
+      });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };
 
 // ─────────────────────────────────────────
-// @desc    Get Single Query by ID
-// @route   GET /api/queries/:id
+// @desc    Get Single Booking by ID
+// @route   GET /api/bookings/:id
 // ─────────────────────────────────────────
-export const getQueryById = async (req, res) => {
+export const getBookingById = async (req, res) => {
   try {
-    const query = await Query.findById(req.params.id);
-    if (!query) {
-      return res.status(404).json({ success: false, message: "Query not found", data: null });
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found", data: null });
     }
-    res.status(200).json({ success: true, message: "Query fetched successfully", data: query });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Booking fetched successfully",
+        data: booking,
+      });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };
 
 // ─────────────────────────────────────────
-// @desc    Update Query by ID (full update from edit modal)
-// @route   PUT /api/queries/:id
+// @desc    Update Booking by ID (full update from edit modal)
+// @route   PUT /api/bookings/:id
 // ─────────────────────────────────────────
-export const updateQuery = async (req, res) => {
+export const updateBooking = async (req, res) => {
   try {
     if (Object.keys(req.body).length === 0) {
-      return res.status(400).json({ success: false, message: "No data provided to update", data: null });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "No data provided to update",
+          data: null,
+        });
     }
 
     // Prevent queryId from being changed
     delete req.body.queryId;
 
-    // Prevent re-confirming a cancelled query via full update
-    const existing = await Query.findById(req.params.id);
+    // Prevent re-confirming a cancelled booking via full update
+    const existing = await Booking.findById(req.params.id);
     if (!existing) {
-      return res.status(404).json({ success: false, message: "Query not found", data: null });
-    }
-    if (existing.status === "cancelled" && req.body.status === "confirmed") {
-      return res.status(400).json({ success: false, message: "Cannot revert a cancelled query", data: null });
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found", data: null });
     }
 
-    const query = await Query.findByIdAndUpdate(
+    const booking = await Booking.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true },
     );
 
-    res.status(200).json({ success: true, message: "Query updated successfully", data: query });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Booking updated successfully",
+        data: booking,
+      });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message, data: null });
+    res
+      .status(400)
+      .json({ success: false, message: error.message, data: null });
   }
 };
 
 // ─────────────────────────────────────────
-// @desc    Update Query Status only
+// @desc    Update Booking Status only
 //          Business rule: confirmed → cancelled only, not reversible
-// @route   PATCH /api/queries/:id/status
+// @route   PATCH /api/bookings/:id/status
 // ─────────────────────────────────────────
-export const updateQueryStatus = async (req, res) => {
+export const updateBookingStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
     if (!["confirmed", "cancelled"].includes(status)) {
-      return res.status(400).json({ success: false, message: "Invalid status value", data: null });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status value", data: null });
     }
 
-    const query = await Query.findById(req.params.id);
-    if (!query) {
-      return res.status(404).json({ success: false, message: "Query not found", data: null });
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found", data: null });
     }
 
-    // Business rule: cannot revert cancelled → confirmed
-    if (query.status === "cancelled" && status === "confirmed") {
-      return res.status(400).json({ success: false, message: "Cannot revert a cancelled query", data: null });
-    }
+    // ── Status ──────────────────────────────────
 
-    query.status = status;
-    await query.save();
+    booking.status = status;
+    await booking.save();
 
-    res.status(200).json({ success: true, message: `Query status updated to ${status}`, data: query });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: `Booking status updated to ${status}`,
+        data: booking,
+      });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };

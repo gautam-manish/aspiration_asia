@@ -4,15 +4,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Query Detail | ASA</title>
+  <title>Booking Detail</title>
   <script>if (!localStorage.getItem("token")) window.location.replace("login.html");</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="shared-theme.css" />
   <style>
-    .floating label { background: white; }
-    .modal-box .floating label { background: white; }
+    .floating label {
+      background: white;
+    }
+
+    .modal-box .floating label {
+      background: white;
+    }
   </style>
 </head>
 
@@ -20,12 +25,12 @@
   <main class="max-w-4xl mx-auto px-6 py-10">
 
     <a href="bookings.html" class="inline-flex items-center gap-2 text-sm mb-6 transition" style="color:#64748b;">
-      <i class="fa fa-arrow-left"></i> Back to Queries
+      <i class="fa fa-arrow-left"></i> Back to Bookings
     </a>
 
     <div class="flex gap-3 mb-6 flex-wrap">
       <button onclick="openEditModal()" class="btn-outline">
-        <i class="fa fa-edit"></i> Edit Query
+        <i class="fa fa-edit"></i> Edit Booking
       </button>
     </div>
 
@@ -46,7 +51,7 @@
     <div class="modal-box">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h3 class="text-xl" style="color:#1e293b;">Edit Query</h3>
+          <h3 class="text-xl" style="color:#1e293b;">Edit Booking</h3>
           <p id="e_displayQId" class="text-xs mt-1 font-semibold" style="color:#2563eb;"></p>
         </div>
         <button onclick="closeEditModal()"
@@ -56,13 +61,13 @@
       <div class="space-y-4">
 
         <!-- Status -->
-        <p class="section-title">Query Status</p>
+        <p class="section-title">Booking Status</p>
         <div class="card p-4 flex items-center justify-between gap-4 flex-wrap" style="background:#f8fafc;">
           <div>
             <p class="text-sm font-semibold" style="color:#1e293b;" id="statusDesc">—</p>
-            <p class="text-xs mt-1" style="color:#64748b;">
+            <!-- <p class="text-xs mt-1" style="color:#64748b;">
               Once cancelled, status cannot be reverted.
-            </p>
+            </p> -->
           </div>
           <div class="flex gap-2">
             <button id="btnConfirmed" onclick="setStatus('confirmed')"
@@ -70,7 +75,8 @@
               <i class="fa fa-check-circle mr-1"></i> Confirmed
             </button>
             <button id="btnCancelled" onclick="setStatus('cancelled')"
-              class="text-xs px-4 py-2 font-semibold rounded-lg border transition" style="border-color:#ef4444;color:#ef4444;background:white;">
+              class="text-xs px-4 py-2 font-semibold rounded-lg border transition"
+              style="border-color:#ef4444;color:#ef4444;background:white;">
               <i class="fa fa-times-circle mr-1"></i> Mark Cancelled
             </button>
           </div>
@@ -183,8 +189,8 @@
         </div>
 
         <div class="flex gap-3 pt-4">
-          <button onclick="updateQuery()" class="btn-blue flex-1">
-            <i class="fa fa-save"></i> Update Query
+          <button onclick="updateBooking()" class="btn-blue flex-1">
+            <i class="fa fa-save"></i> Update Booking
           </button>
           <button onclick="closeEditModal()" class="btn-outline flex-1">Cancel</button>
         </div>
@@ -194,24 +200,24 @@
 
   <script src="sidebar.js"></script>
   <script>
-    const QUERIES_API = "http://localhost:5000/api/queries";
+    const BOOKINGS_API = "http://localhost:5000/api/bookings";
     const authHeaders = () => ({ "Authorization": "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" });
     const id = new URLSearchParams(window.location.search).get("id");
-    let currentQuery = null;
+    let currentBooking = null;
 
     // ── LOAD ──────────────────────────────────────
-    async function loadQuery() {
+    async function loadBooking() {
       if (!id) {
-        document.getElementById("content").innerHTML = `<p style="color:red;">No query ID provided.</p>`;
+        document.getElementById("content").innerHTML = `<p style="color:red;">No booking ID provided.</p>`;
         return;
       }
       try {
-        const res  = await fetch(`${QUERIES_API}/${id}`, { headers: authHeaders() });
+        const res = await fetch(`${BOOKINGS_API}/${id}`, { headers: authHeaders() });
         const data = await res.json();
-        if (data.success) { currentQuery = data.data; renderDetail(data.data); }
+        if (data.success) { currentBooking = data.data; renderDetail(data.data); }
         else document.getElementById("content").innerHTML = `<p style="color:red;">${data.message}</p>`;
       } catch {
-        document.getElementById("content").innerHTML = `<p style="color:red;">Failed to load query.</p>`;
+        document.getElementById("content").innerHTML = `<p style="color:red;">Failed to load booking.</p>`;
       }
     }
 
@@ -224,10 +230,10 @@
     }
 
     function paxDisplay(q) {
-      const adults   = Number(q.adults)    || 0;
-      const children = (Number(q.childEB)  || 0)
-                     + (Number(q.childNoEB)|| 0)
-                     + (Number(q.childU5)  || 0);
+      const adults = Number(q.adults) || 0;
+      const children = (Number(q.childEB) || 0)
+        + (Number(q.childNoEB) || 0)
+        + (Number(q.childU5) || 0);
       return `${adults} Adult${adults !== 1 ? "s" : ""} / ${children} Child${children !== 1 ? "ren" : ""}`;
     }
 
@@ -240,7 +246,7 @@
     }
 
     function renderDetail(q) {
-      document.title = `${q.queryId} | Query`;
+      document.title = `${q.queryId} | Booking`;
       const created = new Date(q.createdAt).toLocaleDateString("en-GB", {
         day: "2-digit", month: "long", year: "numeric"
       });
@@ -256,7 +262,7 @@
           <div>
             <h2 class="text-3xl" style="color:#1e293b;">${q.clientName}</h2>
             <p class="text-sm mt-1" style="color:#64748b;">
-              Query ID: <strong style="color:#2563eb;">${q.queryId}</strong> &nbsp;·&nbsp; Created ${created}
+              Booking ID: <strong style="color:#2563eb;">${q.queryId}</strong> &nbsp;·&nbsp; Created ${created}
             </p>
           </div>
           ${statusBadge(q.status || "confirmed")}
@@ -302,38 +308,38 @@
 
     // ── EDIT MODAL ────────────────────────────────
     function openEditModal() {
-      if (!currentQuery) return;
-      const q = currentQuery;
+      if (!currentBooking) return;
+      const q = currentBooking;
 
       document.getElementById("e_displayQId").textContent = q.queryId;
 
       // Populate fields
-      document.getElementById("e_name").value    = q.clientName    || "";
-      document.getElementById("e_email").value   = q.email         || "";
-      document.getElementById("e_mobile").value  = q.mobile        || "";
-      document.getElementById("e_address").value = q.address       || "";
-      document.getElementById("e_pickup").value  = q.pickupPoint   || "";
-      document.getElementById("e_drop").value    = q.dropPoint     || "";
-      document.getElementById("e_days").value    = q.noOfDays      || "";
-      document.getElementById("e_adults").value  = q.adults        ?? "";
-      document.getElementById("e_childEB").value = q.childEB       ?? "";
-      document.getElementById("e_childNoEB").value = q.childNoEB   ?? "";
-      document.getElementById("e_childU5").value = q.childU5       ?? "";
-      document.getElementById("e_rooms").value   = q.rooms         ?? "";
+      document.getElementById("e_name").value = q.clientName || "";
+      document.getElementById("e_email").value = q.email || "";
+      document.getElementById("e_mobile").value = q.mobile || "";
+      document.getElementById("e_address").value = q.address || "";
+      document.getElementById("e_pickup").value = q.pickupPoint || "";
+      document.getElementById("e_drop").value = q.dropPoint || "";
+      document.getElementById("e_days").value = q.noOfDays || "";
+      document.getElementById("e_adults").value = q.adults ?? "";
+      document.getElementById("e_childEB").value = q.childEB ?? "";
+      document.getElementById("e_childNoEB").value = q.childNoEB ?? "";
+      document.getElementById("e_childU5").value = q.childU5 ?? "";
+      document.getElementById("e_rooms").value = q.rooms ?? "";
 
       // Dates
       document.getElementById("e_arrival").value =
-        q.arrivalDate   ? q.arrivalDate.substring(0, 10)   : "";
+        q.arrivalDate ? q.arrivalDate.substring(0, 10) : "";
       document.getElementById("e_departure").value =
         q.departureDate ? q.departureDate.substring(0, 10) : "";
 
       // Selects
-      document.getElementById("e_destination").value = q.destination    || "";
-      document.getElementById("e_hotel").value        = q.hotelCategory || "";
-      document.getElementById("e_meal").value         = q.mealPlan      || "";
-      if (q.destination)    document.getElementById("e_destination").classList.add("has-value");
-      if (q.hotelCategory)  document.getElementById("e_hotel").classList.add("has-value");
-      if (q.mealPlan)       document.getElementById("e_meal").classList.add("has-value");
+      document.getElementById("e_destination").value = q.destination || "";
+      document.getElementById("e_hotel").value = q.hotelCategory || "";
+      document.getElementById("e_meal").value = q.mealPlan || "";
+      if (q.destination) document.getElementById("e_destination").classList.add("has-value");
+      if (q.hotelCategory) document.getElementById("e_hotel").classList.add("has-value");
+      if (q.mealPlan) document.getElementById("e_meal").classList.add("has-value");
 
       // Status buttons
       updateStatusUI(q.status || "confirmed");
@@ -345,22 +351,22 @@
       const isConf = status === "confirmed";
       const btnConf = document.getElementById("btnConfirmed");
       const btnCanc = document.getElementById("btnCancelled");
-      const desc    = document.getElementById("statusDesc");
+      const desc = document.getElementById("statusDesc");
 
       desc.textContent = isConf
-        ? "Status: Confirmed — query is active."
-        : "Status: Cancelled — this query has been cancelled.";
+        ? "Status: Confirmed — booking is active."
+        : "Status: Cancelled — this booking has been cancelled.";
 
-      // Confirmed button — always disabled (can't revert from cancelled)
-      btnConf.disabled = true;
+      // Confirmed button — disabled when already confirmed, enabled when cancelled
+      btnConf.disabled = isConf;
       btnConf.style.cssText = isConf
-        ? "border-color:#16a34a;color:#16a34a;background:#dcfce7;opacity:1;cursor:default;"
-        : "border-color:#e2e8f0;color:#94a3b8;background:#f8fafc;opacity:0.6;cursor:not-allowed;";
+        ? "border-color:#16a34a;color:#16a34a;background:#dcfce7;opacity:1;cursor:default;border:1px solid;padding:8px 16px;font-size:0.75rem;font-weight:600;border-radius:8px;"
+        : "border-color:#16a34a;color:#16a34a;background:white;border:1px solid;padding:8px 16px;font-size:0.75rem;font-weight:600;border-radius:8px;cursor:pointer;";
 
-      // Cancelled button — disabled if already cancelled
+      // Cancelled button — disabled when already cancelled, enabled when confirmed
       btnCanc.disabled = !isConf;
       btnCanc.style.cssText = !isConf
-        ? "border-color:#e2e8f0;color:#94a3b8;background:#f8fafc;opacity:0.6;cursor:not-allowed;border:1px solid;padding:8px 16px;font-size:0.75rem;font-weight:600;border-radius:8px;"
+        ? "border-color:#ef4444;color:#ef4444;background:#fee2e2;opacity:1;cursor:default;border:1px solid;padding:8px 16px;font-size:0.75rem;font-weight:600;border-radius:8px;"
         : "border-color:#ef4444;color:#ef4444;background:white;border:1px solid;padding:8px 16px;font-size:0.75rem;font-weight:600;border-radius:8px;cursor:pointer;";
     }
 
@@ -371,11 +377,11 @@
 
     // ── CALC DAYS ─────────────────────────────────
     function calcDays() {
-      const a  = document.getElementById("e_arrival").value;
-      const d  = document.getElementById("e_departure").value;
+      const a = document.getElementById("e_arrival").value;
+      const d = document.getElementById("e_departure").value;
       const el = document.getElementById("e_days");
       if (a && d) {
-        const diff = Math.round((new Date(d) - new Date(a)) / (1000 * 60 * 60 * 24));
+        const diff = Math.round((new Date(d) - new Date(a)) / (1000 * 60 * 60 * 24)) + 1;
         el.value = diff > 0 ? `${diff} Day${diff !== 1 ? "s" : ""}` : "";
       } else {
         el.value = "";
@@ -384,18 +390,15 @@
 
     // ── SET STATUS ────────────────────────────────
     async function setStatus(status) {
-      if (!currentQuery) return;
-      if (currentQuery.status === status) return;
-      if (currentQuery.status === "cancelled" && status === "confirmed") {
-        showToast("Cannot revert a cancelled query.", false); return;
-      }
+      if (!currentBooking) return;
+      if (currentBooking.status === status) return;
       try {
-        const res = await axios.patch(`${QUERIES_API}/${id}/status`,
+        const res = await axios.patch(`${BOOKINGS_API}/${id}/status`,
           { status }, { headers: authHeaders() });
         if (res.data.success) {
-          currentQuery.status = status;
+          currentBooking.status = status;
           updateStatusUI(status);
-          renderDetail(currentQuery);
+          renderDetail(currentBooking);
           showToast(`Status updated to ${status}. ✓`);
         } else {
           showToast(res.data.message || "Failed to update.", false);
@@ -403,57 +406,57 @@
       } catch { showToast("Error updating status.", false); }
     }
 
-    // ── UPDATE QUERY ──────────────────────────────
-    async function updateQuery() {
-      const name      = document.getElementById("e_name").value.trim();
-      const email     = document.getElementById("e_email").value.trim();
-      const dest      = document.getElementById("e_destination").value;
-      const arrival   = document.getElementById("e_arrival").value;
+    // ── UPDATE BOOKING ──────────────────────────────
+    async function updateBooking() {
+      const name = document.getElementById("e_name").value.trim();
+      const email = document.getElementById("e_email").value.trim();
+      const dest = document.getElementById("e_destination").value;
+      const arrival = document.getElementById("e_arrival").value;
       const departure = document.getElementById("e_departure").value;
 
-      if (!name)      { showToast("Please enter client / agent name.", false); return; }
-      if (!email)     { showToast("Please enter email address.", false); return; }
-      if (!dest)      { showToast("Please select a destination.", false); return; }
-      if (!arrival)   { showToast("Please select arrival date.", false); return; }
+      if (!name) { showToast("Please enter client / agent name.", false); return; }
+      if (!email) { showToast("Please enter email address.", false); return; }
+      if (!dest) { showToast("Please select a destination.", false); return; }
+      if (!arrival) { showToast("Please select arrival date.", false); return; }
       if (!departure) { showToast("Please select departure date.", false); return; }
       if (new Date(departure) <= new Date(arrival)) {
         showToast("Departure must be after arrival.", false); return;
       }
 
       const payload = {
-        clientName:    name,
+        clientName: name,
         email,
-        mobile:        document.getElementById("e_mobile").value.trim(),
-        address:       document.getElementById("e_address").value.trim(),
-        destination:   dest,
-        pickupPoint:   document.getElementById("e_pickup").value.trim(),
-        dropPoint:     document.getElementById("e_drop").value.trim(),
-        arrivalDate:   arrival,
+        mobile: document.getElementById("e_mobile").value.trim(),
+        address: document.getElementById("e_address").value.trim(),
+        destination: dest,
+        pickupPoint: document.getElementById("e_pickup").value.trim(),
+        dropPoint: document.getElementById("e_drop").value.trim(),
+        arrivalDate: arrival,
         departureDate: departure,
-        noOfDays:      document.getElementById("e_days").value,
-        adults:        Number(document.getElementById("e_adults").value)    || 0,
-        childEB:       Number(document.getElementById("e_childEB").value)   || 0,
-        childNoEB:     Number(document.getElementById("e_childNoEB").value) || 0,
-        childU5:       Number(document.getElementById("e_childU5").value)   || 0,
-        rooms:         Number(document.getElementById("e_rooms").value)     || 0,
+        noOfDays: document.getElementById("e_days").value,
+        adults: Number(document.getElementById("e_adults").value) || 0,
+        childEB: Number(document.getElementById("e_childEB").value) || 0,
+        childNoEB: Number(document.getElementById("e_childNoEB").value) || 0,
+        childU5: Number(document.getElementById("e_childU5").value) || 0,
+        rooms: Number(document.getElementById("e_rooms").value) || 0,
         hotelCategory: document.getElementById("e_hotel").value,
-        mealPlan:      document.getElementById("e_meal").value,
-        status:        currentQuery.status,
+        mealPlan: document.getElementById("e_meal").value,
+        status: currentBooking.status,
       };
 
       try {
-        const res = await axios.put(`${QUERIES_API}/${id}`, payload, {
+        const res = await axios.put(`${BOOKINGS_API}/${id}`, payload, {
           headers: authHeaders()
         });
         if (res.data.success) {
-          showToast("Query updated! ✓");
+          showToast("Booking updated! ✓");
           closeEditModal();
-          currentQuery = res.data.data;
+          currentBooking = res.data.data;
           renderDetail(res.data.data);
         } else {
           showToast(res.data.message || "Failed to update.", false);
         }
-      } catch { showToast("Error updating query.", false); }
+      } catch { showToast("Error updating booking.", false); }
     }
 
     // ── TOAST ─────────────────────────────────────
@@ -467,7 +470,8 @@
     }
 
     // ── INIT ──────────────────────────────────────
-    loadQuery();
+    loadBooking();
   </script>
 </body>
+
 </html>

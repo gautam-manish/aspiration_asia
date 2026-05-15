@@ -125,8 +125,14 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #2a4a6f transparent;
     }
+    #sidebar-nav::-webkit-scrollbar { width: 4px; }
+    #sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+    #sidebar-nav::-webkit-scrollbar-thumb { background: #2a4a6f; border-radius: 4px; }
+    #sidebar-nav::-webkit-scrollbar-thumb:hover { background: #3b6a9f; }
 
     .sidebar-link {
       display: flex;

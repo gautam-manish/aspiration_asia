@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Queries | ASA</title>
+  <title>Bookings</title>
   <script>
     if (!localStorage.getItem("token")) {
       window.location.replace("login.html");
@@ -15,8 +15,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="shared-theme.css" />
   <style>
-    .floating label { background: white; }
-    .modal-box .floating label { background: white; }
+    .floating label {
+      background: white;
+    }
+
+    .modal-box .floating label {
+      background: white;
+    }
   </style>
 </head>
 
@@ -26,17 +31,16 @@
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
       <div>
-        <h2 class="text-3xl" style="color:#1e293b;">Queries</h2>
-        <p id="queryCount" class="text-sm mt-1" style="color:#64748b;">Loading...</p>
+        <h2 class="text-3xl" style="color:#1e293b;">Bookings</h2>
+        <p id="bookingCount" class="text-sm mt-1" style="color:#64748b;">Loading...</p>
       </div>
-      <button onclick="openModal()" class="btn-blue"><i class="fa fa-plus"></i> Create Query</button>
+      <button onclick="openModal()" class="btn-blue"><i class="fa fa-plus"></i> Create Booking</button>
     </div>
 
     <!-- Search Bar -->
     <div class="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
       <div class="relative flex-1">
-        <input id="searchInput" type="text"
-          placeholder="Search by query ID, client name, destination..."
+        <input id="searchInput" type="text" placeholder="Search by booking ID, client name, destination..."
           class="input pr-10" oninput="handleSearch()" />
         <span class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#94a3b8;">🔍</span>
       </div>
@@ -63,7 +67,7 @@
         <table>
           <thead>
             <tr>
-              <th>Query ID</th>
+              <th>Booking ID</th>
               <th>Client / Agent</th>
               <th>Pax</th>
               <th>Arrival Date</th>
@@ -71,26 +75,26 @@
               <th></th>
             </tr>
           </thead>
-          <tbody id="queryTableBody"></tbody>
+          <tbody id="bookingTableBody"></tbody>
         </table>
       </div>
       <div id="emptyState" class="hidden text-center py-16">
         <p class="text-4xl mb-3">📋</p>
-        <p style="color:#64748b;">No queries found.</p>
-        <button onclick="openModal()" class="btn-blue mt-4 text-sm">Create your first query</button>
+        <p style="color:#64748b;">No bookings found.</p>
+        <button onclick="openModal()" class="btn-blue mt-4 text-sm">Create your first booking</button>
       </div>
     </div>
   </main>
 
   <!-- ═══════════════════════════════════════
-       ADD QUERY MODAL
+       ADD BOOKING MODAL
   ════════════════════════════════════════ -->
   <div id="addModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
     <div class="modal-box">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h3 class="text-xl" style="color:#1e293b;">Create Query</h3>
-          <p id="displayQId" class="text-xs mt-1 font-semibold" style="color:#2563eb;">Generating ID…</p>
+          <h3 class="text-xl" style="color:#1e293b;">Create Booking</h3>
+          <p id="displayBookingId" class="text-xs mt-1 font-semibold" style="color:#2563eb;">Generating ID…</p>
         </div>
         <button onclick="closeModal()"
           style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">✕</button>
@@ -205,8 +209,8 @@
         </div>
 
         <div class="flex gap-3 pt-4">
-          <button onclick="submitQuery()" class="btn-blue flex-1">
-            <i class="fa fa-save"></i> Save Query
+          <button onclick="submitBooking()" class="btn-blue flex-1">
+            <i class="fa fa-save"></i> Save Booking
           </button>
           <button onclick="closeModal()" class="btn-outline flex-1">Cancel</button>
         </div>
@@ -217,59 +221,59 @@
 
   <script src="sidebar.js"></script>
   <script>
-    const QUERIES_API = "http://localhost:5000/api/queries";
+    const BOOKINGS_API = "http://localhost:5000/api/bookings";
     const authHeaders = () => ({ "Authorization": "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" });
     let currentTab = "confirmed";
     let searchTimeout = null;
-    let pendingQId = "";
+    let pendingBId = "";
 
-    document.addEventListener("DOMContentLoaded", () => fetchQueries());
+    document.addEventListener("DOMContentLoaded", () => fetchBookings());
 
     // ── FETCH ─────────────────────────────────────
-    async function fetchQueries(search = "") {
+    async function fetchBookings(search = "") {
       try {
         showSkeletons();
-        let url = `${QUERIES_API}?status=${currentTab}`;
+        let url = `${BOOKINGS_API}?status=${currentTab}`;
         if (search) url += `&search=${encodeURIComponent(search)}`;
-        const res  = await fetch(url, { headers: authHeaders() });
+        const res = await fetch(url, { headers: authHeaders() });
         const data = await res.json();
         if (data.success) renderTable(data.data);
-      } catch { showToast("Failed to load queries.", false); }
+      } catch { showToast("Failed to load bookings.", false); }
     }
 
     // ── RENDER ────────────────────────────────────
     function paxDisplay(q) {
-      const adults   = Number(q.adults)    || 0;
-      const children = (Number(q.childEB)  || 0)
-                     + (Number(q.childNoEB)|| 0)
-                     + (Number(q.childU5)  || 0);
+      const adults = Number(q.adults) || 0;
+      const children = (Number(q.childEB) || 0)
+        + (Number(q.childNoEB) || 0)
+        + (Number(q.childU5) || 0);
       return `${adults} Adult${adults !== 1 ? "s" : ""} / ${children} Child${children !== 1 ? "ren" : ""}`;
     }
 
-    function renderTable(queries) {
-      const tbody = document.getElementById("queryTableBody");
+    function renderTable(bookings) {
+      const tbody = document.getElementById("bookingTableBody");
       const empty = document.getElementById("emptyState");
-      document.getElementById("queryCount").textContent =
-        `${queries.length} quer${queries.length !== 1 ? "ies" : "y"} found`;
+      document.getElementById("bookingCount").textContent =
+        `${bookings.length} book${bookings.length !== 1 ? "ings" : "ing"} found`;
 
-      if (queries.length === 0) {
+      if (bookings.length === 0) {
         tbody.innerHTML = "";
         empty.classList.remove("hidden");
         return;
       }
       empty.classList.add("hidden");
-      tbody.innerHTML = queries.map(q => {
-        const arrival = q.arrivalDate
-          ? new Date(q.arrivalDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+      tbody.innerHTML = bookings.map(b => {
+        const arrival = b.arrivalDate
+          ? new Date(b.arrivalDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
           : "—";
         return `<tr>
-          <td style="font-weight:600;color:#2563eb;">${q.queryId}</td>
-          <td style="font-weight:500;">${q.clientName}</td>
-          <td><span class="badge">${paxDisplay(q)}</span></td>
+          <td style="font-weight:600;color:#2563eb;">${b.queryId}</td>
+          <td style="font-weight:500;">${b.clientName}</td>
+          <td><span class="badge">${paxDisplay(b)}</span></td>
           <td>${arrival}</td>
-          <td>${q.destination || "—"}</td>
+          <td>${b.destination || "—"}</td>
           <td>
-            <a href="bookings-detail.html?id=${q._id}" class="btn-outline text-xs px-3 py-1">
+            <a href="bookings-detail.html?id=${b._id}" class="btn-outline text-xs px-3 py-1">
               Edit <i class="fa fa-arrow-right"></i>
             </a>
           </td>
@@ -278,7 +282,7 @@
     }
 
     function showSkeletons() {
-      document.getElementById("queryTableBody").innerHTML =
+      document.getElementById("bookingTableBody").innerHTML =
         Array(5).fill(
           `<tr>${Array(6).fill(`<td><div class="skeleton h-4 w-20"></div></td>`).join("")}</tr>`
         ).join("");
@@ -295,28 +299,28 @@
         tab === "cancelled"
           ? "border-color:#ef4444;color:#ef4444;"
           : "border-color:transparent;color:#94a3b8;";
-      fetchQueries(document.getElementById("searchInput").value.trim());
+      fetchBookings(document.getElementById("searchInput").value.trim());
     }
 
     // ── SEARCH ────────────────────────────────────
     function handleSearch() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() =>
-        fetchQueries(document.getElementById("searchInput").value.trim()), 400);
+        fetchBookings(document.getElementById("searchInput").value.trim()), 400);
     }
 
     function clearFilters() {
       document.getElementById("searchInput").value = "";
-      fetchQueries();
+      fetchBookings();
     }
 
     // ── CALC DAYS ─────────────────────────────────
     function calcDays(prefix) {
-      const a   = document.getElementById(`${prefix}_arrival`).value;
-      const d   = document.getElementById(`${prefix}_departure`).value;
-      const el  = document.getElementById(`${prefix}_days`);
+      const a = document.getElementById(`${prefix}_arrival`).value;
+      const d = document.getElementById(`${prefix}_departure`).value;
+      const el = document.getElementById(`${prefix}_days`);
       if (a && d) {
-        const diff = Math.round((new Date(d) - new Date(a)) / (1000 * 60 * 60 * 24));
+        const diff = Math.round((new Date(d) - new Date(a)) / (1000 * 60 * 60 * 24)) + 1;
         el.value = diff > 0 ? `${diff} Day${diff !== 1 ? "s" : ""}` : "";
       } else {
         el.value = "";
@@ -326,18 +330,18 @@
     // ── MODAL ─────────────────────────────────────
     async function openModal() {
       resetForm();
-      document.getElementById("displayQId").textContent = "Generating ID…";
+      document.getElementById("displayBookingId").textContent = "Generating ID…";
       document.getElementById("addModal").classList.add("active");
       try {
-        const res  = await fetch(`${QUERIES_API}/next-id`, { headers: authHeaders() });
+        const res = await fetch(`${BOOKINGS_API}/next-id`, { headers: authHeaders() });
         const data = await res.json();
         if (data.success) {
-          pendingQId = data.queryId;
-          document.getElementById("displayQId").textContent = pendingQId;
+          pendingBId = data.queryId;
+          document.getElementById("displayBookingId").textContent = pendingBId;
         }
       } catch {
-        pendingQId = "";
-        document.getElementById("displayQId").textContent = "ID assigned on save";
+        pendingBId = "";
+        document.getElementById("displayBookingId").textContent = "ID assigned on save";
       }
     }
 
@@ -347,68 +351,68 @@
     }
 
     function resetForm() {
-      ["m_name","m_email","m_mobile","m_address","m_pickup","m_drop","m_days",
-       "m_arrival","m_departure"].forEach(id => {
+      ["m_name", "m_email", "m_mobile", "m_address", "m_pickup", "m_drop", "m_days",
+        "m_arrival", "m_departure"].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = "";
+        });
+      ["m_destination", "m_hotel", "m_meal"].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = "";
       });
-      ["m_destination","m_hotel","m_meal"].forEach(id => {
-        const el = document.getElementById(id); if (el) el.value = "";
-      });
-      ["m_adults","m_childEB","m_childNoEB","m_childU5","m_rooms"].forEach(id => {
+      ["m_adults", "m_childEB", "m_childNoEB", "m_childU5", "m_rooms"].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = "";
       });
     }
 
     // ── SUBMIT ────────────────────────────────────
-    async function submitQuery() {
-      const name      = document.getElementById("m_name").value.trim();
-      const email     = document.getElementById("m_email").value.trim();
-      const dest      = document.getElementById("m_destination").value;
-      const arrival   = document.getElementById("m_arrival").value;
+    async function submitBooking() {
+      const name = document.getElementById("m_name").value.trim();
+      const email = document.getElementById("m_email").value.trim();
+      const dest = document.getElementById("m_destination").value;
+      const arrival = document.getElementById("m_arrival").value;
       const departure = document.getElementById("m_departure").value;
 
-      if (!name)      { showToast("Please enter client / agent name.", false); return; }
-      if (!email)     { showToast("Please enter email address.", false); return; }
-      if (!dest)      { showToast("Please select a destination.", false); return; }
-      if (!arrival)   { showToast("Please select arrival date.", false); return; }
+      if (!name) { showToast("Please enter client / agent name.", false); return; }
+      if (!email) { showToast("Please enter email address.", false); return; }
+      if (!dest) { showToast("Please select a destination.", false); return; }
+      if (!arrival) { showToast("Please select arrival date.", false); return; }
       if (!departure) { showToast("Please select departure date.", false); return; }
       if (new Date(departure) <= new Date(arrival)) {
         showToast("Departure must be after arrival.", false); return;
       }
 
       const payload = {
-        queryId:       pendingQId,
-        clientName:    name,
+        queryId: pendingBId,
+        clientName: name,
         email,
-        mobile:        document.getElementById("m_mobile").value.trim(),
-        address:       document.getElementById("m_address").value.trim(),
-        destination:   dest,
-        pickupPoint:   document.getElementById("m_pickup").value.trim(),
-        dropPoint:     document.getElementById("m_drop").value.trim(),
-        arrivalDate:   arrival,
+        mobile: document.getElementById("m_mobile").value.trim(),
+        address: document.getElementById("m_address").value.trim(),
+        destination: dest,
+        pickupPoint: document.getElementById("m_pickup").value.trim(),
+        dropPoint: document.getElementById("m_drop").value.trim(),
+        arrivalDate: arrival,
         departureDate: departure,
-        noOfDays:      document.getElementById("m_days").value,
-        adults:        Number(document.getElementById("m_adults").value)    || 0,
-        childEB:       Number(document.getElementById("m_childEB").value)   || 0,
-        childNoEB:     Number(document.getElementById("m_childNoEB").value) || 0,
-        childU5:       Number(document.getElementById("m_childU5").value)   || 0,
-        rooms:         Number(document.getElementById("m_rooms").value)     || 0,
+        noOfDays: document.getElementById("m_days").value,
+        adults: Number(document.getElementById("m_adults").value) || 0,
+        childEB: Number(document.getElementById("m_childEB").value) || 0,
+        childNoEB: Number(document.getElementById("m_childNoEB").value) || 0,
+        childU5: Number(document.getElementById("m_childU5").value) || 0,
+        rooms: Number(document.getElementById("m_rooms").value) || 0,
         hotelCategory: document.getElementById("m_hotel").value,
-        mealPlan:      document.getElementById("m_meal").value,
+        mealPlan: document.getElementById("m_meal").value,
       };
 
       try {
-        const res = await axios.post(QUERIES_API, payload, {
+        const res = await axios.post(BOOKINGS_API, payload, {
           headers: authHeaders()
         });
         if (res.data.success) {
-          showToast(`Query ${res.data.data.queryId} created! ✓`);
+          showToast(`Booking ${res.data.data.queryId} created! ✓`);
           closeModal();
-          fetchQueries();
+          fetchBookings();
         } else {
           showToast(res.data.message || "Failed to save.", false);
         }
-      } catch { showToast("Error saving query.", false); }
+      } catch { showToast("Error saving booking.", false); }
     }
 
     // ── TOAST ─────────────────────────────────────
@@ -422,4 +426,5 @@
     }
   </script>
 </body>
+
 </html>
