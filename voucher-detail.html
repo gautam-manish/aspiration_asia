@@ -569,7 +569,7 @@
           <div class="floating">
             <select class="input e-roomType ${!isNew && h.roomType ? "has-value" : ""}" onchange="this.classList.add('has-value')">
               <option value="" disabled ${!(!isNew && h.roomType) ? "selected" : ""} hidden></option>
-              ${["Single Room", "Double Room", "Twin Room", "Suite"].map(t => `<option ${!isNew && h.roomType === t ? "selected" : ""}>${t}</option>`).join("")}
+              ${["Single Room", "Double Room", "DORM", "Suite", "Triple Room","Quard Room"].map(t => `<option ${!isNew && h.roomType === t ? "selected" : ""}>${t}</option>`).join("")}
             </select>
             <label>Room Type</label>
           </div>
