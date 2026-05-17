@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Booking Detail</title>
+  <title>Query Detail | ASA</title>
   <script>if (!localStorage.getItem("token")) window.location.replace("login.html");</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -25,12 +25,12 @@
   <main class="max-w-4xl mx-auto px-6 py-10">
 
     <a href="bookings.html" class="inline-flex items-center gap-2 text-sm mb-6 transition" style="color:#64748b;">
-      <i class="fa fa-arrow-left"></i> Back to Bookings
+      <i class="fa fa-arrow-left"></i> Back to Queries
     </a>
 
     <div class="flex gap-3 mb-6 flex-wrap">
       <button onclick="openEditModal()" class="btn-outline">
-        <i class="fa fa-edit"></i> Edit Booking
+        <i class="fa fa-edit"></i> Edit Query
       </button>
     </div>
 
@@ -38,7 +38,10 @@
       <div class="space-y-5">
         <div class="skeleton h-8 w-64"></div>
         <div class="card p-6 space-y-3">
-          ${Array(6).fill(`<div class="skeleton h-4 w-full"></div>`).join("")}
+          <div class="skeleton h-4 w-full"></div>
+          <div class="skeleton h-4 w-full"></div>
+          <div class="skeleton h-4 w-full"></div>
+          <div class="skeleton h-4 w-full"></div>
         </div>
       </div>
     </div>
@@ -51,7 +54,7 @@
     <div class="modal-box">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h3 class="text-xl" style="color:#1e293b;">Edit Booking</h3>
+          <h3 class="text-xl" style="color:#1e293b;">Edit Query</h3>
           <p id="e_displayQId" class="text-xs mt-1 font-semibold" style="color:#2563eb;"></p>
         </div>
         <button onclick="closeEditModal()"
@@ -61,13 +64,10 @@
       <div class="space-y-4">
 
         <!-- Status -->
-        <p class="section-title">Booking Status</p>
+        <p class="section-title">Query Status</p>
         <div class="card p-4 flex items-center justify-between gap-4 flex-wrap" style="background:#f8fafc;">
           <div>
             <p class="text-sm font-semibold" style="color:#1e293b;" id="statusDesc">—</p>
-            <!-- <p class="text-xs mt-1" style="color:#64748b;">
-              Once cancelled, status cannot be reverted.
-            </p> -->
           </div>
           <div class="flex gap-2">
             <button id="btnConfirmed" onclick="setStatus('confirmed')"
@@ -82,23 +82,32 @@
           </div>
         </div>
 
-        <!-- Client Info -->
+        <!-- Client / Agent -->
         <p class="section-title mt-2">Client / Agent Information</p>
         <div class="grid grid-cols-2 gap-4">
+
           <div class="floating col-span-2">
-            <input class="input" id="e_name" type="text" placeholder=" " />
-            <label>Client / Agent Name *</label>
+            <input class="input" id="e_clientInput" list="e_clientDatalist" placeholder=" "
+              oninput="onClientInputChange()" />
+            <datalist id="e_clientDatalist"></datalist>
+            <input type="hidden" id="e_clientId" />
+            <label>Client / Agent *</label>
+          </div>
+
+          <div class="floating col-span-2">
+            <input class="input" id="e_company" type="text" readonly placeholder=" " />
+            <label>Company Name</label>
           </div>
           <div class="floating">
-            <input class="input" id="e_email" type="email" placeholder=" " />
-            <label>Email Address *</label>
+            <input class="input" id="e_email" type="email" readonly placeholder=" " />
+            <label>Email Address</label>
           </div>
           <div class="floating">
-            <input class="input" id="e_mobile" type="tel" placeholder=" " />
+            <input class="input" id="e_mobile" type="tel" readonly placeholder=" " />
             <label>Mobile Number</label>
           </div>
           <div class="floating col-span-2">
-            <input class="input" id="e_address" type="text" placeholder=" " />
+            <input class="input" id="e_address" type="text" readonly placeholder=" " />
             <label>Address</label>
           </div>
         </div>
@@ -124,11 +133,11 @@
             <label>Drop Point</label>
           </div>
           <div class="floating">
-            <input class="input" id="e_arrival" type="date" onchange="calcDays()" />
+            <input class="input" id="e_arrival" type="date" onchange="onArrivalChange('e')" />
             <label>Arrival Date *</label>
           </div>
           <div class="floating">
-            <input class="input" id="e_departure" type="date" onchange="calcDays()" />
+            <input class="input" id="e_departure" type="date" onchange="calcDays('e')" />
             <label>Departure Date *</label>
           </div>
           <div class="floating">
@@ -189,8 +198,8 @@
         </div>
 
         <div class="flex gap-3 pt-4">
-          <button onclick="updateBooking()" class="btn-blue flex-1">
-            <i class="fa fa-save"></i> Update Booking
+          <button onclick="updateQuery()" class="btn-blue flex-1">
+            <i class="fa fa-save"></i> Update Query
           </button>
           <button onclick="closeEditModal()" class="btn-outline flex-1">Cancel</button>
         </div>
@@ -200,24 +209,92 @@
 
   <script src="sidebar.js"></script>
   <script>
-    const BOOKINGS_API = "http://localhost:5000/api/bookings";
-    const authHeaders = () => ({ "Authorization": "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" });
-    const id = new URLSearchParams(window.location.search).get("id");
-    let currentBooking = null;
+    const QUERIES_API = "http://localhost:5000/api/queries";
+    const SUNDRY_API = "http://localhost:5000/api/sundry";
+    const authHeaders = () => ({
+      "Authorization": "Bearer " + localStorage.getItem("token"),
+      "Content-Type": "application/json"
+    });
 
-    // ── LOAD ──────────────────────────────────────
-    async function loadBooking() {
+    const id = new URLSearchParams(window.location.search).get("id");
+    let currentQuery = null;
+    let sundryList = [];
+
+    // ── LOAD SUNDRY ───────────────────────────────
+    async function loadSundryDropdown() {
+      try {
+        const res = await fetch(`${SUNDRY_API}/dropdown`, { headers: authHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          sundryList = data.data;
+          buildEditClientOptions();
+        }
+      } catch { /* silent */ }
+    }
+
+    function buildEditClientOptions(selectedId = "") {
+      const dl = document.getElementById("e_clientDatalist");
+      const input = document.getElementById("e_clientInput");
+      const hidden = document.getElementById("e_clientId");
+      dl.innerHTML = "";
+      sundryList.forEach(s => {
+        const label = s.companyName
+          ? `${s.contactPerson} / ${s.phone || s.email || "—"} (${s.companyName})`
+          : `${s.contactPerson} / ${s.phone || s.email || "—"}`;
+        const opt = document.createElement("option");
+        opt.value = label;
+        opt.dataset.id = s._id;
+        dl.appendChild(opt);
+        if (s._id === selectedId) {
+          input.value = label;
+          hidden.value = s._id;
+        }
+      });
+    }
+
+    function onClientInputChange() {
+      const input = document.getElementById("e_clientInput");
+      const hidden = document.getElementById("e_clientId");
+      const val = input.value.trim();
+      // Try to match to a sundry entry by label
+      const match = sundryList.find(s => {
+        const label = s.companyName
+          ? `${s.contactPerson} / ${s.phone || s.email || "—"} (${s.companyName})`
+          : `${s.contactPerson} / ${s.phone || s.email || "—"}`;
+        return label === val;
+      });
+      if (match) {
+        hidden.value = match._id;
+        setReadonly("e_company", match.companyName || "—");
+        setReadonly("e_email", match.email || "");
+        setReadonly("e_mobile", match.phone || "");
+        setReadonly("e_address", match.address || "");
+      } else {
+        hidden.value = "";
+      }
+    }
+
+    function setReadonly(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = value;
+      el.setAttribute("placeholder", "X");
+      setTimeout(() => el.setAttribute("placeholder", " "), 10);
+    }
+
+    // ── LOAD QUERY ────────────────────────────────
+    async function loadQuery() {
       if (!id) {
-        document.getElementById("content").innerHTML = `<p style="color:red;">No booking ID provided.</p>`;
+        document.getElementById("content").innerHTML = `<p style="color:red;">No query ID provided.</p>`;
         return;
       }
       try {
-        const res = await fetch(`${BOOKINGS_API}/${id}`, { headers: authHeaders() });
+        const res = await fetch(`${QUERIES_API}/${id}`, { headers: authHeaders() });
         const data = await res.json();
-        if (data.success) { currentBooking = data.data; renderDetail(data.data); }
+        if (data.success) { currentQuery = data.data; renderDetail(data.data); }
         else document.getElementById("content").innerHTML = `<p style="color:red;">${data.message}</p>`;
       } catch {
-        document.getElementById("content").innerHTML = `<p style="color:red;">Failed to load booking.</p>`;
+        document.getElementById("content").innerHTML = `<p style="color:red;">Failed to load query.</p>`;
       }
     }
 
@@ -246,7 +323,7 @@
     }
 
     function renderDetail(q) {
-      document.title = `${q.queryId} | Booking`;
+      document.title = `${q.queryId} | Query`;
       const created = new Date(q.createdAt).toLocaleDateString("en-GB", {
         day: "2-digit", month: "long", year: "numeric"
       });
@@ -262,7 +339,7 @@
           <div>
             <h2 class="text-3xl" style="color:#1e293b;">${q.clientName}</h2>
             <p class="text-sm mt-1" style="color:#64748b;">
-              Booking ID: <strong style="color:#2563eb;">${q.queryId}</strong> &nbsp;·&nbsp; Created ${created}
+              Query ID: <strong style="color:#2563eb;">${q.queryId}</strong> &nbsp;·&nbsp; Created ${created}
             </p>
           </div>
           ${statusBadge(q.status || "confirmed")}
@@ -271,6 +348,7 @@
         <div class="card p-6 mb-5">
           <p class="section-title">Client / Agent Details</p>
           ${row("Name", `<span style="font-weight:600;">${q.clientName}</span>`)}
+          ${row("Company", q.companyName)}
           ${row("Email", q.email)}
           ${row("Mobile", q.mobile)}
           ${row("Address", q.address)}
@@ -302,32 +380,32 @@
           ${row("Meal Plan", q.mealPlan ? `<span class="badge">${q.mealPlan}</span>` : "—")}
         </div>
 
-        <a href="bookings.html" class="btn-blue"><i class="fa fa-arrow-left"></i> Back</a>
+        <a href="query.html" class="btn-blue"><i class="fa fa-arrow-left"></i> Back</a>
       `;
     }
 
     // ── EDIT MODAL ────────────────────────────────
-    function openEditModal() {
-      if (!currentBooking) return;
-      const q = currentBooking;
+    async function openEditModal() {
+      if (!currentQuery) return;
+      await loadSundryDropdown();
 
+      const q = currentQuery;
       document.getElementById("e_displayQId").textContent = q.queryId;
 
-      // Populate fields
-      document.getElementById("e_name").value = q.clientName || "";
-      document.getElementById("e_email").value = q.email || "";
-      document.getElementById("e_mobile").value = q.mobile || "";
-      document.getElementById("e_address").value = q.address || "";
+      // Pre-select sundry in datalist
+      const sundryId = q.sundryId?._id || q.sundryId || "";
+      buildEditClientOptions(sundryId);
+
+      // Pre-fill readonly autofill fields from saved snapshot
+      setReadonly("e_company", q.companyName || "—");
+      setReadonly("e_email", q.email || "");
+      setReadonly("e_mobile", q.mobile || "");
+      setReadonly("e_address", q.address || "");
+
+      // Trip
       document.getElementById("e_pickup").value = q.pickupPoint || "";
       document.getElementById("e_drop").value = q.dropPoint || "";
       document.getElementById("e_days").value = q.noOfDays || "";
-      document.getElementById("e_adults").value = q.adults ?? "";
-      document.getElementById("e_childEB").value = q.childEB ?? "";
-      document.getElementById("e_childNoEB").value = q.childNoEB ?? "";
-      document.getElementById("e_childU5").value = q.childU5 ?? "";
-      document.getElementById("e_rooms").value = q.rooms ?? "";
-
-      // Dates
       document.getElementById("e_arrival").value =
         q.arrivalDate ? q.arrivalDate.substring(0, 10) : "";
       document.getElementById("e_departure").value =
@@ -341,12 +419,18 @@
       if (q.hotelCategory) document.getElementById("e_hotel").classList.add("has-value");
       if (q.mealPlan) document.getElementById("e_meal").classList.add("has-value");
 
-      // Status buttons
-      updateStatusUI(q.status || "confirmed");
+      // Pax
+      document.getElementById("e_adults").value = q.adults ?? "";
+      document.getElementById("e_childEB").value = q.childEB ?? "";
+      document.getElementById("e_childNoEB").value = q.childNoEB ?? "";
+      document.getElementById("e_childU5").value = q.childU5 ?? "";
+      document.getElementById("e_rooms").value = q.rooms ?? "";
 
+      updateStatusUI(q.status || "confirmed");
       document.getElementById("editModal").classList.add("active");
     }
 
+    // ── STATUS UI ─────────────────────────────────
     function updateStatusUI(status) {
       const isConf = status === "confirmed";
       const btnConf = document.getElementById("btnConfirmed");
@@ -354,16 +438,16 @@
       const desc = document.getElementById("statusDesc");
 
       desc.textContent = isConf
-        ? "Status: Confirmed — booking is active."
-        : "Status: Cancelled — this booking has been cancelled.";
+        ? "Status: Confirmed — query is active."
+        : "Status: Cancelled — this query has been cancelled.";
 
-      // Confirmed button — disabled when already confirmed, enabled when cancelled
+      // Confirmed button — active style when confirmed, clickable when cancelled
       btnConf.disabled = isConf;
       btnConf.style.cssText = isConf
         ? "border-color:#16a34a;color:#16a34a;background:#dcfce7;opacity:1;cursor:default;border:1px solid;padding:8px 16px;font-size:0.75rem;font-weight:600;border-radius:8px;"
         : "border-color:#16a34a;color:#16a34a;background:white;border:1px solid;padding:8px 16px;font-size:0.75rem;font-weight:600;border-radius:8px;cursor:pointer;";
 
-      // Cancelled button — disabled when already cancelled, enabled when confirmed
+      // Cancelled button — active style when cancelled, clickable when confirmed
       btnCanc.disabled = !isConf;
       btnCanc.style.cssText = !isConf
         ? "border-color:#ef4444;color:#ef4444;background:#fee2e2;opacity:1;cursor:default;border:1px solid;padding:8px 16px;font-size:0.75rem;font-weight:600;border-radius:8px;"
@@ -376,10 +460,10 @@
     }
 
     // ── CALC DAYS ─────────────────────────────────
-    function calcDays() {
-      const a = document.getElementById("e_arrival").value;
-      const d = document.getElementById("e_departure").value;
-      const el = document.getElementById("e_days");
+    function calcDays(prefix = 'e') {
+      const a = document.getElementById(`${prefix}_arrival`).value;
+      const d = document.getElementById(`${prefix}_departure`).value;
+      const el = document.getElementById(`${prefix}_days`);
       if (a && d) {
         const diff = Math.round((new Date(d) - new Date(a)) / (1000 * 60 * 60 * 24)) + 1;
         el.value = diff > 0 ? `${diff} Day${diff !== 1 ? "s" : ""}` : "";
@@ -388,17 +472,39 @@
       }
     }
 
-    // ── SET STATUS ────────────────────────────────
+    // ── ARRIVAL DATE → SET DEPARTURE MIN ──────────
+    function onArrivalChange(prefix = 'e') {
+      const arrivalVal = document.getElementById(`${prefix}_arrival`).value;
+      const depEl = document.getElementById(`${prefix}_departure`);
+      if (arrivalVal) {
+        // Set min to the day after arrival
+        const nextDay = new Date(arrivalVal);
+        nextDay.setDate(nextDay.getDate() + 1);
+        depEl.min = nextDay.toISOString().split('T')[0];
+        // Clear departure if it's now before the min
+        if (depEl.value && depEl.value <= arrivalVal) {
+          depEl.value = '';
+        }
+      } else {
+        depEl.min = '';
+      }
+      calcDays(prefix);
+    }
+
+    // ── SET STATUS (reversible — matches bookings pattern) ────────────────
     async function setStatus(status) {
-      if (!currentBooking) return;
-      if (currentBooking.status === status) return;
+      if (!currentQuery) return;
+      if (currentQuery.status === status) return;
       try {
-        const res = await axios.patch(`${BOOKINGS_API}/${id}/status`,
-          { status }, { headers: authHeaders() });
+        const res = await axios.patch(
+          `${QUERIES_API}/${id}/status`,
+          { status },
+          { headers: authHeaders() }
+        );
         if (res.data.success) {
-          currentBooking.status = status;
+          currentQuery.status = status;
           updateStatusUI(status);
-          renderDetail(currentBooking);
+          renderDetail(currentQuery);
           showToast(`Status updated to ${status}. ✓`);
         } else {
           showToast(res.data.message || "Failed to update.", false);
@@ -406,16 +512,15 @@
       } catch { showToast("Error updating status.", false); }
     }
 
-    // ── UPDATE BOOKING ──────────────────────────────
-    async function updateBooking() {
-      const name = document.getElementById("e_name").value.trim();
-      const email = document.getElementById("e_email").value.trim();
+    // ── UPDATE QUERY ──────────────────────────────
+    async function updateQuery() {
+      const sundryId = document.getElementById("e_clientId").value;
+      if (!sundryId) { showToast("Please select a client / agent.", false); return; }
+
       const dest = document.getElementById("e_destination").value;
       const arrival = document.getElementById("e_arrival").value;
       const departure = document.getElementById("e_departure").value;
 
-      if (!name) { showToast("Please enter client / agent name.", false); return; }
-      if (!email) { showToast("Please enter email address.", false); return; }
       if (!dest) { showToast("Please select a destination.", false); return; }
       if (!arrival) { showToast("Please select arrival date.", false); return; }
       if (!departure) { showToast("Please select departure date.", false); return; }
@@ -423,11 +528,15 @@
         showToast("Departure must be after arrival.", false); return;
       }
 
+      const entry = sundryList.find(s => s._id === sundryId) || {};
+
       const payload = {
-        clientName: name,
-        email,
-        mobile: document.getElementById("e_mobile").value.trim(),
-        address: document.getElementById("e_address").value.trim(),
+        sundryId,
+        clientName: entry.contactPerson || currentQuery.clientName,
+        companyName: entry.companyName || "",
+        email: entry.email || "",
+        mobile: entry.phone || "",
+        address: entry.address || "",
         destination: dest,
         pickupPoint: document.getElementById("e_pickup").value.trim(),
         dropPoint: document.getElementById("e_drop").value.trim(),
@@ -441,22 +550,20 @@
         rooms: Number(document.getElementById("e_rooms").value) || 0,
         hotelCategory: document.getElementById("e_hotel").value,
         mealPlan: document.getElementById("e_meal").value,
-        status: currentBooking.status,
+        status: currentQuery.status,
       };
 
       try {
-        const res = await axios.put(`${BOOKINGS_API}/${id}`, payload, {
-          headers: authHeaders()
-        });
+        const res = await axios.put(`${QUERIES_API}/${id}`, payload, { headers: authHeaders() });
         if (res.data.success) {
-          showToast("Booking updated! ✓");
+          showToast("Query updated! ✓");
           closeEditModal();
-          currentBooking = res.data.data;
+          currentQuery = res.data.data;
           renderDetail(res.data.data);
         } else {
           showToast(res.data.message || "Failed to update.", false);
         }
-      } catch { showToast("Error updating booking.", false); }
+      } catch { showToast("Error updating query.", false); }
     }
 
     // ── TOAST ─────────────────────────────────────
@@ -470,7 +577,7 @@
     }
 
     // ── INIT ──────────────────────────────────────
-    loadBooking();
+    loadQuery();
   </script>
 </body>
 

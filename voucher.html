@@ -15,9 +15,17 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="shared-theme.css" />
   <style>
-    .floating label { background: white; }
-    .hotel-block .floating label { background: #f8fafc; }
-    .modal-box .floating label { background: white; }
+    .floating label {
+      background: white;
+    }
+
+    .hotel-block .floating label {
+      background: #f8fafc;
+    }
+
+    .modal-box .floating label {
+      background: white;
+    }
   </style>
 </head>
 
@@ -34,7 +42,8 @@
 
     <div class="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
       <div class="relative flex-1">
-        <input id="searchInput" type="text" placeholder="Search by guest name..." class="input pr-10" oninput="handleSearch()" />
+        <input id="searchInput" type="text" placeholder="Search by guest name..." class="input pr-10"
+          oninput="handleSearch()" />
         <span class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#94a3b8;">🔍</span>
       </div>
       <input id="dateFilter" type="date" class="input sm:w-48" onchange="handleSearch()" />
@@ -75,7 +84,8 @@
     <div class="modal-box">
       <div class="flex items-center justify-between mb-6">
         <h3 class="text-xl" style="color:#1e293b;">Add Voucher</h3>
-        <button onclick="closeModal()" style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">✕</button>
+        <button onclick="closeModal()"
+          style="color:#94a3b8;font-size:1.5rem;background:none;border:none;cursor:pointer;">✕</button>
       </div>
       <div class="space-y-4">
 
@@ -83,50 +93,98 @@
         <p class="section-title">Guest Details</p>
         <div class="grid grid-cols-2 gap-4">
           <div class="floating">
-            <input class="input" id="m_guestName" type="text" placeholder=" "/>
+            <input class="input" id="m_guestName" type="text" placeholder=" " />
             <label>Guest Name *</label>
           </div>
           <div class="floating">
             <select class="input" id="m_nationality" onchange="this.classList.add('has-value')">
               <option value="" disabled selected hidden></option>
-              <option>Afghan</option><option>Albanian</option><option>American</option><option>Argentine</option>
-              <option>Australian</option><option>Austrian</option><option>Bangladeshi</option><option>Belgian</option>
-              <option>Brazilian</option><option>British</option><option>Bulgarian</option><option>Canadian</option>
-              <option>Chilean</option><option>Chinese</option><option>Colombian</option><option>Czech</option>
-              <option>Danish</option><option>Dutch</option><option>Egyptian</option><option>Emirati</option>
-              <option>Ethiopian</option><option>Filipino</option><option>Finnish</option><option>French</option>
-              <option>German</option><option>Greek</option><option>Hungarian</option><option>Icelandic</option>
-              <option>Indian</option><option>Indonesian</option><option>Iranian</option><option>Irish</option>
-              <option>Israeli</option><option>Italian</option><option>Japanese</option><option>Jordanian</option>
-              <option>Kenyan</option><option>Korean</option><option>Kuwaiti</option><option>Lebanese</option>
-              <option>Malaysian</option><option>Maldivian</option><option>Mexican</option><option>Moroccan</option>
-              <option>Nepalese</option><option>New Zealander</option><option>Nigerian</option><option>Norwegian</option>
-              <option>Pakistani</option><option>Polish</option><option>Portuguese</option><option>Qatari</option>
-              <option>Romanian</option><option>Russian</option><option>Saudi</option><option>Singaporean</option>
-              <option>South African</option><option>Spanish</option><option>Sri Lankan</option><option>Swedish</option>
-              <option>Swiss</option><option>Thai</option><option>Turkish</option><option>Ukrainian</option>
+              <option>Afghan</option>
+              <option>Albanian</option>
+              <option>American</option>
+              <option>Argentine</option>
+              <option>Australian</option>
+              <option>Austrian</option>
+              <option>Bangladeshi</option>
+              <option>Belgian</option>
+              <option>Brazilian</option>
+              <option>British</option>
+              <option>Bulgarian</option>
+              <option>Canadian</option>
+              <option>Chilean</option>
+              <option>Chinese</option>
+              <option>Colombian</option>
+              <option>Czech</option>
+              <option>Danish</option>
+              <option>Dutch</option>
+              <option>Egyptian</option>
+              <option>Emirati</option>
+              <option>Ethiopian</option>
+              <option>Filipino</option>
+              <option>Finnish</option>
+              <option>French</option>
+              <option>German</option>
+              <option>Greek</option>
+              <option>Hungarian</option>
+              <option>Icelandic</option>
+              <option>Indian</option>
+              <option>Indonesian</option>
+              <option>Iranian</option>
+              <option>Irish</option>
+              <option>Israeli</option>
+              <option>Italian</option>
+              <option>Japanese</option>
+              <option>Jordanian</option>
+              <option>Kenyan</option>
+              <option>Korean</option>
+              <option>Kuwaiti</option>
+              <option>Lebanese</option>
+              <option>Malaysian</option>
+              <option>Maldivian</option>
+              <option>Mexican</option>
+              <option>Moroccan</option>
+              <option>Nepalese</option>
+              <option>New Zealander</option>
+              <option>Nigerian</option>
+              <option>Norwegian</option>
+              <option>Pakistani</option>
+              <option>Polish</option>
+              <option>Portuguese</option>
+              <option>Qatari</option>
+              <option>Romanian</option>
+              <option>Russian</option>
+              <option>Saudi</option>
+              <option>Singaporean</option>
+              <option>South African</option>
+              <option>Spanish</option>
+              <option>Sri Lankan</option>
+              <option>Swedish</option>
+              <option>Swiss</option>
+              <option>Thai</option>
+              <option>Turkish</option>
+              <option>Ukrainian</option>
               <option>Vietnamese</option>
             </select>
             <label>Nationality</label>
           </div>
           <div class="floating">
-            <input class="input" id="m_contactNumber" type="number" placeholder=" "/>
+            <input class="input" id="m_contactNumber" type="number" placeholder=" " />
             <label>Contact Number</label>
           </div>
           <div class="floating">
-            <input class="input" id="m_preferredFloor" type="text" placeholder=" "/>
+            <input class="input" id="m_preferredFloor" type="text" placeholder=" " />
             <label>Preferred Floor</label>
           </div>
           <div class="floating col-span-2">
-            <input class="input" id="m_mealInstruction" type="text" placeholder=" "/>
+            <input class="input" id="m_mealInstruction" type="text" placeholder=" " />
             <label>Meal Instruction</label>
           </div>
           <div class="floating">
-            <input class="input" id="m_wheelChair" type="text" placeholder=" "/>
+            <input class="input" id="m_wheelChair" type="text" placeholder=" " />
             <label>Wheel Chair</label>
           </div>
           <div class="floating">
-            <input class="input" id="m_arrivalFlightDetails" type="text" placeholder=" "/>
+            <input class="input" id="m_arrivalFlightDetails" type="text" placeholder=" " />
             <label>Arrival Flight Details</label>
           </div>
         </div>
@@ -134,16 +192,21 @@
         <!-- Pax -->
         <p class="section-title mt-2">Number of Pax</p>
         <div class="grid grid-cols-2 gap-4">
-          <div class="floating"><input class="input" id="m_adults" type="number" placeholder=" " min="0"/><label>Adults</label></div>
-          <div class="floating"><input class="input" id="m_childWithBed" type="number" placeholder=" " min="0"/><label>Child with Bed</label></div>
-          <div class="floating"><input class="input" id="m_childWithoutBed" type="number" placeholder=" " min="0"/><label>Child without Bed (6–10)</label></div>
-          <div class="floating"><input class="input" id="m_childBelow5" type="number" placeholder=" " min="0"/><label>Child below 5 yrs</label></div>
+          <div class="floating"><input class="input" id="m_adults" type="number" placeholder=" "
+              min="0" /><label>Adults</label></div>
+          <div class="floating"><input class="input" id="m_childWithBed" type="number" placeholder=" "
+              min="0" /><label>Child with Bed</label></div>
+          <div class="floating"><input class="input" id="m_childWithoutBed" type="number" placeholder=" "
+              min="0" /><label>Child without Bed (6–10)</label></div>
+          <div class="floating"><input class="input" id="m_childBelow5" type="number" placeholder=" "
+              min="0" /><label>Child below 5 yrs</label></div>
         </div>
 
         <!-- Hotels -->
         <div class="flex items-center justify-between mt-2">
           <p class="section-title mb-0">Hotel Entries</p>
-          <button onclick="addHotelBlock()" style="color:#2563eb;font-size:0.85rem;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <button onclick="addHotelBlock()"
+            style="color:#2563eb;font-size:0.85rem;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;">
             <span>➕</span> Add Hotel
           </button>
         </div>
@@ -159,16 +222,16 @@
 
   <script src="sidebar.js"></script>
   <script>
-    const HOTELS_API   = "http://localhost:5000/api/hotels";
+    const HOTELS_API = "http://localhost:5000/api/hotels";
     const VOUCHERS_API = "http://localhost:5000/api/vouchers";
     let hotelsData = [], blockCount = 0, searchTimeout = null;
 
     async function loadHotels() {
       try {
-        const res  = await fetch(HOTELS_API);
+        const res = await fetch(HOTELS_API);
         const data = await res.json();
         if (data.success) hotelsData = data.data;
-      } catch {}
+      } catch { }
     }
 
     async function fetchVouchers(search = "", date = "") {
@@ -177,16 +240,16 @@
         let url = VOUCHERS_API;
         const params = [];
         if (search) params.push(`search=${encodeURIComponent(search)}`);
-        if (date)   params.push(`date=${date}`);
+        if (date) params.push(`date=${date}`);
         if (params.length) url += "?" + params.join("&");
-        const res  = await fetch(url);
+        const res = await fetch(url);
         const data = await res.json();
         if (data.success) renderTable(data.data);
       } catch { showToast("Failed to load vouchers.", false); }
     }
 
     function paxDisplay(pax) {
-      const adults   = Number(pax?.adults) || 0;
+      const adults = Number(pax?.adults) || 0;
       const children = (Number(pax?.childWithBed) || 0) + (Number(pax?.childWithoutBed) || 0) + (Number(pax?.childBelow5) || 0);
       return `${adults} Adult${adults !== 1 ? "s" : ""} / ${children} Child${children !== 1 ? "ren" : ""}`;
     }
@@ -198,9 +261,9 @@
       if (vouchers.length === 0) { tbody.innerHTML = ""; empty.classList.remove("hidden"); return; }
       empty.classList.add("hidden");
       tbody.innerHTML = vouchers.map(v => {
-        const date      = new Date(v.createdAt).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+        const date = new Date(v.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
         const firstHotel = v.hotels?.[0] || {};
-        const lastHotel  = v.hotels?.[v.hotels.length - 1] || {};
+        const lastHotel = v.hotels?.[v.hotels.length - 1] || {};
         return `<tr>
           <td>${date}</td>
           <td style="font-weight:500;">${v.guestName}</td>
@@ -231,7 +294,7 @@
 
     function clearFilters() {
       document.getElementById("searchInput").value = "";
-      document.getElementById("dateFilter").value  = "";
+      document.getElementById("dateFilter").value = "";
       fetchVouchers();
     }
 
@@ -239,11 +302,11 @@
       document.getElementById("hotelBlocksContainer").innerHTML = "";
       blockCount = 0;
       // Clear all guest fields
-      ["m_guestName","m_contactNumber","m_mealInstruction","m_wheelChair","m_arrivalFlightDetails","m_preferredFloor"].forEach(id => {
+      ["m_guestName", "m_contactNumber", "m_mealInstruction", "m_wheelChair", "m_arrivalFlightDetails", "m_preferredFloor"].forEach(id => {
         document.getElementById(id).value = "";
       });
       document.getElementById("m_nationality").value = "";
-      ["m_adults","m_childWithBed","m_childWithoutBed","m_childBelow5"].forEach(id => {
+      ["m_adults", "m_childWithBed", "m_childWithoutBed", "m_childBelow5"].forEach(id => {
         document.getElementById(id).value = "";
       });
       addHotelBlock();
@@ -257,7 +320,7 @@
 
     function addHotelBlock() {
       blockCount++;
-      const id  = `block_${blockCount}`;
+      const id = `block_${blockCount}`;
       const div = document.createElement("div");
       div.className = "hotel-block card p-4"; div.id = id;
       div.innerHTML = `
@@ -317,11 +380,11 @@
 
     function onHotelSelect(select, blockId) {
       select.classList.add("has-value");
-      const block       = document.getElementById(blockId);
-      const opt         = select.options[select.selectedIndex];
-      const cityInput    = block.querySelector(".hotel-city");
+      const block = document.getElementById(blockId);
+      const opt = select.options[select.selectedIndex];
+      const cityInput = block.querySelector(".hotel-city");
       const countryInput = block.querySelector(".hotel-country");
-      cityInput.value    = opt.dataset.city    || "";
+      cityInput.value = opt.dataset.city || "";
       countryInput.value = opt.dataset.country || "";
       [cityInput, countryInput].forEach(input => input.setAttribute("placeholder", "X"));
       setTimeout(() => [cityInput, countryInput].forEach(input => input.setAttribute("placeholder", " ")), 10);
@@ -330,25 +393,29 @@
     function collectHotelBlocks() {
       return Array.from(document.querySelectorAll(".hotel-block")).map(block => {
         const sel = block.querySelector(".hotel-select");
-        const g   = f => block.querySelector(`[data-field="${f}"]`)?.value || "";
+        const g = f => block.querySelector(`[data-field="${f}"]`)?.value || "";
         return {
-          confirmationNumber:  block.querySelector(".conf-num")?.value || "",
-          hotelName:           sel.value ? sel.options[sel.selectedIndex].text : "",
-          hotelCity:           block.querySelector(".hotel-city")?.value || "",
-          hotelCountry:        block.querySelector(".hotel-country")?.value || "",
-          roomCategory:        g("roomCategory"),
-          noOfRooms:           g("noOfRooms"),
-          roomType:            g("roomType"),
-          mealPlan:            g("mealPlan"),
-          visit1in:            g("visit1in")  || "N/A",
-          visit1out:           g("visit1out") || "N/A",
-          visit2in:            g("visit2in")  || "N/A",
-          visit2out:           g("visit2out") || "N/A",
-          hotelContactNumber:  g("hotelContactNumber"),
-          googleMapsLink:      g("googleMapsLink"),
-          includes:            g("includes"),
+          confirmationNumber: block.querySelector(".conf-num")?.value || "",
+          hotelName: sel.value ? sel.options[sel.selectedIndex].text : "",
+          hotelCity: block.querySelector(".hotel-city")?.value || "",
+          hotelCountry: block.querySelector(".hotel-country")?.value || "",
+          roomCategory: g("roomCategory"),
+          noOfRooms: g("noOfRooms"),
+          roomType: g("roomType"),
+          mealPlan: g("mealPlan"),
+          visit1in: g("visit1in") || "N/A",
+          visit1out: g("visit1out") || "N/A",
+          visit2in: g("visit2in") || "N/A",
+          visit2out: g("visit2out") || "N/A",
+          hotelContactNumber: g("hotelContactNumber"),
+          googleMapsLink: g("googleMapsLink"),
+          includes: g("includes"),
         };
       });
+    }
+
+    function hasHotelCheckinDate(hotels) {
+      return hotels.some(h => h.visit1in && h.visit1in !== "N/A");
     }
 
     async function submitVoucher() {
@@ -357,20 +424,26 @@
       const g = id => document.getElementById(id)?.value ?? "";
       const payload = {
         guestName,
-        nationality:           g("m_nationality"),
-        contactNumber:         g("m_contactNumber"),
-        mealInstruction:       g("m_mealInstruction"),
-        wheelChair:            g("m_wheelChair"),
-        arrivalFlightDetails:  g("m_arrivalFlightDetails"),
-        preferredFloor:        g("m_preferredFloor"),
+        nationality: g("m_nationality"),
+        contactNumber: g("m_contactNumber"),
+        mealInstruction: g("m_mealInstruction"),
+        wheelChair: g("m_wheelChair"),
+        arrivalFlightDetails: g("m_arrivalFlightDetails"),
+        preferredFloor: g("m_preferredFloor"),
         pax: {
-          adults:          g("m_adults"),
-          childWithBed:    g("m_childWithBed"),
+          adults: g("m_adults"),
+          childWithBed: g("m_childWithBed"),
           childWithoutBed: g("m_childWithoutBed"),
-          childBelow5:     g("m_childBelow5"),
+          childBelow5: g("m_childBelow5"),
         },
         hotels: collectHotelBlocks(),
       };
+
+      if (!hasHotelCheckinDate(payload.hotels)) {
+        showToast("Please enter at least one hotel check-in date.", false);
+        return;
+      }
+
       try {
         const res = await axios.post(VOUCHERS_API, payload, { headers: { "Content-Type": "application/json" } });
         if (res.data.success) { showToast("Voucher saved! ✓"); closeModal(); fetchVouchers(); }
@@ -390,4 +463,5 @@
     loadHotels().then(() => fetchVouchers());
   </script>
 </body>
+
 </html>

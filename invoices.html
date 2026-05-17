@@ -161,6 +161,7 @@
                         <tr>
                             <th>#</th>
                             <th>Invoice No.</th>
+                            <th>Booking ID</th>
                             <th>Client Name</th>
                             <th>Date</th>
                             <th>Balance</th>
@@ -275,6 +276,7 @@
         <tr onclick="window.location.href='invoice.html?id=${inv._id}'" title="Click to edit">
           <td style="color:#94a3b8;font-size:0.8rem;">${rowNum}</td>
           <td><span class="badge">${inv.invoiceNumber || "—"}</span></td>
+          <td style="color:#64748b;font-size:0.82rem;">${inv.bookingId || "—"}</td>
           <td style="font-weight:500;">${inv.billTo?.name || "—"}</td>
           <td style="color:#64748b;">${date || createdDate}</td>
           <td style="font-weight:700;color:#1e293b;">${fmtMoney(inv)}</td>
@@ -375,6 +377,7 @@
       <tr>
         <td><div class="skeleton h-4 w-6"></div></td>
         <td><div class="skeleton h-5 w-28"></div></td>
+        <td><div class="skeleton h-4 w-24"></div></td>
         <td><div class="skeleton h-4 w-36"></div></td>
         <td><div class="skeleton h-4 w-24"></div></td>
         <td><div class="skeleton h-4 w-28"></div></td>

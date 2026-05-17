@@ -4,6 +4,7 @@ import {
   createBooking,
   getAllBookings,
   getBookingById,
+  getBookingByQueryId,
   updateBooking,
   updateBookingStatus,
 } from "../Controller/bookingController.js";
@@ -14,6 +15,7 @@ const router = express.Router();
 // Base Route: /api/bookings
 // ─────────────────────────────────────────
 router.route("/next-id").get(getNextBookingId); // GET  /api/bookings/next-id
+router.route("/lookup/:queryId").get(getBookingByQueryId); // GET /api/queries/lookup/:queryId
 router.route("/").get(getAllBookings).post(createBooking); // GET  /api/bookings  |  POST /api/bookings
 router.route("/:id").get(getBookingById).put(updateBooking); // GET  /api/bookings/:id  |  PUT /api/bookings/:id
 router.route("/:id/status").patch(updateBookingStatus); // PATCH /api/bookings/:id/status

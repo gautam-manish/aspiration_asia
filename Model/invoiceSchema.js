@@ -37,6 +37,8 @@ const invoiceSchema = new mongoose.Schema(
       phone: { type: String, trim: true },
     },
 
+    bookingId: { type: String, trim: true, default: "" },
+
     billTo: {
       name: {
         type: String,

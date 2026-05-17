@@ -138,6 +138,32 @@ export const createBooking = async (req, res) => {
 };
 
 // ─────────────────────────────────────────
+// @desc    Lookup Booking by queryId (e.g. ASA2026100)
+// @route   GET /api/queries/lookup/:queryId
+// ─────────────────────────────────────────
+export const getBookingByQueryId = async (req, res) => {
+  try {
+    const booking = await Booking.findOne({ queryId: req.params.queryId });
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found", data: null });
+    }
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Booking fetched successfully",
+        data: booking,
+      });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
+  }
+};
+
+// ─────────────────────────────────────────
 // @desc    Get All Bookings
 //          Filters: status, search (clientName / queryId / destination)
 // @route   GET /api/bookings?status=confirmed&search=john

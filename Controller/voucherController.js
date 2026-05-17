@@ -1,5 +1,21 @@
 import Voucher from "../Model/voucherSchema.js";
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const findDuplicateVoucher = async (
+  guestName,
+  checkinDates,
+  excludeId = null,
+) => {
+  if (!guestName || !checkinDates.length) return null;
+  const query = {
+    guestName: { $regex: `^${escapeRegex(guestName)}$`, $options: "i" },
+    "hotels.visit1in": { $in: checkinDates },
+  };
+  if (excludeId) query._id = { $ne: excludeId };
+  return Voucher.findOne(query);
+};
+
 // ─────────────────────────────────────────
 // @desc    Create Voucher
 // @route   POST /api/vouchers
@@ -7,27 +23,85 @@ import Voucher from "../Model/voucherSchema.js";
 export const createVoucher = async (req, res) => {
   try {
     const {
-      guestName, nationality,
-      contactNumber, mealInstruction, wheelChair, arrivalFlightDetails, preferredFloor,
-      pax, hotels,
+      guestName,
+      nationality,
+      contactNumber,
+      mealInstruction,
+      wheelChair,
+      arrivalFlightDetails,
+      preferredFloor,
+      pax,
+      hotels,
     } = req.body;
 
     if (!guestName) {
-      return res.status(400).json({ success: false, message: "Guest name is required", data: null });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Guest name is required",
+          data: null,
+        });
     }
     if (!hotels || hotels.length === 0) {
-      return res.status(400).json({ success: false, message: "At least one hotel entry is required", data: null });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "At least one hotel entry is required",
+          data: null,
+        });
+    }
+
+    const checkinDates = hotels
+      .map((h) => (h.visit1in || "").trim())
+      .filter((date) => date && date !== "N/A");
+
+    if (checkinDates.length === 0) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Please provide at least one hotel check-in date",
+          data: null,
+        });
+    }
+
+    const duplicate = await findDuplicateVoucher(guestName, checkinDates);
+    if (duplicate) {
+      return res
+        .status(409)
+        .json({
+          success: false,
+          message:
+            "A voucher already exists for this guest name and check-in date",
+          data: null,
+        });
     }
 
     const voucher = await Voucher.create({
-      guestName, nationality,
-      contactNumber, mealInstruction, wheelChair, arrivalFlightDetails, preferredFloor,
-      pax, hotels,
+      guestName,
+      nationality,
+      contactNumber,
+      mealInstruction,
+      wheelChair,
+      arrivalFlightDetails,
+      preferredFloor,
+      pax,
+      hotels,
     });
 
-    res.status(201).json({ success: true, message: "Voucher created successfully", data: voucher });
+    res
+      .status(201)
+      .json({
+        success: true,
+        message: "Voucher created successfully",
+        data: voucher,
+      });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };
 
@@ -54,9 +128,17 @@ export const getAllVouchers = async (req, res) => {
 
     const vouchers = await Voucher.find(query).sort({ createdAt: -1 });
 
-    res.status(200).json({ success: true, message: "Vouchers fetched successfully", data: vouchers });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Vouchers fetched successfully",
+        data: vouchers,
+      });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };
 
@@ -68,11 +150,21 @@ export const getVoucherById = async (req, res) => {
   try {
     const voucher = await Voucher.findById(req.params.id);
     if (!voucher) {
-      return res.status(404).json({ success: false, message: "Voucher not found", data: null });
+      return res
+        .status(404)
+        .json({ success: false, message: "Voucher not found", data: null });
     }
-    res.status(200).json({ success: true, message: "Voucher fetched successfully", data: voucher });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Voucher fetched successfully",
+        data: voucher,
+      });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message, data: null });
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };
 
@@ -83,21 +175,85 @@ export const getVoucherById = async (req, res) => {
 export const updateVoucher = async (req, res) => {
   try {
     if (Object.keys(req.body).length === 0) {
-      return res.status(400).json({ success: false, message: "No data provided to update", data: null });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "No data provided to update",
+          data: null,
+        });
+    }
+
+    const existing = await Voucher.findById(req.params.id);
+    if (!existing) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Voucher not found", data: null });
+    }
+
+    const updatedGuestName = (req.body.guestName || existing.guestName).trim();
+    const updatedHotels = req.body.hotels || existing.hotels;
+    const checkinDates = (updatedHotels || [])
+      .map((h) => (h.visit1in || "").trim())
+      .filter((date) => date && date !== "N/A");
+
+    if (updatedHotels.length === 0) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "At least one hotel entry is required",
+          data: null,
+        });
+    }
+    if (checkinDates.length === 0) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Please provide at least one hotel check-in date",
+          data: null,
+        });
+    }
+
+    const duplicate = await findDuplicateVoucher(
+      updatedGuestName,
+      checkinDates,
+      req.params.id,
+    );
+    if (duplicate) {
+      return res
+        .status(409)
+        .json({
+          success: false,
+          message:
+            "A voucher already exists for this guest name and check-in date",
+          data: null,
+        });
     }
 
     const voucher = await Voucher.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { returnDocument: "after", runValidators: true }
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!voucher) {
-      return res.status(404).json({ success: false, message: "Voucher not found", data: null });
+      return res
+        .status(404)
+        .json({ success: false, message: "Voucher not found", data: null });
     }
 
-    res.status(200).json({ success: true, message: "Voucher updated successfully", data: voucher });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Voucher updated successfully",
+        data: voucher,
+      });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message, data: null });
+    res
+      .status(400)
+      .json({ success: false, message: error.message, data: null });
   }
 };

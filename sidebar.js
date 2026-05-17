@@ -106,6 +106,7 @@
       white-space: nowrap;
       overflow: hidden;
       background: #162f4f;
+      overflow-x: hidden;
     }
 
     #sidebar-logo .logo-icon { font-size: 1.5rem; flex-shrink: 0; }
@@ -128,6 +129,7 @@
       overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: #2a4a6f transparent;
+      overflow-x: hidden;
     }
     #sidebar-nav::-webkit-scrollbar { width: 4px; }
     #sidebar-nav::-webkit-scrollbar-track { background: transparent; }
@@ -160,6 +162,7 @@
     #sidebar-bottom {
       padding: 8px;
       border-top: 1px solid #1a3354;
+      overflow-x: hidden;
     }
 
     #logout-btn {
@@ -266,6 +269,7 @@
     { icon: "🧮", label: "Allowance/Expense </br>Calculator", href: "calculator-landing.html" },
     { icon: "📒", label: "Ledger", href: "ledger.html" },
     { icon: "📖", label: "Bookings", href: "bookings.html" },
+    { icon: "📑", label: "Sundry </br>Debtors/Creditors", href: "sundry.html" },
   ];
 
   const currentPage = window.location.pathname.split("/").pop() || "index.html";

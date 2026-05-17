@@ -673,6 +673,11 @@
         };
       });
 
+      if (!hotels.some(h => h.visit1in && h.visit1in !== "N/A")) {
+        showToast("Please enter at least one hotel check-in date.", false);
+        return;
+      }
+
       const payload = {
         guestName,
         nationality: document.getElementById("e_nationality").value,

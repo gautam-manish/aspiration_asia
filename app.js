@@ -15,6 +15,8 @@ import calculatorRoute from "./Routes/calculatorRoutes.js";
 import authMiddleware from "./Middleware/authMiddleware.js";
 import clientRoutes from "./Routes/clientRoutes.js";
 import bookingRoute from "./Routes/bookingRoutes.js";
+import sundryRoute from "./Routes/sundryRoutes.js";
+import queryRoute from "./Routes/queryRoutes.js";
 
 connectDB();
 
@@ -35,6 +37,9 @@ app.use("/api/cash-receipts", authMiddleware, cashReceiptRoute);
 app.use("/api/calculator", authMiddleware, calculatorRoute);
 app.use("/api/clients", clientRoutes);
 app.use("/api/bookings", authMiddleware, bookingRoute);
+// Register sundry and query routes expected by front-end
+app.use("/api/sundry", sundryRoute);
+app.use("/api/queries", authMiddleware, queryRoute);
 
 app.listen(process.env.PORT, () => {
   console.log("Server running on port " + process.env.PORT);

@@ -299,6 +299,46 @@
             color: #ef4444;
         }
 
+        /* ── Booking ID Lookup ── */
+        .booking-lookup {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .booking-lookup .inv-input {
+            flex: 1;
+            text-transform: uppercase;
+        }
+
+        .lookup-btn {
+            padding: 7px 14px;
+            border-radius: 6px;
+            border: 1px solid #2563eb;
+            background: #2563eb;
+            color: white;
+            font-size: 0.82rem;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .lookup-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .lookup-status {
+            font-size: 0.78rem;
+            font-weight: 500;
+            min-width: 20px;
+            text-align: center;
+        }
+
         /* ── Print ── */
         @media print {
             @page {
@@ -696,6 +736,14 @@
                     <!-- BILL TO -->
                     <div>
                         <div class="inv-section-title">Bill To</div>
+                        <div class="booking-lookup" id="bookingLookupWrap">
+                            <input class="inv-input" id="bill_booking_id" placeholder="Booking ID (e.g. ASA2026100)"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();lookupBooking()}" />
+                            <button class="lookup-btn" onclick="lookupBooking()" type="button">
+                                <i class="fa fa-search"></i> Lookup
+                            </button>
+                            <span class="lookup-status" id="lookupStatus"></span>
+                        </div>
                         <div class="space-y-2" id="billEdit">
                             <div>
                                 <div class="inv-label">Name</div><input class="inv-input" id="bill_name"
@@ -792,6 +840,7 @@
     <script src="sidebar.js"></script>
     <script>
         const API = "http://localhost:5000/api/invoices";
+        const QUERIES_API = "http://localhost:5000/api/queries";
         let currentMode = "edit";
         let currentInvoiceId = null;
         let searchTimeout = null;
@@ -1198,6 +1247,7 @@
                 notes: document.getElementById("inv_notes").value,
                 terms: document.getElementById("inv_terms").value,
                 currency: document.getElementById("currencySelect").value,
+                bookingId: document.getElementById("bill_booking_id").value.trim(),
             };
         }
 
@@ -1283,6 +1333,8 @@
             document.getElementById("currencySelect").value = "$";
             currentCurrency = "$";
             document.getElementById("lineBody").innerHTML = "";
+            document.getElementById("bill_booking_id").value = "";
+            document.getElementById("lookupStatus").innerHTML = "";
             lineCount = 0;
             addLineItem();
             recalc();
@@ -1305,6 +1357,10 @@
             document.getElementById("bill_email").value = inv.billTo?.email || "";
             document.getElementById("bill_addr").value = inv.billTo?.address || "";
             document.getElementById("bill_mobile").value = inv.billTo?.mobile || "";
+            document.getElementById("bill_booking_id").value = inv.bookingId || "";
+            document.getElementById("lookupStatus").innerHTML = inv.bookingId
+                ? '<i class="fa fa-check-circle" style="color:#16a34a;"></i>'
+                : '';
             document.getElementById("inv_discount_type").value = inv.discountType || "none";
             document.getElementById("inv_discount").value = inv.discountValue || 0;
             toggleDiscountInput();
@@ -1346,6 +1402,37 @@
         document.getElementById("inv_number").value = generateInvoiceNumber();
         document.getElementById("inv_date").value = new Date().toISOString().split("T")[0];
         addLineItem();
+
+        // ── Booking ID Lookup ──────────────────────────
+        async function lookupBooking() {
+            const bookingId = document.getElementById("bill_booking_id").value.trim().toUpperCase();
+            const statusEl = document.getElementById("lookupStatus");
+            if (!bookingId) {
+                statusEl.innerHTML = '';
+                showToast("Please enter a Booking ID.", false);
+                return;
+            }
+            statusEl.innerHTML = '<i class="fa fa-spinner fa-spin" style="color:#94a3b8;"></i>';
+            try {
+                const res = await fetch(`${QUERIES_API}/lookup/${bookingId}`, { headers: authHeaders() });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const b = data.data;
+                    document.getElementById("bill_name").value = b.clientName || "";
+                    document.getElementById("bill_email").value = b.email || "";
+                    document.getElementById("bill_addr").value = b.address || "";
+                    document.getElementById("bill_mobile").value = b.mobile || "";
+                    statusEl.innerHTML = '<i class="fa fa-check-circle" style="color:#16a34a;"></i>';
+                    showToast(`Booking ${bookingId} matched! ✓`);
+                } else {
+                    statusEl.innerHTML = '<i class="fa fa-times-circle" style="color:#ef4444;"></i>';
+                    showToast("No booking found with that ID.", false);
+                }
+            } catch {
+                statusEl.innerHTML = '<i class="fa fa-times-circle" style="color:#ef4444;"></i>';
+                showToast("Error looking up booking.", false);
+            }
+        }
     </script>
 </body>
 
